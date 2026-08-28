@@ -3,6 +3,14 @@
 Analytics dashboard for the Omarchy plugin catalog. Cloudflare Worker (Hono) +
 D1, React SPA frontend (TanStack Router + Query, coss ui, dither-kit charts).
 
+<p align="center">
+  <img src="./public/og.png" alt="omastats share card" width="720" />
+</p>
+
+The share card and favicon render at build time with
+[takumi](https://takumi.kane.tw), no headless browser, using the same
+dither-kit engine the charts run on. See [Brand assets](#brand-assets).
+
 ## Architecture
 
 - **Cron triggers** (see `wrangler.jsonc`): `*/30 * * * *` light poll fetches
@@ -20,10 +28,31 @@ D1, React SPA frontend (TanStack Router + Query, coss ui, dither-kit charts).
 Both upstream endpoints are current-state snapshots; history only accumulates
 from the first cron run onward.
 
+## Brand assets
+
+`bun run assets` renders the brand images into `public/` with takumi. Build
+time only; the Worker bundle never imports it.
+
+- **`og.png`** - the 1200×630 share card above.
+- **`favicon.ico`** (16/32/48) and **`favicon.png`** (64) - a blue dither "o"
+  on the dark rounded tile.
+
+<p align="center">
+  <img src="./public/favicon.png" alt="omastats favicon" width="64" />
+</p>
+
+Both reuse the site's own dither engine. `scripts/assets.tsx` imports
+`paintColumn` and the palette seeds from `src/components/dither-kit/`,
+rasterizes them to raw-RGBA bitmaps, and blooms them the same way the charts
+bloom. `bun run build` runs `assets` first, so the deployed copy stays
+current, and the script prints an ASCII preview of the favicon while it
+renders.
+
 ## Setup
 
 ```txt
-npm install
+bun install
+bun run assets       # regenerate public/og.png + favicons (also runs on build)
 bun run db:generate    # regenerate migrations from src/db/schema.ts
 bun run db:migrate:local   # apply migrations to local D1
 bun run db:migrate:remote  # apply migrations to remote D1
