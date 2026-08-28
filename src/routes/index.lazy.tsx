@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
@@ -72,7 +72,13 @@ function TrendChart({
 }) {
 	const { data, isLoading, isError, error } = query;
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	const rows = (data?.points ?? []).map((p) => ({ bucket: p.bucket, count: p.count }));
+	// Stable identity across renders (and across sibling queries settling): a
+	// fresh array here would bump the chart's revision and replay the entrance
+	// mid-flight every time the page re-renders.
+	const rows = useMemo(
+		() => (data?.points ?? []).map((p) => ({ bucket: p.bucket, count: p.count })),
+		[data],
+	);
 	return (
 		<div className="flex flex-col gap-2">
 			<h2 className="font-medium text-muted-foreground text-sm">{title}</h2>

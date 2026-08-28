@@ -1,6 +1,6 @@
 /** @jsxImportSource react */
 import { createLazyFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
@@ -48,6 +48,20 @@ function PluginDetailPage() {
 		return idx >= 0 ? idx + 1 : null;
 	};
 
+	// Stable across renders: the chart's entrance replays whenever the data
+	// array identity changes, and this map would otherwise make a fresh array
+	// on every re-render of the page.
+	const rows = useMemo(
+		() =>
+			(data?.snapshots ?? []).map((s) => ({
+				snapshotAt: s.snapshotAt,
+				hearts: s.hearts ?? 0,
+				views: s.views ?? 0,
+				copies: s.copies ?? 0,
+			})),
+		[data],
+	);
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-col gap-6">
@@ -70,12 +84,6 @@ function PluginDetailPage() {
 
 	const { plugin, snapshots, averages } = data;
 	const last = snapshots[snapshots.length - 1];
-	const rows = snapshots.map((s) => ({
-		snapshotAt: s.snapshotAt,
-		hearts: s.hearts ?? 0,
-		views: s.views ?? 0,
-		copies: s.copies ?? 0,
-	}));
 
 	return (
 		<div className="flex flex-col gap-8">

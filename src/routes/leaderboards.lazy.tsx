@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { createLazyFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 
@@ -64,7 +64,13 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
 
 	const rows = data?.rows ?? [];
-	const chartRows = rows.slice(0, 25).map((r) => ({ name: r.name ?? r.pluginId, value: metric.score(r) ?? 0 }));
+	// Stable across renders: the bar entrance replays whenever the data array
+	// identity changes, and this map would otherwise make a fresh array on
+	// every re-render.
+	const chartRows = useMemo(
+		() => rows.slice(0, 25).map((r) => ({ name: r.name ?? r.pluginId, value: metric.score(r) ?? 0 })),
+		[rows, metric],
+	);
 
 	return (
 		<div className="flex flex-col gap-6">

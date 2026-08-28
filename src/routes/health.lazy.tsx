@@ -1,5 +1,6 @@
 /** @jsxImportSource react */
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { BlockLegend } from "@/components/dither-kit/block-legend";
 import { PieChart } from "@/components/dither-kit/pie-chart";
 import { Pie } from "@/components/dither-kit/pie";
@@ -37,8 +38,18 @@ function Donut({
 	rows: { status: string | null; count: number }[] | undefined;
 	loading: boolean;
 }) {
-	const data = (rows ?? []).map((r) => ({ name: r.status ?? "unknown", value: r.count }));
-	const config = Object.fromEntries(data.map((d) => [d.name, { label: d.name, color: statusColor(d.name) }]));
+	// Stable across renders: the pie entrance replays whenever the data array
+	// identity changes, and these maps would otherwise make fresh arrays on
+	// every re-render of the page (the two queries here settle at different
+	// ticks).
+	const data = useMemo(
+		() => (rows ?? []).map((r) => ({ name: r.status ?? "unknown", value: r.count })),
+		[rows],
+	);
+	const config = useMemo(
+		() => Object.fromEntries(data.map((d) => [d.name, { label: d.name, color: statusColor(d.name) }])),
+		[data],
+	);
 	const total = data.reduce((a, d) => a + d.value, 0);
 	return (
 		<div className="flex flex-col gap-2">
