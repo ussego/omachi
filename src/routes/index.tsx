@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
 	head: () => ({
 		meta: [
-			{ title: "omastats — Analytics for the Omarchy plugin catalog" },
+			{ title: "omastats · Analytics for the Omarchy plugin catalog" },
 			{
 				name: "description",
 				content:
