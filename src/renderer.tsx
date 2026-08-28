@@ -4,7 +4,7 @@ import { jsxRenderer } from "hono/jsx-renderer";
 import { Link, Script, ViteClient } from "vite-ssr-components/hono";
 
 const SITE = "omastats";
-const SITE_TITLE = "omastats — Analytics for the Omarchy plugin catalog";
+const SITE_TITLE = "omastats · Analytics for the Omarchy plugin catalog";
 const SITE_DESC =
 	"Live analytics for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges.";
 
