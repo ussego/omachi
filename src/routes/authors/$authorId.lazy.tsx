@@ -12,7 +12,7 @@ import { DitherAvatar } from "@/components/dither-kit/avatar";
 import { StatCard } from "@/components/stat-card";
 
 import { fmt } from "@/lib/format";
-import { useAuthorDetail, useErrorToast } from "@/lib/queries";
+import { useAuthorDetail, useAuthors, useErrorToast } from "@/lib/queries";
 
 export const Route = createLazyFileRoute("/authors/$authorId")({
 	component: AuthorDetailPage,
@@ -21,6 +21,13 @@ export const Route = createLazyFileRoute("/authors/$authorId")({
 function AuthorDetailPage() {
 	const { authorId } = useParams({ from: "/authors/$authorId" });
 	const { data, isLoading, isError, error } = useAuthorDetail(authorId);
+
+	const authors = useAuthors();
+	const rankOf = (name: string) => {
+		const idx = (authors.data?.rows ?? []).findIndex((r) => r.author === name);
+		return idx >= 0 ? idx + 1 : null;
+	};
+
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
 	useEffect(() => {
 		if (data) document.title = `${data.author} · omastats`;
@@ -54,13 +61,19 @@ function AuthorDetailPage() {
 	const { author, totals, plugins } = data;
 	return (
 		<div className="flex flex-col gap-8">
-			<div className="flex items-center gap-4">
-				<DitherAvatar name={author} className="size-12 shrink-0" animate={false} />
-				<div className="flex flex-col">
-					<h1 className="font-heading text-2xl">{author}</h1>
-					<p className="font-mono text-muted-foreground text-xs">
-						{totals.plugins} plugin{totals.plugins === 1 ? "" : "s"}
-					</p>
+			<div className="flex flex-wrap items-center justify-between gap-4">
+				<div className="flex items-center gap-4">
+					<DitherAvatar name={author} className="size-12 shrink-0" animate={false} />
+					<div className="flex flex-col">
+						<h1 className="text-balance font-heading text-2xl">{author}</h1>
+						<p className="font-mono text-muted-foreground text-xs">
+							{totals.plugins} plugin{totals.plugins === 1 ? "" : "s"}
+						</p>
+					</div>
+				</div>
+				<div className="flex flex-col sm:items-end sm:text-right">
+					<span className="text-muted-foreground text-xs">Current rank (hearts)</span>
+					<span className="font-mono text-2xl tabular-nums">#{rankOf(author) ?? "—"}</span>
 				</div>
 			</div>
 
