@@ -26,6 +26,7 @@ export const renderer = jsxRenderer(({ children }, c: Context) => {
 		<html lang="en">
 			<head>
 				<script>{themeInit}</script>
+				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<title>{SITE_TITLE}</title>
 				<meta name="description" content={SITE_DESC} />
 				<link rel="canonical" href={url.toString()} />
