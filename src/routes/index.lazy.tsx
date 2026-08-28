@@ -267,7 +267,20 @@ function OverviewPage() {
 													{p.name ?? p.id}
 												</Link>
 											</TableCell>
-											<TableCell className="text-muted-foreground">{p.author}</TableCell>
+											<TableCell className="text-muted-foreground">
+											{p.author ? (
+												<Link
+													to="/authors/$authorId"
+													params={{ authorId: p.author }}
+													title={p.author}
+													className="block max-w-40 truncate hover:underline"
+												>
+													{p.author}
+												</Link>
+											) : (
+												"—"
+											)}
+										</TableCell>
 											<TableCell className="text-muted-foreground">{p.category ?? "—"}</TableCell>
 											<TableCell className="text-right font-mono tabular-nums">
 												{fmtRelative(p.addedAt)}
