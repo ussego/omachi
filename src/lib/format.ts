@@ -12,6 +12,9 @@ export const pct = (a: number, b: number): number => (b > 0 ? Math.round((a / b)
 export const fmtDate = (iso: string | null | undefined): string =>
 	iso ? new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
+export const fmtMonthDay = (iso: string | null | undefined): string =>
+	iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—";
+
 export const fmtDateTime = (iso: string | null | undefined): string =>
 	iso
 		? new Date(iso).toLocaleString(undefined, {
