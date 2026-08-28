@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
-import { BrokenPluginsTable } from "@/components/broken-plugins-table";
 import { Area } from "@/components/dither-kit/area";
 import { AreaChart } from "@/components/dither-kit/area-chart";
 import type { DitherColor } from "@/components/dither-kit/palette";
@@ -26,7 +25,6 @@ import { fmt, fmtDateTime, fmtRelative, pct } from "@/lib/format";
 import {
 	type Granularity,
 	useBreakdown,
-	useBrokenPlugins,
 	useErrorToast,
 	useHealth,
 	usePublishedStats,
@@ -107,12 +105,10 @@ function OverviewPage() {
 	const verified = useVerifiedStats(range, groupBy, customFrom, customTo);
 	const updated = useUpdatedStats(range, groupBy, customFrom, customTo);
 	const trending = useTrending(7);
-	const broken = useBrokenPlugins();
 	const recent = useRecentPlugins(8);
 
 	useErrorToast(health.isError, health.error instanceof Error ? health.error.message : String(health.error));
 	useErrorToast(trending.isError, trending.error instanceof Error ? trending.error.message : String(trending.error));
-	useErrorToast(broken.isError, broken.error instanceof Error ? broken.error.message : String(broken.error));
 	useErrorToast(recent.isError, recent.error instanceof Error ? recent.error.message : String(recent.error));
 	useErrorToast(
 		breakdown.isError,
@@ -231,31 +227,32 @@ function OverviewPage() {
 				<TrendChart title="Updated" color="blue" query={updated} groupBy={groupBy} />
 			</div>
 
-			<div className="grid items-start gap-8 lg:grid-cols-2">
-				<section className="flex min-w-0 flex-col gap-3">
+			<div className="flex flex-col gap-3">
+				<div className="flex items-baseline justify-between">
 					<h2 className="font-heading text-xl">Recent plugins</h2>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Plugin</TableHead>
-								<TableHead>Author</TableHead>
-								<TableHead>Category</TableHead>
-								<TableHead className="text-right">Added</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{recent.isLoading
-								? SKELETON.slice(0, 4).map((k) => (
-										<TableRow key={k}>
-											<TableCell colSpan={4}>
-												<Skeleton className="h-5 w-full" />
-											</TableCell>
-										</TableRow>
-									))
-								: (recent.data?.plugins ?? []).map((p) => (
-										<TableRow key={p.id}>
-											<TableCell>
-												<Link
+				</div>
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Plugin</TableHead>
+							<TableHead>Author</TableHead>
+							<TableHead>Category</TableHead>
+							<TableHead className="text-right">Added</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{recent.isLoading
+							? SKELETON.slice(0, 4).map((k) => (
+									<TableRow key={k}>
+										<TableCell colSpan={4}>
+											<Skeleton className="h-5 w-full" />
+										</TableCell>
+									</TableRow>
+								))
+							: (recent.data?.plugins ?? []).map((p) => (
+									<TableRow key={p.id}>
+										<TableCell>
+											<Link
 													to="/plugins/$pluginId"
 													params={{ pluginId: p.id }}
 													title={p.name ?? p.id}
@@ -271,19 +268,8 @@ function OverviewPage() {
 											</TableCell>
 										</TableRow>
 									))}
-						</TableBody>
-					</Table>
-				</section>
-
-				<section className="flex min-w-0 flex-col gap-3">
-					<div className="flex items-baseline justify-between">
-						<h2 className="font-heading text-xl">Broken plugins</h2>
-						<Link to="/health" className="text-muted-foreground text-sm hover:underline">
-							View all
-						</Link>
-					</div>
-					<BrokenPluginsTable plugins={broken.data?.plugins ?? []} loading={broken.isLoading} limit={5} />
-				</section>
+					</TableBody>
+				</Table>
 			</div>
 
 			<section className="flex flex-col gap-3">
