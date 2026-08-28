@@ -130,7 +130,12 @@ api.get("/plugins", async (c) => {
 		.select()
 		.from(plugins)
 		.where(where)
-		.orderBy(q.sort === "addedAt" ? desc(plugins.addedAt) : plugins.id)
+		// ponytail: addedAt is day-granular (114+ plugins can share a date), so the
+		// same-day tie-break on rowid (insertion ≈ discovery order, catalog arrays
+		// are listedAt-ascending) keeps recent-lists newest-first; swap in a real
+		// listed_at timestamp column if the upstream array order ever stops being
+		// listedAt-ascending.
+		.orderBy(...(q.sort === "addedAt" ? [desc(plugins.addedAt), desc(sql`rowid`)] : [plugins.id]))
 		.limit(pageSize)
 		.offset((page - 1) * pageSize)
 		.all();
