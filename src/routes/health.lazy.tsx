@@ -1,17 +1,21 @@
 /** @jsxImportSource react */
-import { createLazyFileRoute } from "@tanstack/react-router";
+
 import { useMemo } from "react";
-import { BlockLegend } from "@/components/dither-kit/block-legend";
-import { PieChart } from "@/components/dither-kit/pie-chart";
-import { Pie } from "@/components/dither-kit/pie";
-import { Tooltip as ChartTooltip } from "@/components/dither-kit/tooltip";
-import type { DitherColor } from "@/components/dither-kit/palette";
+
+import { createLazyFileRoute } from "@tanstack/react-router";
 
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { BrokenPluginsTable } from "@/components/broken-plugins-table";
-import { useBreakdown, useBrokenPlugins, useErrorToast } from "@/lib/queries";
+import { BlockLegend } from "@/components/dither-kit/block-legend";
+import type { DitherColor } from "@/components/dither-kit/palette";
+import { Pie } from "@/components/dither-kit/pie";
+import { PieChart } from "@/components/dither-kit/pie-chart";
+import { Tooltip as ChartTooltip } from "@/components/dither-kit/tooltip";
+
 import { fmt } from "@/lib/format";
+import { useBreakdown, useBrokenPlugins, useErrorToast } from "@/lib/queries";
 
 export const Route = createLazyFileRoute("/health")({
 	component: HealthPage,
@@ -42,10 +46,7 @@ function Donut({
 	// identity changes, and these maps would otherwise make fresh arrays on
 	// every re-render of the page (the two queries here settle at different
 	// ticks).
-	const data = useMemo(
-		() => (rows ?? []).map((r) => ({ name: r.status ?? "unknown", value: r.count })),
-		[rows],
-	);
+	const data = useMemo(() => (rows ?? []).map((r) => ({ name: r.status ?? "unknown", value: r.count })), [rows]);
 	const config = useMemo(
 		() => Object.fromEntries(data.map((d) => [d.name, { label: d.name, color: statusColor(d.name) }])),
 		[data],

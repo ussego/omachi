@@ -1,14 +1,18 @@
 /** @jsxImportSource react */
-import { createLazyFileRoute, Link, useParams } from "@tanstack/react-router";
+
 import { useEffect } from "react";
 
-import { DitherAvatar } from "@/components/dither-kit/avatar";
+import { createLazyFileRoute, Link, useParams } from "@tanstack/react-router";
+
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatCard } from "@/components/stat-card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAuthorDetail, useErrorToast } from "@/lib/queries";
+
+import { DitherAvatar } from "@/components/dither-kit/avatar";
+import { StatCard } from "@/components/stat-card";
+
 import { fmt } from "@/lib/format";
+import { useAuthorDetail, useErrorToast } from "@/lib/queries";
 
 export const Route = createLazyFileRoute("/authors/$authorId")({
 	component: AuthorDetailPage,

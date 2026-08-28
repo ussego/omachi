@@ -1,6 +1,6 @@
-import { jsxRenderer } from "hono/jsx-renderer";
-import { raw } from "hono/html";
 import type { Context } from "hono";
+import { raw } from "hono/html";
+import { jsxRenderer } from "hono/jsx-renderer";
 import { Link, Script, ViteClient } from "vite-ssr-components/hono";
 
 const SITE = "omastats";

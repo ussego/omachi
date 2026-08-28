@@ -15,10 +15,10 @@ import type { DitherColor } from "@/components/dither-kit/palette";
 import { Sparkline } from "@/components/dither-kit/sparkline";
 import { Tooltip as ChartTooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
+import { TrendingTable } from "@/components/trending-table";
 
 import type { LeaderboardRow } from "@/lib/api-types";
 import { fmt } from "@/lib/format";
-import { TrendingTable } from "@/components/trending-table";
 import { useAuthors, useErrorToast, useLeaderboard, useTrending } from "@/lib/queries";
 
 const SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
