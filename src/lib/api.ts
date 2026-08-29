@@ -17,6 +17,7 @@ import type {
 	StatsResponse,
 	TrendingResponse,
 } from "./api-types";
+import { pollNewPlugins } from "./light-poll";
 import { runSnapshot } from "./snapshot";
 
 export const api = new Hono<{ Bindings: CloudflareBindings & { ADMIN_TOKEN?: string } }>();
@@ -464,6 +465,11 @@ api.get("/authors/:authorId", async (c) => {
 api.post("/admin/snapshot", async (c) => {
 	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
 	return c.json(await runSnapshot(c.env));
+});
+
+api.post("/admin/light-poll", async (c) => {
+	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
+	return c.json(await pollNewPlugins(c.env));
 });
 
 // ── health ─────────────────────────────────────────────────────────────────

@@ -13,13 +13,23 @@ dither-kit engine the charts run on. See [Brand assets](#brand-assets).
 
 ## Architecture
 
-- **Cron triggers** (see `wrangler.jsonc`): `*/30 * * * *` light poll fetches
-  `catalog.json` and inserts rows for plugin IDs not yet in `plugins`, keeping
-  the live plugin count fresh. `0 */6 * * *` heavy poll fetches `catalog.json`
-  + `/v1/stats`, validates with Zod, upserts plugins (metadata + denormalized
-  `current_*` stats columns), appends one snapshot row per plugin, logs
-  verification/update events by diffing against the previous snapshot, and
-  prunes snapshots older than 90 days.
+- **Cron triggers** live in `.github/workflows/`. `light-poll.yml` runs every
+  30 min and `heavy-poll.yml` every 6 h; each fires a `curl` to the matching
+  `/api/admin/...` endpoint, gated by a `secrets.ADMIN_TOKEN` repo secret
+  (same value as the Worker secret). The Worker still has a `scheduled()`
+  handler for `wrangler triggers` and local miniflare, but production cadence
+  is owned by GitHub Actions.
+  - **Light poll** (`POST /api/admin/light-poll`): fetches `catalog.json` and
+    inserts rows for plugin IDs not yet in `plugins`, keeping the live plugin
+    count fresh. Cheap: no zod, no per-plugin loop, no snapshot writes.
+  - **Heavy poll** (`POST /api/admin/snapshot`): fetches `catalog.json` +
+    `/v1/stats`, validates with Zod, upserts plugins (metadata + denormalized
+    `current_*` stats columns), appends one snapshot row per plugin, logs
+    verification/update events by diffing against the previous snapshot, and
+    prunes snapshots older than 90 days.
+  - **Note**: GitHub Actions cron has no SLA — occasional missed firings are
+    documented upstream. If the original "failing occasionally" was caused by
+    Workers CPU/D1 caps, this migration does not fix that; diagnose separately.
 - **D1**: `plugins` (dimension, carries denormalized `current_*` so leaderboard/
   list reads never scan snapshots), `plugin_snapshots` (fact, 90-day retention),
   `verification_events` / `update_events` (derived).
@@ -66,6 +76,14 @@ Trigger a snapshot manually in dev:
 curl -X POST http://localhost:5173/cdn-cgi/mf/scheduled
 ```
 
+Or against production (admin token, same as the GH Actions `ADMIN_TOKEN` repo
+secret and the Cloudflare `ADMIN_TOKEN` Worker secret):
+
+```txt
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/snapshot
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/light-poll
+```
+
 ## Deploy
 
 ```txt
@@ -89,6 +107,7 @@ bun run deploy
 | `GET /api/leaderboard/trending?days=7\|30` | biggest hearts/views growth in the last N days |
 | `GET /api/authors/leaderboard` | aggregate stats per author |
 | `GET /api/health/broken` | plugins with unreachable/failed upstream or repo untouched >365d |
-| `POST /api/admin/snapshot` | force a poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
+| `POST /api/admin/snapshot` | force a heavy poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
+| `POST /api/admin/light-poll` | force a light poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
 
 `range` accepts `30d|90d|180d|365d|1y|all`; `from`/`to` are ISO dates. Buckets are UTC-based (ISO strings).

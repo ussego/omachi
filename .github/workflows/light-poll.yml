@@ -1,0 +1,21 @@
+name: Light poll (new plugin count)
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: light-poll
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger worker light poll
+        run: |
+          curl -fsS -X POST \
+            -H "x-admin-token: ${{ secrets.ADMIN_TOKEN }}" \
+            https://stats.ussego.com/api/admin/light-poll

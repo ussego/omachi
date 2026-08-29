@@ -1,0 +1,21 @@
+name: Heavy poll (snapshot + diff + prune)
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: heavy-poll
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger worker snapshot
+        run: |
+          curl -fsS -X POST \
+            -H "x-admin-token: ${{ secrets.ADMIN_TOKEN }}" \
+            https://stats.ussego.com/api/admin/snapshot

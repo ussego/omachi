@@ -9,7 +9,10 @@ tuned to Cloudflare's Free tier (see Budget discipline).
 
 No git repo: no history, no rollback. Read before editing, verify before
 deploying. `wrangler.jsonc` and `package.json` are the environment truth
-(scripts, bindings, crons); `README.md` documents the API routes.
+(scripts, bindings); `README.md` documents the API routes. Production cron
+schedules live in `.github/workflows/` (light-poll.yml every 30 min,
+heavy-poll.yml every 6 h); the Worker's `scheduled()` handler stays for
+`wrangler triggers` and local miniflare only.
 
 - Typecheck: `bun run typecheck` (`tsconfig.worker.json` + `tsconfig.client.json`:
   the Worker runs DOM-less with hono/jsx, the React app needs DOM lib and
@@ -26,8 +29,11 @@ deploying. `wrangler.jsonc` and `package.json` are the environment truth
   new logic gets one; extend it when snapshot/`current_*` logic changes.
 - Manual poll in dev (miniflare): heavy = `curl -X POST
   http://localhost:5173/cdn-cgi/mf/scheduled`; light = same with
-  `?cron=*/30%20*%20*%20*%20*`. Prod: `POST /api/admin/snapshot` with header
-  `x-admin-token: <ADMIN_TOKEN secret>`.
+  `?cron=*/30%20*%20*%20*%20*`. Prod (GH Actions owns the schedule; same
+  endpoints for ad-hoc triggers): `POST /api/admin/snapshot` and
+  `POST /api/admin/light-poll` with header `x-admin-token: <ADMIN_TOKEN>` —
+  the same value lives as the Cloudflare Worker secret and the GitHub
+  `ADMIN_TOKEN` repo secret.
 - Schema change → `bun run db:generate` → `db:migrate:local` →
   `db:migrate:remote`. Remote applies immediately: additive columns are safe,
   destructive changes are not.
@@ -37,18 +43,23 @@ deploying. `wrangler.jsonc` and `package.json` are the environment truth
 
 ## Architecture (data flow)
 
-1. **Heavy cron** `0 */6 * * *`: `runSnapshot()` (src/lib/snapshot.ts).
-   Fetches catalog.json (3.6 MB, ~1580 plugins) + stats.json (98 KB),
-   zod-validates both, upserts `plugins` (metadata + `current_*`), appends one
-   `plugin_snapshots` row per plugin, diffs against the previous snapshot into
-   `verification_events` / `update_events`, prunes snapshots older than 90 days.
-2. **Light cron** `*/30 * * * *`: `pollNewPlugins()` (src/lib/light-poll.ts).
-   Fetches catalog.json, inserts rows only for new plugin IDs (fresh count).
-   Cheap on purpose: no zod, no per-plugin loop, no snapshot writes.
+1. **Heavy cron** `0 */6 * * *` (GitHub Actions: `.github/workflows/heavy-poll.yml`):
+   `runSnapshot()` (src/lib/snapshot.ts). Fetches catalog.json (3.6 MB, ~1580
+   plugins) + stats.json (98 KB), zod-validates both, upserts `plugins`
+   (metadata + `current_*`), appends one `plugin_snapshots` row per plugin,
+   diffs against the previous snapshot into `verification_events` /
+   `update_events`, prunes snapshots older than 90 days. The GH Actions
+   workflow just `curl`s `POST /api/admin/snapshot` with `secrets.ADMIN_TOKEN`.
+2. **Light cron** `*/30 * * * *` (GitHub Actions: `.github/workflows/light-poll.yml`):
+   `pollNewPlugins()` (src/lib/light-poll.ts). Fetches catalog.json, inserts
+   rows only for new plugin IDs (fresh count). Cheap on purpose: no zod, no
+   per-plugin loop, no snapshot writes. The GH Actions workflow just `curl`s
+   `POST /api/admin/light-poll` with `secrets.ADMIN_TOKEN`.
 3. **API**: src/lib/api.ts. Every GET /api/* response is edge-cached via the
    Cache API (`s-maxage=3600`); `/api/health*` stays uncached; only 2xx stored;
-   `x-cache: HIT|MISS` header for observability. Crons are dispatched by
-   `ctl.cron` in `scheduled()` (src/index.tsx).
+   `x-cache: HIT|MISS` header for observability. Production schedules are
+   owned by GitHub Actions; the Worker's `scheduled()` handler in
+   `src/index.tsx` is kept for `wrangler triggers` and local miniflare only.
 4. **Frontend**: the same Worker serves the SPA via a catch-all GET route in
    src/index.tsx renders the shell (`src/renderer.tsx` loads `/src/client.tsx`),
    routing happens client-side (TanStack Router, generated `src/routeTree.gen.ts`;

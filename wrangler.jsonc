@@ -17,9 +17,6 @@
 			"migrations_pattern": "migrations/*/migration.sql"
 		}
 	],
-	"triggers": {
-		"crons": ["*/30 * * * *", "0 */6 * * *"]
-	},
 	"observability": {
 		"logs": {
 			"enabled": true,
