@@ -13,30 +13,20 @@ dither-kit engine the charts run on. See [Brand assets](#brand-assets).
 
 ## Architecture
 
-- **Cron triggers** live in `.github/workflows/`. `light-poll.yml` runs every
-  30 min and `heavy-poll.yml` every 6 h; each fires a `curl` to the matching
-  `/api/admin/...` endpoint, gated by a `secrets.ADMIN_TOKEN` repo secret
-  (same value as the Worker secret). The Worker still has a `scheduled()`
-  handler for `wrangler triggers` and local miniflare, but production cadence
-  is owned by GitHub Actions.
-  - **Light poll** (`POST /api/admin/light-poll`): fetches `catalog.json` and
-    inserts rows for plugin IDs not yet in `plugins`, keeping the live plugin
-    count fresh. Cheap: no zod, no per-plugin loop, no snapshot writes.
-  - **Heavy poll** (`POST /api/admin/snapshot`): fetches `catalog.json` +
-    `/v1/stats`, validates with Zod, upserts plugins (metadata + denormalized
-    `current_*` stats columns), appends one snapshot row per plugin, logs
-    verification/update events by diffing against the previous snapshot, and
-    prunes snapshots older than 90 days.
-  - **Note**: GitHub Actions cron has no SLA — occasional missed firings are
-    documented upstream. If the original "failing occasionally" was caused by
-    Workers CPU/D1 caps, this migration does not fix that; diagnose separately.
+- **Cadence**: scheduled workflows in `.github/workflows/`. `light-poll.yml`
+  every 30 min, `heavy-poll.yml` every 6 h; each `curl`s the matching
+  `/api/admin/...` endpoint with the `ADMIN_TOKEN` GitHub secret. The
+  Worker's `scheduled()` handler stays for `wrangler triggers` and local
+  miniflare. Implementation: `src/lib/light-poll.ts`, `src/lib/snapshot.ts`.
 - **D1**: `plugins` (dimension, carries denormalized `current_*` so leaderboard/
   list reads never scan snapshots), `plugin_snapshots` (fact, 90-day retention),
   `verification_events` / `update_events` (derived).
 - **API** served by the same Worker (see routes below).
 
 Both upstream endpoints are current-state snapshots; history only accumulates
-from the first cron run onward.
+from the first cron run onward. GitHub Actions cron has no SLA — a missed
+firing is not retried. If the original "failing occasionally" was caused by
+Workers CPU/D1 caps, this migration does not fix that.
 
 ## Brand assets
 
@@ -76,8 +66,8 @@ Trigger a snapshot manually in dev:
 curl -X POST http://localhost:5173/cdn-cgi/mf/scheduled
 ```
 
-Or against production (admin token, same as the GH Actions `ADMIN_TOKEN` repo
-secret and the Cloudflare `ADMIN_TOKEN` Worker secret):
+Or against production (admin token; same value lives as the
+`ADMIN_TOKEN` Cloudflare Worker secret and the GitHub repo secret):
 
 ```txt
 curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/snapshot
@@ -86,9 +76,23 @@ curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin
 
 ## Deploy
 
+Production deploys are driven by `.github/workflows/deploy.yml` on every
+push to `main` (and on manual `workflow_dispatch`). The workflow runs
+typecheck, lint, and `snapshot.selftest.ts` before `bun run deploy`, so a
+broken main can't ship. It authenticates with the `CLOUDFLARE_API_TOKEN`
+repo secret (a scoped Cloudflare API token, see the workflow file for the
+required permissions).
+
+To deploy locally instead, use the same command the action uses:
+
 ```txt
 bun run deploy
 ```
+
+`bun run deploy` does **not** run D1 migrations. Apply schema changes
+manually with `bun run db:migrate:remote` after reviewing the generated
+SQL — AGENTS.md: "Remote applies immediately: additive columns are safe,
+destructive changes are not."
 
 ## API routes
 
