@@ -78,10 +78,10 @@ curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin
 
 Production deploys are driven by `.github/workflows/deploy.yml` on every
 push to `main` (and on manual `workflow_dispatch`). The workflow runs
-typecheck, lint, and `snapshot.selftest.ts` before `bun run deploy`, so a
-broken main can't ship. It authenticates with the `CLOUDFLARE_API_TOKEN`
-repo secret (a scoped Cloudflare API token, see the workflow file for the
-required permissions).
+typecheck, lint, and the snapshot/badges/charts selftests before
+`bun run deploy`, so a broken main can't ship. It authenticates with the
+`CLOUDFLARE_API_TOKEN` repo secret (a scoped Cloudflare API token, see the
+workflow file for the required permissions).
 
 To deploy locally instead, use the same command the action uses:
 
@@ -99,7 +99,7 @@ destructive changes are not."
 | Route | Description |
 |---|---|
 | `GET /api/health` | last snapshot time, plugin/snapshot counts |
-| `GET /api/plugins?q=&category=&author=&kind=&verification=&page=&pageSize=` | list/search plugins + latest stats |
+| `GET /api/plugins?q=&category=&author=&kind=&verification=&page=&pageSize=` | list/search plugins + latest stats; `q` ranks name-prefix matches first |
 | `GET /api/plugins/:id` | plugin detail, full snapshot history, averages |
 | `GET /api/stats/published?range=&groupBy=day\|month\|year&from=&to=` | publish counts over time (from `added_at`) |
 | `GET /api/stats/updated?...` | update-event counts over time |

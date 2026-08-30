@@ -121,6 +121,28 @@ plugin-list `latest`) come from `plugins.current_*`, never from
 - Changing snapshot columns changes three places together: the snapshot write,
   the mirror columns, the upsert.
 
+## Charts & badges (data-only; shieldcn renders)
+
+Embeddable images are a split: omastats serves JSON, shieldcn.dev renders
+SVG. No SVG renderer, chart themes, or chart fonts live in this repo — the
+old `render.ts`/`themes.ts` were deleted for exactly that. Providers are
+`src/lib/charts.ts` (catalog aggregates + per-plugin/per-author series) and
+`src/lib/badges.ts` (shields.io schema), routed in `api.ts` at `/api/charts/*`
+and `/api/badges/*`, each with a `*.selftest.ts`.
+
+- Chart JSON shape is fixed for shieldcn's JSONPath example verbatim:
+  `points: [{date, count}]` ↔ `query=$.points[*].count&dateQuery=$.points[*].date`.
+- `?groupBy=` defaults per kind: `day` for `updated`/`verified` (activity
+  curves), `month` for `published`/`total` (growth). Day buckets are already
+  full dates; month/year buckets get padded (`-01` / `-01-01`) by
+  `padBucket` — charts.selftest locks these shapes, extend it when bucketing
+  changes.
+- **Shieldcn's fetcher rejects dot-suffixed URLs**: embeds must use the
+  extensionless route (`/api/charts/...`, no `.json`). The `.json` suffix
+  still works for direct curl use.
+- Each chart is 1-2 statements (one GROUP BY; plugin = lookup + snapshots;
+  author = chunked snapshot sums). Keep it that way — D1 budget.
+
 ## Budget discipline (Workers Free + D1 Free)
 
 - **CPU**: 10 ms/invocation cap, enforced leniently by frequency. The heavy
