@@ -1,13 +1,15 @@
 /** @jsxImportSource react */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import { BrokenPluginsTable } from "@/components/broken-plugins-table";
+import { UnverifiedPluginsTable } from "@/components/unverified-plugins-table";
 import { BlockLegend } from "@/components/dither-kit/block-legend";
 import type { DitherColor } from "@/components/dither-kit/palette";
 import { Pie } from "@/components/dither-kit/pie";
@@ -15,7 +17,7 @@ import { PieChart } from "@/components/dither-kit/pie-chart";
 import { Tooltip as ChartTooltip } from "@/components/dither-kit/tooltip";
 
 import { fmt } from "@/lib/format";
-import { useBreakdown, useBrokenPlugins, useErrorToast } from "@/lib/queries";
+import { useBreakdown, useBrokenPlugins, useErrorToast, useUnverifiedPlugins } from "@/lib/queries";
 
 export const Route = createLazyFileRoute("/health")({
 	component: HealthPage,
@@ -90,13 +92,16 @@ function Donut({
 }
 
 function HealthPage() {
+	const [range, setRange] = useState("30d");
 	const breakdown = useBreakdown();
 	const broken = useBrokenPlugins();
+	const unverified = useUnverifiedPlugins(range);
 	useErrorToast(
 		breakdown.isError,
 		breakdown.error instanceof Error ? breakdown.error.message : String(breakdown.error),
 	);
 	useErrorToast(broken.isError, broken.error instanceof Error ? broken.error.message : String(broken.error));
+	useErrorToast(unverified.isError, unverified.error instanceof Error ? unverified.error.message : String(unverified.error));
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -117,6 +122,20 @@ function HealthPage() {
 					Unreachable/failed upstream, or repository untouched for &gt;{broken.data?.staleDays ?? 365} days
 				</p>
 				<BrokenPluginsTable plugins={broken.data?.plugins ?? []} loading={broken.isLoading} />
+			</div>
+
+			<div className="flex flex-col gap-3">
+				<div className="flex items-center justify-between">
+					<h2 className="font-heading text-xl">Unverified plugins</h2>
+					<Tabs value={range} onValueChange={setRange}>
+						<TabsList>
+							<TabsTab value="7d">7d</TabsTab>
+							<TabsTab value="14d">14d</TabsTab>
+							<TabsTab value="30d">1 month</TabsTab>
+						</TabsList>
+					</Tabs>
+				</div>
+				<UnverifiedPluginsTable plugins={unverified.data?.plugins ?? []} loading={unverified.isLoading} />
 			</div>
 		</div>
 	);

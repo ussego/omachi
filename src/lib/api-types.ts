@@ -157,6 +157,17 @@ export type BrokenResponse = {
 	}[];
 };
 
+export type UnverifiedResponse = {
+	rangeDays: number;
+	plugins: {
+		pluginId: string;
+		name: string | null;
+		author: string | null;
+		currentVerificationStatus: string | null;
+		repositoryUpdatedAt: string | null;
+	}[];
+};
+
 export type BadgeResponse = {
 	schemaVersion: number;
 	label: string;

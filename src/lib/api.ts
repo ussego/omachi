@@ -18,6 +18,7 @@ import type {
 	PluginListResponse,
 	StatsResponse,
 	TrendingResponse,
+	UnverifiedResponse,
 } from "./api-types";
 import { badgeRank, badgeValue, isRankStat, isStat } from "./badges";
 import {
@@ -597,6 +598,32 @@ api.get("/health", async (c) => {
 	const [{ pluginCount }] = await db.select({ pluginCount: count() }).from(plugins).all();
 	const [{ snapshotCount }] = await db.select({ snapshotCount: count() }).from(pluginSnapshots).all();
 	return c.json({ lastSnapshotAt: snap?.at ?? null, pluginCount, snapshotCount } satisfies HealthResponse);
+});
+
+api.get("/health/unverified", async (c) => {
+	const db = drizzle(c.env.DB);
+	const q = c.req.query();
+	const days = { "7d": 7, "14d": 14, "30d": 30 }[q.range ?? "30d"] ?? 30;
+	const from = new Date(Date.now() - days * dayMs).toISOString();
+	const rows = await db
+		.select({
+			pluginId: plugins.id,
+			name: plugins.name,
+			author: plugins.author,
+			currentVerificationStatus: plugins.currentVerificationStatus,
+			repositoryUpdatedAt: plugins.currentRepositoryUpdatedAt,
+		})
+		.from(plugins)
+		.where(
+			and(
+				eq(plugins.currentVerificationStatus, "unverified"),
+				isNotNull(plugins.currentRepositoryUpdatedAt),
+				sql`${plugins.currentRepositoryUpdatedAt} >= ${from}`,
+			),
+		)
+		.orderBy(plugins.id)
+		.all();
+	return c.json({ rangeDays: days, plugins: rows } satisfies UnverifiedResponse);
 });
 
 api.get("/health/broken", async (c) => {

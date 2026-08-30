@@ -17,6 +17,7 @@ import type {
 	PluginListResponse,
 	StatsResponse,
 	TrendingResponse,
+	UnverifiedResponse,
 } from "./api-types";
 
 // ── fetch helper ───────────────────────────────────────────────────────────
@@ -159,5 +160,12 @@ export function useBrokenPlugins() {
 	return useQuery({
 		queryKey: ["broken"],
 		queryFn: () => get<BrokenResponse>("/api/health/broken"),
+	});
+}
+
+export function useUnverifiedPlugins(range: string) {
+	return useQuery({
+		queryKey: ["unverified", range],
+		queryFn: () => get<UnverifiedResponse>(`/api/health/unverified?range=${range}`),
 	});
 }
