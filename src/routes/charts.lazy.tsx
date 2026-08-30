@@ -18,6 +18,22 @@ const SIZE = "width=520&height=180";
 // Note: no .json extension (shieldcn's fetcher rejects dot-suffixed URLs).
 const EXAMPLES: { path: string; src: string }[] = [
 	{
+		path: "/api/charts/plugin/ussego.otoru/hearts",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts&${PICK}&title=Hearts&${SIZE}`,
+	},
+	{
+		path: "/api/charts/plugin/ussego.otoru/views",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/views&${PICK}&title=Views&${SIZE}`,
+	},
+	{
+		path: "/api/charts/plugin/ussego.otoru/copies",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/copies&${PICK}&title=Copies&${SIZE}`,
+	},
+	{
+		path: "/api/charts/author/ussego/copies",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies&${PICK}&title=Copies&${SIZE}`,
+	},
+	{
 		path: "/api/charts/omastats/published",
 		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/published&${PICK}&title=Plugins+published&${SIZE}`,
 	},
@@ -32,14 +48,6 @@ const EXAMPLES: { path: string; src: string }[] = [
 	{
 		path: "/api/charts/omastats/verified",
 		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/verified&${PICK}&title=Verifications&${SIZE}`,
-	},
-	{
-		path: "/api/charts/plugin/ussego.otoru/hearts",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts&${PICK}&title=Hearts&${SIZE}`,
-	},
-	{
-		path: "/api/charts/author/ussego/copies",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies&${PICK}&title=Copies&${SIZE}`,
 	},
 ];
 
