@@ -30,8 +30,8 @@ const EXAMPLES: { path: string; src: string }[] = [
 		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/updated&${PICK}&title=Plugin+updates&${SIZE}`,
 	},
 	{
-		path: "/api/charts/omastats/verified?toStatus=broken",
-		src: `https://shieldcn.dev/chart/json.svg?url=${encodeURIComponent(`${BASE}/omastats/verified?toStatus=broken`)}&${PICK}&title=Broken+verifications&${SIZE}`,
+		path: "/api/charts/omastats/verified",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/verified&${PICK}&title=Verifications&${SIZE}`,
 	},
 	{
 		path: "/api/charts/plugin/ussego.otoru/hearts",
@@ -115,7 +115,9 @@ function ChartsPage() {
 							<Code>groupBy</Code>
 						</span>
 						<span className="text-muted-foreground">
-							Bucket size: <Code>day</Code>, <Code>month</Code> (default), or <Code>year</Code>.
+							Bucket size: <Code>day</Code>, <Code>month</Code>, or <Code>year</Code>. Defaults:
+							<Code>day</Code> for <Code>updated</Code>/<Code>verified</Code>, <Code>month</Code> for
+							<Code>published</Code>/<Code>total</Code>.
 						</span>
 					</div>
 					<div className="flex gap-4">

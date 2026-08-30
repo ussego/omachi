@@ -38,6 +38,12 @@ export interface CumulativeSeries {
 const GROUP_LEN = { day: 10, month: 7, year: 4 } as const;
 type GroupBy = keyof typeof GROUP_LEN;
 
+/** Pad a bucket prefix to a full ISO date: YYYY-MM-DD stays, YYYY-MM gains -01, YYYY gains -01-01. */
+function padBucket(bucket: string, groupBy: GroupBy): string {
+	if (groupBy === "day") return bucket;
+	return groupBy === "year" ? `${bucket}-01-01` : `${bucket}-01`;
+}
+
 /** Group rows by a time column and count. Returns ascending date series. */
 async function countsOverTime(
 	db: DrizzleDb,
@@ -55,11 +61,11 @@ async function countsOverTime(
 		.groupBy(bucket)
 		.orderBy(bucket)
 		.all();
-	// bucket is a leading prefix of an ISO date — append "-01" so the date
-	// axis gets a real date, not a bare YYYY-MM.
+	// bucket is a leading prefix of an ISO date — pad it so the date axis
+	// gets a real date (day buckets are already full dates).
 	const points = rows
 		.filter((r): r is { bucket: string; count: number } => typeof r.bucket === "string")
-		.map((r) => ({ date: `${r.bucket}-01`, count: r.count }));
+		.map((r) => ({ date: padBucket(r.bucket, groupBy), count: r.count }));
 	const total = points.reduce((a, p) => a + p.count, 0);
 	return {
 		title: "plugins",
@@ -87,7 +93,7 @@ async function totalOverTime(db: DrizzleDb, groupBy: GroupBy = "month"): Promise
 		.filter((r): r is { bucket: string; count: number } => typeof r.bucket === "string")
 		.map((r) => {
 			running += r.count;
-			return { date: `${r.bucket}-01`, count: running };
+			return { date: padBucket(r.bucket, groupBy), count: running };
 		});
 	return { title: "total plugins", total: running, points };
 }

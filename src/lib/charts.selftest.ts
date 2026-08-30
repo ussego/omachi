@@ -158,6 +158,15 @@ assert(pub.points[0]?.count === 1 && pub.points[0]?.date === "2026-05-01", "May 
 assert(pub.points[1]?.count === 1, "Jun has 1 publish");
 assert(pub.points[2]?.count === 1, "Jul has 1 publish");
 
+// Day and year buckets must yield real ISO dates (no "-01" corruption).
+const pubDay = await omastatsPublished(db, "day");
+assert(
+	pubDay.points.map((p) => p.date).join(",") === "2026-05-15,2026-06-20,2026-07-10",
+	"day buckets keep full dates",
+);
+const pubYear = await omastatsPublished(db, "year");
+assert(pubYear.points.length === 1 && pubYear.points[0]?.date === "2026-01-01", "year buckets pad to -01-01");
+
 // omastatsTotal: cumulative running total — 1, 2, 3.
 const total = await omastatsTotal(db);
 assert(total.total === 3, "total plugins = 3");

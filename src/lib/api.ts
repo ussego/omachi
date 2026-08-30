@@ -510,8 +510,12 @@ api.get("/badges/ranking/:stat/:id", async (c) => {
 
 // ── charts (JSON chart data for shieldcn's /chart/json.svg) ───────────────
 
-const chartGroupBy = (raw: string | null): "day" | "month" | "year" =>
-	raw === "day" || raw === "year" ? raw : "month";
+const chartGroupBy = (raw: string | null, kind: string): "day" | "month" | "year" => {
+	if (raw === "day" || raw === "year" || raw === "month") return raw;
+	// Event charts are daily-activity curves (sparse data); published/total
+	// are growth curves — month reads better. ?groupBy= overrides either.
+	return kind === "updated" || kind === "verified" ? "day" : "month";
+};
 const chartMetric = (raw: string): "hearts" | "views" | "copies" | null =>
 	raw === "hearts" || raw === "views" || raw === "copies" ? raw : null;
 /** Optional `.json` suffix; `.svg` requests get a pointer to shieldcn. */
@@ -529,7 +533,7 @@ api.get("/charts/omastats/:kind", async (c) => {
 	const kind = stripChartExt(c.req.param("kind"));
 	if (kind === null) return c.json({ error: CHART_SVG_POINTER }, 400);
 	const db = drizzle(c.env.DB);
-	const groupBy = chartGroupBy(c.req.query("groupBy") ?? null);
+	const groupBy = chartGroupBy(c.req.query("groupBy") ?? null, kind);
 	const series =
 		kind === "published"
 			? await omastatsPublished(db, groupBy)

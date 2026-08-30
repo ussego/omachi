@@ -142,7 +142,9 @@ JSONPath example verbatim: `query=$.points[*].count` +
 
 The `.json` extension is optional — and must be **dropped** in shieldcn
 embeds: its fetcher rejects dot-suffixed URLs. `?groupBy=day|month|year`
-defaults to month. These routes are edge-cached like the rest of `/api/*`.
+overrides the per-kind default: `day` for `updated`/`verified` (activity
+curves), `month` for `published`/`total` (growth). These routes are
+edge-cached like the rest of `/api/*`.
 
 Embed in markdown:
 
