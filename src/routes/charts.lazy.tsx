@@ -15,7 +15,7 @@ const PICK = "query=$.points[*].count&dateQuery=$.points[*].date";
 const SIZE = "width=520&height=180";
 
 // Live example charts (rendered by shieldcn from stats.ussego.com/api/charts JSON).
-// Note: no .json extension — shieldcn's fetcher rejects dot-suffixed URLs.
+// Note: no .json extension (shieldcn's fetcher rejects dot-suffixed URLs).
 const EXAMPLES: { path: string; src: string }[] = [
 	{
 		path: "/api/charts/omastats/published",
@@ -63,8 +63,8 @@ function ChartsPage() {
 			</div>
 
 			<p className="max-w-2xl text-muted-foreground">
-				Embeddable chart images for catalog stats. omastats serves the time series as JSON; shieldcn renders
-				the SVG from it — same division of labor as the badges.
+				Embeddable chart images for catalog stats. omastats serves the time series as JSON; shieldcn
+				renders the SVG.
 			</p>
 
 			<div className="flex flex-col gap-3">
@@ -94,7 +94,7 @@ function ChartsPage() {
 						<Code>verification_events</Code>.
 					</li>
 					<li>
-						<Code>total</Code> is the cumulative plugin count — it only ever rises.
+						<Code>total</Code> is the cumulative plugin count; it never drops.
 					</li>
 				</ul>
 				<Snippet>{`GET /api/charts/plugin/{id}/{hearts|views|copies}`}</Snippet>
@@ -143,14 +143,15 @@ function ChartsPage() {
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Rendering</h2>
 				<p className="text-muted-foreground">
-					Point shieldcn's chart endpoint at the JSON — it fetches it, applies the JSONPath, and renders:
+					Point shieldcn's chart endpoint at the JSON; it fetches the JSON, applies the JSONPath, and
+					renders:
 				</p>
 				<Snippet>
 					{`https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published`}
 				</Snippet>
 				<p className="text-muted-foreground">
-					The <Code>url</Code> must be extensionless — shieldcn's fetcher rejects dot-suffixed
-					URLs, so drop the <Code>.json</Code>.
+					The <Code>url</Code> must be extensionless: shieldcn's fetcher rejects dot-suffixed URLs, so
+					drop the <Code>.json</Code>.
 				</p>
 				<p className="text-muted-foreground">Embed in markdown:</p>
 				<Snippet>
