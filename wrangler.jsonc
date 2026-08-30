@@ -25,6 +25,8 @@
 	},
 	"vars": {
 		"CATALOG_URL": "https://plugins.omarchy.org/catalog.json",
-		"STATS_URL": "https://api.omarchyplugins.com/v1/stats"
+		"STATS_URL": "https://api.omarchyplugins.com/v1/stats",
+		"OMARCHY_REPO": "omacom/omarchy",
+		"GITHUB_API": "https://api.github.com"
 	}
 }

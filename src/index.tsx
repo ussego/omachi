@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { api } from "./lib/api";
 import { pollNewPlugins } from "./lib/light-poll";
 import { runSnapshot } from "./lib/snapshot";
+import { pollStars } from "./lib/stars-poll";
 import { renderer } from "./renderer";
 import { Shell } from "./shell";
 
@@ -52,8 +53,14 @@ export default {
 	 * Cron triggers (see wrangler.jsonc):
 	 * - every 30 min: light poll; keep the plugin count fresh
 	 * - every 6 h: heavy snapshot; full poll, diff, snapshot append, prune
+	 * - every 1 h: omarchy repo star count; cheap one-row append
 	 */
 	scheduled: async (ctl: ScheduledController, env: CloudflareBindings) => {
+		if (ctl.cron === "17 * * * *") {
+			const result = await pollStars(env);
+			console.log(`stars poll: ${JSON.stringify(result)}`);
+			return;
+		}
 		if (ctl.cron === "*/30 * * * *") {
 			const result = await pollNewPlugins(env);
 			console.log(`light poll: ${JSON.stringify(result)}`);

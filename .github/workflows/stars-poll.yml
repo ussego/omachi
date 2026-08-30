@@ -1,0 +1,21 @@
+name: Stars poll (omarchy repo)
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: stars-poll
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger worker stars poll
+        run: |
+          curl -fsS -X POST \
+            -H "x-admin-token: ${{ secrets.ADMIN_TOKEN }}" \
+            https://stats.ussego.com/api/admin/stars-poll

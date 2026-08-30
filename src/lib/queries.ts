@@ -13,6 +13,8 @@ import type {
 	HealthResponse,
 	HeatmapResponse,
 	LeaderboardResponse,
+	OmarchyStarsResponse,
+	OmarchyStarsStatsResponse,
 	PluginDetailResponse,
 	PluginListResponse,
 	StatsResponse,
@@ -167,5 +169,19 @@ export function useUnverifiedPlugins(range: string) {
 	return useQuery({
 		queryKey: ["unverified", range],
 		queryFn: () => get<UnverifiedResponse>(`/api/health/unverified?range=${range}`),
+	});
+}
+
+export function useOmarchyStars() {
+	return useQuery({
+		queryKey: ["omarchy-stars"],
+		queryFn: () => get<OmarchyStarsResponse>("/api/omarchy-stars"),
+	});
+}
+
+export function useOmarchyStarsStats(groupBy: Granularity, range = "365d") {
+	return useQuery({
+		queryKey: ["omarchy-stars", "stats", range, groupBy],
+		queryFn: () => get<OmarchyStarsStatsResponse>(`/api/stats/omarchy-stars?groupBy=${groupBy}&range=${range}`),
 	});
 }

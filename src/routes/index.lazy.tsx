@@ -20,13 +20,15 @@ import { YAxis } from "@/components/dither-kit/y-axis";
 import { StatCard } from "@/components/stat-card";
 import { TrendingTable } from "@/components/trending-table";
 
-import type { StatsResponse } from "@/lib/api-types";
+import type { OmarchyStarsStatsResponse, StatsResponse } from "@/lib/api-types";
 import { fmt, fmtDateTime, fmtRelative, pct } from "@/lib/format";
 import {
 	type Granularity,
 	useBreakdown,
 	useErrorToast,
 	useHealth,
+	useOmarchyStars,
+	useOmarchyStarsStats,
 	usePublishedStats,
 	useRecentPlugins,
 	useTrending,
@@ -96,6 +98,31 @@ function TrendChart({
 	);
 }
 
+function StarsChart({
+	color,
+	query,
+	groupBy,
+}: {
+	color: DitherColor;
+	query: UseQueryResult<OmarchyStarsStatsResponse, Error>;
+	groupBy: Granularity;
+}) {
+	const { data, isError, error } = query;
+	useErrorToast(isError, error instanceof Error ? error.message : String(error));
+	const rows = useMemo(
+		() => (data?.points ?? []).map((p) => ({ bucket: p.bucket, count: p.stars })),
+		[data],
+	);
+	return (
+		<AreaChart data={rows} config={{ count: { label: "Stars", color } }} bloom="low" className="h-40 w-full">
+			<XAxis dataKey="bucket" tickFormatter={fmtBucketTick(groupBy)} maxTicks={4} />
+			<YAxis />
+			<ChartTooltip labelKey="bucket" />
+			<Area dataKey="count" variant="gradient" />
+		</AreaChart>
+	);
+}
+
 function OverviewPage() {
 	// ponytail: default "day" because the catalog only has ~1 day of stats yet;
 	// switch to "month" once there's enough history to be useful.
@@ -112,6 +139,8 @@ function OverviewPage() {
 	const updated = useUpdatedStats(range, groupBy, customFrom, customTo);
 	const trending = useTrending(7);
 	const recent = useRecentPlugins(8);
+	const omarchyStars = useOmarchyStars();
+	const omarchyStarsStats = useOmarchyStarsStats(groupBy, range === "all" ? "all" : range);
 
 	useErrorToast(health.isError, health.error instanceof Error ? health.error.message : String(health.error));
 	useErrorToast(trending.isError, trending.error instanceof Error ? trending.error.message : String(trending.error));
@@ -119,6 +148,10 @@ function OverviewPage() {
 	useErrorToast(
 		breakdown.isError,
 		breakdown.error instanceof Error ? breakdown.error.message : String(breakdown.error),
+	);
+	useErrorToast(
+		omarchyStars.isError,
+		omarchyStars.error instanceof Error ? omarchyStars.error.message : String(omarchyStars.error),
 	);
 
 	const weekCount = (publishedWeek.data?.points ?? []).reduce((a, p) => a + p.count, 0);
@@ -221,10 +254,23 @@ function OverviewPage() {
 					footnote="Plugins added to the catalog in the last 7 days"
 				/>
 				<StatCard
-					label="Snapshots stored"
-					value={health.data?.snapshotCount ?? null}
-					loading={health.isLoading}
+					label="Omarchy repo stars"
+					value={omarchyStars.data?.current ?? null}
+					loading={omarchyStars.isLoading}
+					footnote={`github.com/omacom/omarchy — last polled ${fmtRelative(omarchyStars.data?.lastRecordedAt ?? null)}`}
 				/>
+			</div>
+
+			<div className="flex flex-col gap-2 rounded-lg bg-card p-4">
+				<div className="flex items-baseline justify-between">
+					<h2 className="font-medium text-muted-foreground text-sm">Omarchy repo stars</h2>
+					<span className="text-muted-foreground text-xs">hourly · github.com/omacom/omarchy</span>
+				</div>
+				{omarchyStarsStats.isLoading ? (
+					<div className="h-40 animate-pulse rounded-lg bg-muted" />
+				) : (
+					<StarsChart color="purple" query={omarchyStarsStats} groupBy={groupBy} />
+				)}
 			</div>
 
 			<div className="grid gap-8 lg:grid-cols-3">
