@@ -129,10 +129,10 @@ export function CommandPalette() {
 													value={item.value}
 													onClick={() => go(item)}
 												>
-													<span className="flex-1">{item.label}</span>
+													<span className="min-w-0 flex-1 truncate">{item.label}</span>
 													{item.kind === "plugin" && (
-														<span className="font-mono text-muted-foreground text-xs">
-															{item.value}
+														<span className="max-w-[45%] truncate font-mono text-muted-foreground text-xs">
+															{item.id}
 														</span>
 													)}
 													{item.kind === "author" && (
