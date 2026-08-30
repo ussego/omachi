@@ -19,19 +19,19 @@ const SIZE = "width=520&height=180";
 const EXAMPLES: { path: string; src: string }[] = [
 	{
 		path: "/api/charts/plugin/ussego.otoru/hearts",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts&${PICK}&title=Hearts&${SIZE}`,
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts&${PICK}&title=Plugin+Hearts&${SIZE}`,
 	},
 	{
 		path: "/api/charts/plugin/ussego.otoru/views",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/views&${PICK}&title=Views&${SIZE}`,
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/views&${PICK}&title=Plugin+Views&${SIZE}`,
 	},
 	{
 		path: "/api/charts/plugin/ussego.otoru/copies",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/copies&${PICK}&title=Copies&${SIZE}`,
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/copies&${PICK}&title=Plugin+Copies&${SIZE}`,
 	},
 	{
 		path: "/api/charts/author/ussego/copies",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies&${PICK}&title=Copies&${SIZE}`,
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies&${PICK}&title=Author+Copies&${SIZE}`,
 	},
 	{
 		path: "/api/charts/omastats/published",
