@@ -140,13 +140,14 @@ JSONPath example verbatim: `query=$.points[*].count` +
 /api/charts/author/{login}/copies.json           author's total copies across their plugins
 ```
 
-The `.json` extension is optional. `?groupBy=day|month|year` defaults to
-month. These routes are edge-cached like the rest of `/api/*`.
+The `.json` extension is optional — and must be **dropped** in shieldcn
+embeds: its fetcher rejects dot-suffixed URLs. `?groupBy=day|month|year`
+defaults to month. These routes are edge-cached like the rest of `/api/*`.
 
 Embed in markdown:
 
 ```md
-![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published.json&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published&theme=emerald)
+![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published&theme=emerald)
 ```
 
 For inline `?values=` charts, GitHub / npm charts, or arbitrary-JSON charts,

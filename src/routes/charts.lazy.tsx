@@ -15,30 +15,31 @@ const PICK = "query=$.points[*].count&dateQuery=$.points[*].date";
 const SIZE = "width=520&height=180";
 
 // Live example charts (rendered by shieldcn from stats.ussego.com/api/charts JSON).
+// Note: no .json extension — shieldcn's fetcher rejects dot-suffixed URLs.
 const EXAMPLES: { path: string; src: string }[] = [
 	{
-		path: "/api/charts/omastats/published.json",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/published.json&${PICK}&title=Plugins+published&${SIZE}`,
+		path: "/api/charts/omastats/published",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/published&${PICK}&title=Plugins+published&${SIZE}`,
 	},
 	{
-		path: "/api/charts/omastats/total.json",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/total.json&${PICK}&title=Total+plugins&${SIZE}`,
+		path: "/api/charts/omastats/total",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/total&${PICK}&title=Total+plugins&${SIZE}`,
 	},
 	{
-		path: "/api/charts/omastats/updated.json",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/updated.json&${PICK}&title=Plugin+updates&${SIZE}`,
+		path: "/api/charts/omastats/updated",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/omastats/updated&${PICK}&title=Plugin+updates&${SIZE}`,
 	},
 	{
-		path: "/api/charts/omastats/verified.json?toStatus=broken",
-		src: `https://shieldcn.dev/chart/json.svg?url=${encodeURIComponent(`${BASE}/omastats/verified.json?toStatus=broken`)}&${PICK}&title=Broken+verifications&${SIZE}`,
+		path: "/api/charts/omastats/verified?toStatus=broken",
+		src: `https://shieldcn.dev/chart/json.svg?url=${encodeURIComponent(`${BASE}/omastats/verified?toStatus=broken`)}&${PICK}&title=Broken+verifications&${SIZE}`,
 	},
 	{
-		path: "/api/charts/plugin/ussego.otoru/hearts.json",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts.json&${PICK}&title=Hearts&${SIZE}`,
+		path: "/api/charts/plugin/ussego.otoru/hearts",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/plugin/ussego.otoru/hearts&${PICK}&title=Hearts&${SIZE}`,
 	},
 	{
-		path: "/api/charts/author/ussego/copies.json",
-		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies.json&${PICK}&title=Copies&${SIZE}`,
+		path: "/api/charts/author/ussego/copies",
+		src: `https://shieldcn.dev/chart/json.svg?url=${BASE}/author/ussego/copies&${PICK}&title=Copies&${SIZE}`,
 	},
 ];
 
@@ -143,11 +144,15 @@ function ChartsPage() {
 					Point shieldcn's chart endpoint at the JSON — it fetches it, applies the JSONPath, and renders:
 				</p>
 				<Snippet>
-					{`https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published.json&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published`}
+					{`https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published`}
 				</Snippet>
+				<p className="text-muted-foreground">
+					The <Code>url</Code> must be extensionless — shieldcn's fetcher rejects dot-suffixed
+					URLs, so drop the <Code>.json</Code>.
+				</p>
 				<p className="text-muted-foreground">Embed in markdown:</p>
 				<Snippet>
-					{`![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published.json&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published)`}
+					{`![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published)`}
 				</Snippet>
 			</div>
 		</div>
