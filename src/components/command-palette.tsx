@@ -30,7 +30,7 @@ type NavItem = {
 	label: string;
 	to: "/" | "/leaderboards" | "/health" | "/categories" | "/charts" | "/badges";
 };
-type PluginItem = { kind: "plugin"; value: string; label: string };
+type PluginItem = { kind: "plugin"; value: string; label: string; id: string };
 type AuthorItem = { kind: "author"; value: string; label: string; count: number };
 type PaletteItem = NavItem | PluginItem | AuthorItem;
 type Group = { value: string; items: PaletteItem[] };
@@ -71,14 +71,17 @@ export function CommandPalette() {
 	const authors = useAuthors(debounced.length > 0);
 	const pluginItems: PluginItem[] = (list.data?.plugins ?? []).map((p) => ({
 		kind: "plugin",
-		value: p.id,
+		// value is what the palette filters on (name + id so both match);
+		// id stays the navigation target.
+		value: `${p.name ?? p.id} ${p.id}`,
 		label: p.name ?? p.id,
+		id: p.id,
 	}));
 	const authorItems: AuthorItem[] = (authors.data?.rows ?? [])
 		.filter((a) => a.author != null)
 		.map((a) => ({ kind: "author", value: a.author!, label: a.author!, count: a.plugins }));
 	const groups: Group[] = [
-		{ value: "Navigation", items: NAV_ITEMS },
+		{ value: "Navigation", items: NAV_ITEMS.map((i) => ({ ...i, value: `${i.to} ${i.label}` })) },
 		{ value: "Plugins", items: pluginItems },
 		...(debounced ? [{ value: "Authors", items: authorItems }] : []),
 	];
@@ -86,7 +89,7 @@ export function CommandPalette() {
 	const go = (item: PaletteItem) => {
 		setOpen(false);
 		if (item.kind === "nav") navigate({ to: item.to });
-		else if (item.kind === "plugin") navigate({ to: "/plugins/$pluginId", params: { pluginId: item.value } });
+		else if (item.kind === "plugin") navigate({ to: "/plugins/$pluginId", params: { pluginId: item.id } });
 		else navigate({ to: "/authors/$authorId", params: { authorId: item.value } });
 	};
 

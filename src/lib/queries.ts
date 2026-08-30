@@ -69,6 +69,9 @@ export function usePluginList(q: string, page: number, pageSize = 50) {
 		queryKey: ["plugins", q, page, pageSize],
 		queryFn: () =>
 			get<PluginListResponse>(`/api/plugins?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`),
+		// Keep the previous page of results while the next query loads —
+		// otherwise the palette blanks and refills on every keystroke.
+		placeholderData: keepPreviousData,
 	});
 }
 

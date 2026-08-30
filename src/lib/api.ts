@@ -147,7 +147,15 @@ api.get("/plugins", async (c) => {
 		// are listedAt-ascending) keeps recent-lists newest-first; swap in a real
 		// listed_at timestamp column if the upstream array order ever stops being
 		// listedAt-ascending.
-		.orderBy(...(q.sort === "addedAt" ? [desc(plugins.addedAt), desc(sql`rowid`)] : [plugins.id]))
+		// q searches rank name-prefix matches first, then name asc — later
+		// substring hits still appear, just lower. Plain lists keep id order.
+		.orderBy(
+			...(q.q
+				? [sql`${plugins.name} like ${`${q.q}%`} desc`, plugins.name, plugins.id]
+				: q.sort === "addedAt"
+					? [desc(plugins.addedAt), desc(sql`rowid`)]
+					: [plugins.id]),
+		)
 		.limit(pageSize)
 		.offset((page - 1) * pageSize)
 		.all();
