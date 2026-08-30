@@ -30,7 +30,7 @@ jobs:
         run: bun run lint
 
       - name: Self-check
-        run: bun src/lib/snapshot.selftest.ts && bun src/lib/badges.selftest.ts && bun src/lib/charts/charts.selftest.ts
+        run: bun src/lib/snapshot.selftest.ts && bun src/lib/badges.selftest.ts && bun src/lib/charts.selftest.ts
 
       - name: Build + deploy
         env:

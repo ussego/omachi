@@ -6,15 +6,15 @@
  * `badges.selftest.ts`). Rendering is shieldcn's job; this only covers the
  * JSON series shape (`points[*].count` / `points[*].date`).
  *
- * Run: bun src/lib/charts/charts.selftest.ts
+ * Run: bun src/lib/charts.selftest.ts
  */
 
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { Database } from "bun:sqlite";
 
-import { plugins, pluginSnapshots, updateEvents, verificationEvents } from "../../db/schema";
-import type { DrizzleDb } from "../db";
+import { plugins, pluginSnapshots, updateEvents, verificationEvents } from "../db/schema";
+import type { DrizzleDb } from "./db";
 import {
 	omastatsAuthor,
 	omastatsPlugin,
@@ -22,7 +22,7 @@ import {
 	omastatsTotal,
 	omastatsUpdated,
 	omastatsVerified,
-} from "./omastats";
+} from "./charts";
 
 function assert(cond: unknown, msg: string): asserts cond {
 	if (!cond) throw new Error(`assertion failed: ${msg}`);

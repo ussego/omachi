@@ -29,7 +29,7 @@ deploy before `wrangler deploy` runs.
   formatter: match its style in new code: tab indents, double quotes,
   trailing commas, 120-col lines, semicolons.
 - Self-checks: `bun src/lib/snapshot.selftest.ts`, `bun src/lib/badges.selftest.ts`,
-  `bun src/lib/charts/charts.selftest.ts` (assert-based). Non-trivial
+  `bun src/lib/charts.selftest.ts` (assert-based). Non-trivial
   new logic gets one; extend it when snapshot/`current_*` logic changes.
 - Manual poll in dev (miniflare): heavy = `curl -X POST
   http://localhost:5173/cdn-cgi/mf/scheduled`; light = same with

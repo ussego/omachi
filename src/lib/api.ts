@@ -27,7 +27,7 @@ import {
 	omastatsTotal,
 	omastatsUpdated,
 	omastatsVerified,
-} from "./charts/omastats";
+} from "./charts";
 import { pollNewPlugins } from "./light-poll";
 import { runSnapshot } from "./snapshot";
 
@@ -523,7 +523,7 @@ const stripChartExt = (s: string): string | null =>
 			: s;
 
 const CHART_SVG_POINTER =
-	"omastats doesn't render SVG — point shieldcn's /chart/json.svg at the .json URL instead, e.g. ?url=<this without .svg>&query=$.points[*].count&dateQuery=$.points[*].date";
+	"omastats doesn't render SVG — feed shieldcn's /chart/json.svg this URL without the .svg (and without .json; its fetcher rejects dot-suffixed URLs), e.g. ?url=<this without extension>&query=$.points[*].count&dateQuery=$.points[*].date";
 
 api.get("/charts/omastats/:kind", async (c) => {
 	const kind = stripChartExt(c.req.param("kind"));
