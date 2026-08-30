@@ -27,9 +27,7 @@ app.use(renderer);
 app.route("/api", api);
 
 // Static SEO files: registered before the SPA catch-all so they aren't swallowed.
-app.get("/robots.txt", (c) =>
-	c.text("User-agent: *\nAllow: /\nDisallow: /api/\n"),
-);
+app.get("/robots.txt", (c) => c.text("User-agent: *\nAllow: /\nDisallow: /api/\n"));
 app.get("/llms.txt", (c) => c.text(LLMS_TXT));
 
 // SPA shell: every non-API GET serves the app; routing happens client-side.

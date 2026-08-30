@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BadgesRouteImport } from './routes/badges'
 import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as ChartsRouteImport } from './routes/charts'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as LeaderboardsRouteImport } from './routes/leaderboards'
 import { Route as AuthorsAuthorIdRouteImport } from './routes/authors/$authorId'
@@ -32,6 +33,11 @@ const CategoriesRoute = CategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/categories.lazy').then((d) => d.Route))
+const ChartsRoute = ChartsRouteImport.update({
+  id: '/charts',
+  path: '/charts',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/charts.lazy').then((d) => d.Route))
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/badges': typeof BadgesRoute
   '/categories': typeof CategoriesRoute
+  '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/badges': typeof BadgesRoute
   '/categories': typeof CategoriesRoute
+  '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/badges': typeof BadgesRoute
   '/categories': typeof CategoriesRoute
+  '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/'
     | '/badges'
     | '/categories'
+    | '/charts'
     | '/health'
     | '/leaderboards'
     | '/authors/$authorId'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/'
     | '/badges'
     | '/categories'
+    | '/charts'
     | '/health'
     | '/leaderboards'
     | '/authors/$authorId'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/'
     | '/badges'
     | '/categories'
+    | '/charts'
     | '/health'
     | '/leaderboards'
     | '/authors/$authorId'
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BadgesRoute: typeof BadgesRoute
   CategoriesRoute: typeof CategoriesRoute
+  ChartsRoute: typeof ChartsRoute
   HealthRoute: typeof HealthRoute
   LeaderboardsRoute: typeof LeaderboardsRoute
   AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
@@ -146,6 +159,13 @@ declare module '@tanstack/react-router' {
       path: '/categories'
       fullPath: '/categories'
       preLoaderRoute: typeof CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charts': {
+      id: '/charts'
+      path: '/charts'
+      fullPath: '/charts'
+      preLoaderRoute: typeof ChartsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/health': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BadgesRoute: BadgesRoute,
   CategoriesRoute: CategoriesRoute,
+  ChartsRoute: ChartsRoute,
   HealthRoute: HealthRoute,
   LeaderboardsRoute: LeaderboardsRoute,
   AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,

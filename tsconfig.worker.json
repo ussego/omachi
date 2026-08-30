@@ -22,6 +22,7 @@
 		"src/db/schema.ts",
 		"src/lib/api.ts",
 		"src/lib/api-types.ts",
+		"src/lib/badges.ts",
 		"src/lib/db.ts",
 		"src/lib/light-poll.ts",
 		"src/lib/snapshot.ts",

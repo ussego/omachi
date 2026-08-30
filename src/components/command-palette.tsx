@@ -28,7 +28,7 @@ type NavItem = {
 	kind: "nav";
 	value: string;
 	label: string;
-	to: "/" | "/leaderboards" | "/health" | "/categories" | "/badges";
+	to: "/" | "/leaderboards" | "/health" | "/categories" | "/charts" | "/badges";
 };
 type PluginItem = { kind: "plugin"; value: string; label: string };
 type AuthorItem = { kind: "author"; value: string; label: string; count: number };
@@ -40,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
 	{ kind: "nav", value: "leaderboards", label: "Leaderboards", to: "/leaderboards" },
 	{ kind: "nav", value: "health", label: "Ecosystem Health", to: "/health" },
 	{ kind: "nav", value: "categories", label: "Categories", to: "/categories" },
+	{ kind: "nav", value: "charts", label: "Charts", to: "/charts" },
 	{ kind: "nav", value: "badges", label: "Badges", to: "/badges" },
 ];
 

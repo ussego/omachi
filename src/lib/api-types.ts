@@ -156,3 +156,19 @@ export type BrokenResponse = {
 		repositoryUpdatedAt: string | null;
 	}[];
 };
+
+export type BadgeResponse = {
+	schemaVersion: number;
+	label: string;
+	message: string;
+	color: string;
+};
+
+/** Chart-data response: JSON series consumed by shieldcn's /chart/json.svg. */
+export type ChartSeriesResponse = {
+	title: string;
+	subtitle?: string;
+	link?: string;
+	total: number;
+	points: { date: string; count: number }[];
+};

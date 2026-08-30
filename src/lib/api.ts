@@ -6,9 +6,11 @@ import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "../d
 import type {
 	AuthorDetailResponse,
 	AuthorsResponse,
+	BadgeResponse,
 	BreakdownResponse,
 	BrokenResponse,
 	CategoriesResponse,
+	ChartSeriesResponse,
 	HealthResponse,
 	HeatmapResponse,
 	LeaderboardResponse,
@@ -17,6 +19,15 @@ import type {
 	StatsResponse,
 	TrendingResponse,
 } from "./api-types";
+import { badgeRank, badgeValue, isRankStat, isStat } from "./badges";
+import {
+	omastatsAuthor,
+	omastatsPlugin,
+	omastatsPublished,
+	omastatsTotal,
+	omastatsUpdated,
+	omastatsVerified,
+} from "./charts/omastats";
 import { pollNewPlugins } from "./light-poll";
 import { runSnapshot } from "./snapshot";
 
@@ -460,6 +471,97 @@ api.get("/authors/:authorId", async (c) => {
 		totals: { plugins: rows.length, views: sum("views"), copies: sum("copies"), hearts: sum("hearts") },
 		plugins: rows,
 	} satisfies AuthorDetailResponse);
+});
+
+// ── badges (shields.io endpoint schema, for external renderers) ────────────
+
+const BADGE_COLORS = { hearts: "red", views: "blue", copies: "green", avg: "purple" } as const;
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+api.get("/badges/:stat/:id", async (c) => {
+	const stat = c.req.param("stat");
+	const id = c.req.param("id");
+	if (!isStat(stat)) return c.json({ error: "stat must be views, copies, or hearts" }, 400);
+	const db = drizzle(c.env.DB);
+	const value = await badgeValue(db, stat, id);
+	if (value === null) return c.json({ error: "not found" }, 404);
+	return c.json({
+		schemaVersion: 1,
+		label: c.req.query("label") ?? cap(stat),
+		message: String(value),
+		color: c.req.query("color") ?? BADGE_COLORS[stat],
+	} satisfies BadgeResponse);
+});
+
+api.get("/badges/ranking/:stat/:id", async (c) => {
+	const stat = c.req.param("stat");
+	const id = c.req.param("id");
+	if (!isRankStat(stat)) return c.json({ error: "stat must be views, copies, hearts, or avg" }, 400);
+	const db = drizzle(c.env.DB);
+	const rank = await badgeRank(db, stat, id);
+	if (!rank) return c.json({ error: "not found" }, 404);
+	return c.json({
+		schemaVersion: 1,
+		label: `${stat === "avg" ? "Avg" : cap(stat)} rank`,
+		message: String(rank.rank),
+		color: BADGE_COLORS[stat],
+	} satisfies BadgeResponse);
+});
+
+// ── charts (JSON chart data for shieldcn's /chart/json.svg) ───────────────
+
+const chartGroupBy = (raw: string | null): "day" | "month" | "year" =>
+	raw === "day" || raw === "year" ? raw : "month";
+const chartMetric = (raw: string): "hearts" | "views" | "copies" | null =>
+	raw === "hearts" || raw === "views" || raw === "copies" ? raw : null;
+/** Optional `.json` suffix; `.svg` requests get a pointer to shieldcn. */
+const stripChartExt = (s: string): string | null =>
+	s.toLowerCase().endsWith(".svg")
+		? null
+		: s.toLowerCase().endsWith(".json")
+			? s.slice(0, -5)
+			: s;
+
+const CHART_SVG_POINTER =
+	"omastats doesn't render SVG — point shieldcn's /chart/json.svg at the .json URL instead, e.g. ?url=<this without .svg>&query=$.points[*].count&dateQuery=$.points[*].date";
+
+api.get("/charts/omastats/:kind", async (c) => {
+	const kind = stripChartExt(c.req.param("kind"));
+	if (kind === null) return c.json({ error: CHART_SVG_POINTER }, 400);
+	const db = drizzle(c.env.DB);
+	const groupBy = chartGroupBy(c.req.query("groupBy") ?? null);
+	const series =
+		kind === "published"
+			? await omastatsPublished(db, groupBy)
+			: kind === "updated"
+				? await omastatsUpdated(db, groupBy)
+				: kind === "verified"
+					? await omastatsVerified(db, c.req.query("toStatus") ?? null, groupBy)
+					: kind === "total"
+						? await omastatsTotal(db, groupBy)
+						: null;
+	if (!series) return c.json({ error: "usage: /api/charts/omastats/{published|updated|verified|total}" }, 400);
+	return c.json(series satisfies ChartSeriesResponse);
+});
+
+api.get("/charts/plugin/:id/:metric", async (c) => {
+	const metricRaw = stripChartExt(c.req.param("metric"));
+	if (metricRaw === null) return c.json({ error: CHART_SVG_POINTER }, 400);
+	const metric = chartMetric(metricRaw);
+	if (!metric) return c.json({ error: "metric must be hearts, views, or copies" }, 400);
+	const series = await omastatsPlugin(drizzle(c.env.DB), c.req.param("id"), metric);
+	if (!series) return c.json({ error: "not found" }, 404);
+	return c.json(series satisfies ChartSeriesResponse);
+});
+
+api.get("/charts/author/:login/:metric", async (c) => {
+	const metricRaw = stripChartExt(c.req.param("metric"));
+	if (metricRaw === null) return c.json({ error: CHART_SVG_POINTER }, 400);
+	const metric = chartMetric(metricRaw);
+	if (!metric) return c.json({ error: "metric must be hearts, views, or copies" }, 400);
+	const series = await omastatsAuthor(drizzle(c.env.DB), c.req.param("login"), metric);
+	if (!series) return c.json({ error: "not found" }, 404);
+	return c.json(series satisfies ChartSeriesResponse);
 });
 
 api.post("/admin/snapshot", async (c) => {

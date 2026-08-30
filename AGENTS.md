@@ -7,12 +7,13 @@ tuned to Cloudflare's Free tier (see Budget discipline).
 
 ## Work here
 
-No git repo: no history, no rollback. Read before editing, verify before
-deploying. `wrangler.jsonc` and `package.json` are the environment truth
-(scripts, bindings); `README.md` documents the API routes. Production
-cadence lives in `.github/workflows/`; the Worker's `scheduled()` handler
-is a dev-only fallback. Deploys ship from `.github/workflows/deploy.yml`
-on push to main — a broken typecheck, lint, or self-check fails the
+Repo: https://github.com/ussego/omastats (origin/main; deploys ship from
+`.github/workflows/deploy.yml` on push to main). Read before editing, verify
+before deploying, commit in focused changesets. `wrangler.jsonc` and
+`package.json` are the environment truth (scripts, bindings); `README.md`
+documents the API routes. Production cadence lives in `.github/workflows/`;
+the Worker's `scheduled()` handler is a dev-only fallback. A broken typecheck,
+lint, or self-check fails the
 deploy before `wrangler deploy` runs.
 
 - Typecheck: `bun run typecheck` (`tsconfig.worker.json` + `tsconfig.client.json`:
@@ -27,7 +28,8 @@ deploy before `wrangler deploy` runs.
 - Lint: `bun run lint` (biome, config in biome.json). Biome is also the
   formatter: match its style in new code: tab indents, double quotes,
   trailing commas, 120-col lines, semicolons.
-- Self-checks: `bun src/lib/snapshot.selftest.ts` (assert-based). Non-trivial
+- Self-checks: `bun src/lib/snapshot.selftest.ts`, `bun src/lib/badges.selftest.ts`,
+  `bun src/lib/charts/charts.selftest.ts` (assert-based). Non-trivial
   new logic gets one; extend it when snapshot/`current_*` logic changes.
 - Manual poll in dev (miniflare): heavy = `curl -X POST
   http://localhost:5173/cdn-cgi/mf/scheduled`; light = same with

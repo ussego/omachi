@@ -1,75 +1,44 @@
 /** @jsxImportSource react */
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ExternalLinkIcon } from "lucide-react";
 
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { DitherButton } from "@/components/dither-kit/button";
+import { Code, CopyButton, Snippet } from "@/components/snippet";
 
 export const Route = createLazyFileRoute("/badges")({
 	component: BadgesPage,
 });
 
-// Live example badges (rendered client-side from badges.ussego.com via shieldcn).
+// Live example badges (rendered client-side from stats.ussego.com/api/badges via shieldcn).
 const EXAMPLES: { path: string; src: string }[] = [
 	{
-		path: "/hearts/ussego.otoru",
-		src: "https://shieldcn.dev/https/badges.ussego.com/hearts/ussego.otoru.svg?logo=lu%3AHeart",
+		path: "/api/badges/hearts/ussego.otoru",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/hearts/ussego.otoru.svg?logo=lu%3AHeart",
 	},
 	{
-		path: "/views/ussego.otoru",
-		src: "https://shieldcn.dev/https/badges.ussego.com/views/ussego.otoru.svg?logo=lu%3AEye",
+		path: "/api/badges/views/ussego.otoru",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/views/ussego.otoru.svg?logo=lu%3AEye",
 	},
 	{
-		path: "/copies/ussego.otoru",
-		src: "https://shieldcn.dev/https/badges.ussego.com/copies/ussego.otoru.svg?logo=lu%3ACopy",
+		path: "/api/badges/copies/ussego.otoru",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/copies/ussego.otoru.svg?logo=lu%3ACopy",
 	},
 	{
-		path: "/views/ussego (author total)",
-		src: "https://shieldcn.dev/https/badges.ussego.com/views/ussego.svg?logo=lu%3AEye",
+		path: "/api/badges/views/ussego (author total)",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/views/ussego.svg?logo=lu%3AEye",
 	},
 	{
-		path: "/ranking/hearts/ussego.otoru",
-		src: "https://shieldcn.dev/https/badges.ussego.com/ranking/hearts/ussego.otoru.svg?logo=lu%3AMedal",
+		path: "/api/badges/ranking/hearts/ussego.otoru",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/ranking/hearts/ussego.otoru.svg?logo=lu%3AMedal",
 	},
 	{
-		path: "/ranking/avg/ussego.otoru",
-		src: "https://shieldcn.dev/https/badges.ussego.com/ranking/avg/ussego.otoru.svg?logo=lu%3AMedal",
+		path: "/api/badges/ranking/avg/ussego.otoru",
+		src: "https://shieldcn.dev/https/stats.ussego.com/api/badges/ranking/avg/ussego.otoru.svg?logo=lu%3AMedal",
 	},
 ];
-
-function CopyButton({ text }: { text: string }) {
-	const [copied, setCopied] = useState(false);
-	useEffect(() => {
-		if (!copied) return;
-		const t = setTimeout(() => setCopied(false), 1500);
-		return () => clearTimeout(t);
-	}, [copied]);
-	return (
-		<Button
-			variant="ghost"
-			size="icon-sm"
-			title={copied ? "Copied" : "Copy URL"}
-			onClick={() => {
-				navigator.clipboard.writeText(text);
-				setCopied(true);
-			}}
-		>
-			{copied ? <CheckIcon className="text-green-600" /> : <CopyIcon />}
-		</Button>
-	);
-}
-
-function Code({ children }: { children: string }) {
-	return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>;
-}
-
-function Snippet({ children }: { children: string }) {
-	return <pre className="overflow-x-auto rounded-lg border bg-muted/50 p-4 font-mono text-sm">{children}</pre>;
-}
 
 function BadgesPage() {
 	return (
@@ -77,7 +46,9 @@ function BadgesPage() {
 			<div className="flex items-center justify-between gap-4">
 				<h1 className="font-heading text-2xl">Badges</h1>
 				<DitherButton
-					render={<a href="https://github.com/ussego/omarchy-badges" target="_blank" rel="noreferrer" />}
+					render={
+						<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />
+					}
 					color="purple"
 					bloom="aura"
 				>
@@ -89,8 +60,8 @@ function BadgesPage() {
 			</div>
 
 			<p className="max-w-2xl text-muted-foreground">
-				Embeddable badges for plugin and author stats. Point a badge renderer at badges.ussego.com and it
-				returns live numbers from the Omarchy plugins API.
+				Embeddable badges for plugin and author stats. Point a badge renderer at stats.ussego.com/api/badges
+				and it returns live numbers from omastats' mirrored catalog data.
 			</p>
 
 			<div className="flex flex-col gap-4">
@@ -121,7 +92,7 @@ function BadgesPage() {
 
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Endpoints</h2>
-				<Snippet>GET /:stat/:id</Snippet>
+				<Snippet>GET /api/badges/:stat/:id</Snippet>
 				<ul className="list-inside list-disc text-muted-foreground">
 					<li>
 						<Code>stat</Code> is <Code>views</Code>, <Code>copies</Code>, or <Code>hearts</Code>.
@@ -131,7 +102,7 @@ function BadgesPage() {
 						<Code>ussego</Code>. Author ids return the total across all the author's plugins.
 					</li>
 				</ul>
-				<Snippet>GET /ranking/:stat/:id</Snippet>
+				<Snippet>GET /api/badges/ranking/:stat/:id</Snippet>
 				<ul className="list-inside list-disc text-muted-foreground">
 					<li>
 						Same stats, plus <Code>avg</Code> (the mean of views, copies, and hearts).
@@ -170,10 +141,10 @@ function BadgesPage() {
 				<Snippet>{`{"schemaVersion": 1, "label": "Views", "message": "109", "color": "blue"}`}</Snippet>
 				<p className="text-muted-foreground">shieldcn, with styling via its own query params:</p>
 				<Snippet>
-					{`https://shieldcn.dev/https/badges.ussego.com/hearts/ussego.otoru.svg?logo=lu%3AHeart`}
+					{`https://shieldcn.dev/https/stats.ussego.com/api/badges/hearts/ussego.otoru.svg?logo=lu%3AHeart`}
 				</Snippet>
 				<p className="text-muted-foreground">shields.io reads the same JSON:</p>
-				<Snippet>{`https://img.shields.io/endpoint?url=https://badges.ussego.com/views/ussego.otoru`}</Snippet>
+				<Snippet>{`https://img.shields.io/endpoint?url=https://stats.ussego.com/api/badges/views/ussego.otoru`}</Snippet>
 			</div>
 		</div>
 	);

@@ -21,10 +21,11 @@ import { ToastProvider } from "@/components/ui/toast";
 
 import { CommandPalette } from "@/components/command-palette";
 
-const NAV: { to: "/" | "/leaderboards" | "/health" | "/categories" | "/badges"; label: string }[] = [
+const NAV: { to: "/" | "/leaderboards" | "/health" | "/categories" | "/charts" | "/badges"; label: string }[] = [
 	{ to: "/leaderboards", label: "Leaderboards" },
 	{ to: "/health", label: "Ecosystem Health" },
 	{ to: "/categories", label: "Categories" },
+	{ to: "/charts", label: "Charts" },
 	{ to: "/badges", label: "Badges" },
 ];
 

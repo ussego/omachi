@@ -110,8 +110,45 @@ destructive changes are not."
 | `GET /api/leaderboard/:metric?limit=&sparkPoints=` | top N by `hearts`/`views`/`copies`/`copies_per_view`; `sparkPoints` embeds per-row snapshot history |
 | `GET /api/leaderboard/trending?days=7\|30` | biggest hearts/views growth in the last N days |
 | `GET /api/authors/leaderboard` | aggregate stats per author |
+| `GET /api/badges/:stat/:id` | shields.io endpoint badge — a plugin's stat (`id` with a dot) or an author's total (bare `id`); `?label=`/`?color=` override badge text/color |
+| `GET /api/badges/ranking/:stat/:id` | competition-rank badge (1 = highest, ties share a place); `stat` may also be `avg` |
 | `GET /api/health/broken` | plugins with unreachable/failed upstream or repo untouched >365d |
 | `POST /api/admin/snapshot` | force a heavy poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
 | `POST /api/admin/light-poll` | force a light poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
 
 `range` accepts `30d|90d|180d|365d|1y|all`; `from`/`to` are ISO dates. Buckets are UTC-based (ISO strings).
+
+## Charts
+
+JSON chart data sourced from omastats's own D1, rendered by
+[shieldcn](https://shieldcn.dev) — omastats doesn't render SVG. Point
+shieldcn's `/chart/json.svg` at these endpoints (the JSON shape matches its
+JSONPath example verbatim: `query=$.points[*].count` +
+`dateQuery=$.points[*].date`).
+
+```
+/api/charts/omastats/published.json              new plugins per period (addedAt)
+/api/charts/omastats/updated.json                plugin updates per period (update_events)
+/api/charts/omastats/verified.json               verification events per period (verification_events)
+/api/charts/omastats/verified.json?toStatus=broken filtered to one transition
+/api/charts/omastats/total.json                  cumulative plugin count (always-rising)
+/api/charts/plugin/{id}/hearts.json              single plugin's hearts over time
+/api/charts/plugin/{id}/views.json               single plugin's views over time
+/api/charts/plugin/{id}/copies.json              single plugin's copies over time
+/api/charts/author/{login}/hearts.json           author's total hearts across their plugins
+/api/charts/author/{login}/views.json            author's total views across their plugins
+/api/charts/author/{login}/copies.json           author's total copies across their plugins
+```
+
+The `.json` extension is optional. `?groupBy=day|month|year` defaults to
+month. These routes are edge-cached like the rest of `/api/*`.
+
+Embed in markdown:
+
+```md
+![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published.json&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published&theme=emerald)
+```
+
+For inline `?values=` charts, GitHub / npm charts, or arbitrary-JSON charts,
+use [shieldcn](https://shieldcn.dev) directly — omastats charts are
+intentionally scoped to its own catalog data.
