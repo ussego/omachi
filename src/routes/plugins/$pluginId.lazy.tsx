@@ -174,7 +174,7 @@ function PluginDetailPage() {
 						<DitherButton
 							render={
 								<a
-									href={`https://omarchyplugins.com/plugin.html?id=${plugin.id}`}
+									href={`https://plugins.omarchy.org/plugin.html?id=${plugin.id}`}
 									target="_blank"
 									rel="noreferrer"
 								/>
