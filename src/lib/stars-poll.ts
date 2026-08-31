@@ -28,8 +28,13 @@ export async function debugStars(env: StarsEnv) {
 	const repo = repoFromEnv(env);
 	const api = env.GITHUB_API;
 	const tok = env.GITHUB_TOKEN ?? null;
-	const tokPrefix = tok ? tok.slice(0, 6) : null;
-	const tokLen = tok ? tok.length : 0;
+	const tokKind = tok
+		? tok.startsWith("github_pat_")
+			? "fine_grained"
+			: tok.startsWith("ghp_") || tok.startsWith("gho_") || tok.startsWith("ghs_") || tok.startsWith("ghu_") || tok.startsWith("ghr_")
+				? "classic"
+				: "unknown"
+		: null;
 	const headers = ghHeaders(env, "v3");
 	const repoUrl = `${api}/repos/${repo}`;
 	const starsUrl = `${api}/repos/${repo}/stargazers?per_page=1`;
@@ -38,7 +43,7 @@ export async function debugStars(env: StarsEnv) {
 		fetch(starsUrl, { headers: ghHeaders(env, "star+json") }),
 	]);
 	return {
-		env: { api, repo, hasToken: tok != null, tokPrefix, tokLen },
+		env: { api, repo, hasToken: tok != null, tokKind },
 		repo: {
 			url: repoUrl,
 			status: repoRes.status,
