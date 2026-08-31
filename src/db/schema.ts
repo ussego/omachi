@@ -70,21 +70,6 @@ export const verificationEvents = sqliteTable(
 	],
 );
 
-// omarchy_stars: cumulative star count of the omarchy repo over time.
-// One row per poll (`source='poll'`) or per star event during backfill
-// (`source='backfill'`). `recorded_at` is the ISO timestamp; for backfill
-// rows it equals `starred_at` from GitHub's /stargazers endpoint.
-export const omarchyStars = sqliteTable(
-	"omarchy_stars",
-	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		recordedAt: text("recorded_at").notNull(),
-		stars: integer("stars").notNull(),
-		source: text("source").notNull().default("poll"),
-	},
-	(t) => [index("omarchy_stars_recorded_at_idx").on(t.recordedAt)],
-);
-
 // update_events: derived by diffing version vs prior snapshot
 export const updateEvents = sqliteTable(
 	"update_events",

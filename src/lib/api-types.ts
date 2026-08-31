@@ -144,20 +144,6 @@ export type HealthResponse = {
 	lastSnapshotAt: string | null;
 	pluginCount: number;
 	snapshotCount: number;
-	omarchyStars: { current: number; lastRecordedAt: string | null };
-};
-
-export type OmarchyStarsResponse = {
-	current: number;
-	lastRecordedAt: string | null;
-	total: number;
-};
-
-export type OmarchyStarsStatsResponse = {
-	groupBy: string;
-	from: string | null;
-	to: string | null;
-	points: { bucket: string; stars: number }[];
 };
 
 export type BrokenResponse = {

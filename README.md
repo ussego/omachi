@@ -14,11 +14,10 @@ dither-kit engine the charts run on. See [Brand assets](#brand-assets).
 ## Architecture
 
 - **Cadence**: scheduled workflows in `.github/workflows/`. `light-poll.yml`
-  every 30 min, `heavy-poll.yml` every 6 h, `stars-poll.yml` hourly; each
-  `curl`s the matching `/api/admin/...` endpoint with the `ADMIN_TOKEN`
-  GitHub secret. The Worker's `scheduled()` handler stays for `wrangler
-  triggers` and local miniflare. Implementation: `src/lib/light-poll.ts`,
-  `src/lib/snapshot.ts`, `src/lib/stars-poll.ts`.
+  every 30 min, `heavy-poll.yml` every 6 h; each `curl`s the matching
+  `/api/admin/...` endpoint with the `ADMIN_TOKEN` GitHub secret. The
+  Worker's `scheduled()` handler stays for `wrangler triggers` and local
+  miniflare. Implementation: `src/lib/light-poll.ts`, `src/lib/snapshot.ts`.
 - **D1**: `plugins` (dimension, carries denormalized `current_*` so leaderboard/
   list reads never scan snapshots), `plugin_snapshots` (fact, 90-day retention),
   `verification_events` / `update_events` (derived).
@@ -73,8 +72,6 @@ Or against production (admin token; same value lives as the
 ```txt
 curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/snapshot
 curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/light-poll
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/stars-poll
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/stars-backfill
 ```
 
 ## Deploy
@@ -101,9 +98,7 @@ destructive changes are not."
 
 | Route | Description |
 |---|---|
-| `GET /api/health` | last snapshot time, plugin/snapshot counts, omarchy repo stars |
-| `GET /api/omarchy-stars` | current star count + last poll time + total rows |
-| `GET /api/stats/omarchy-stars?range=&groupBy=day\|month\|year&from=&to=` | cumulative star count per bucket for the omarchy repo |
+| `GET /api/health` | last snapshot time, plugin/snapshot counts |
 | `GET /api/plugins?q=&category=&author=&kind=&verification=&page=&pageSize=` | list/search plugins + latest stats; `q` ranks name-prefix matches first |
 | `GET /api/plugins/:id` | plugin detail, full snapshot history, averages |
 | `GET /api/stats/published?range=&groupBy=day\|month\|year&from=&to=` | publish counts over time (from `added_at`) |
@@ -120,8 +115,6 @@ destructive changes are not."
 | `GET /api/health/broken` | plugins with unreachable/failed upstream or repo untouched >365d |
 | `POST /api/admin/snapshot` | force a heavy poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
 | `POST /api/admin/light-poll` | force a light poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
-| `POST /api/admin/stars-poll` | force an omarchy repo stars poll now; header `x-admin-token` |
-| `POST /api/admin/stars-backfill` | one-shot historical backfill via `/stargazers` (requires `GITHUB_TOKEN` Worker secret); header `x-admin-token` |
 
 `range` accepts `30d|90d|180d|365d|1y|all`; `from`/`to` are ISO dates. Buckets are UTC-based (ISO strings).
 

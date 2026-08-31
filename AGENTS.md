@@ -57,18 +57,7 @@ deploy before `wrangler deploy` runs.
    `POST /api/admin/light-poll`. Fetches catalog.json and inserts rows only
    for new plugin IDs, keeping the live `count(*)` fresh. No zod, no
    per-plugin loop, no snapshot writes — cheap on purpose.
-3. **Stars poll** (`pollStars()`, src/lib/stars-poll.ts): GitHub Actions
-   workflow `.github/workflows/stars-poll.yml` curls
-   `POST /api/admin/stars-poll` every hour. One fetch to
-   `GET /repos/{OMARCHY_REPO}` (default `omacom/omarchy`), one row in
-   `omarchy_stars` with `source='poll'` and the cumulative star count.
-   Anonymous works under the 60/hr limit; a `GITHUB_TOKEN` secret lifts
-   the cap to 5000/hr. Historical backfill lives on the same endpoint:
-   `backfillStars()` paginates `/stargazers` with the
-   `application/vnd.github.v3.star+json` media type to recover
-   `starred_at` for every star. Requires `GITHUB_TOKEN`. Backfill is
-   manual (`POST /api/admin/stars-backfill`); deploys do not run it.
-4. **API**: src/lib/api.ts. Every GET /api/* response is edge-cached via the
+3. **API**: src/lib/api.ts. Every GET /api/* response is edge-cached via the
    Cache API (`s-maxage=3600`); `/api/health*` stays uncached; only 2xx stored;
    `x-cache: HIT|MISS` header for observability.
 4. **Frontend**: the same Worker serves the SPA via a catch-all GET route in

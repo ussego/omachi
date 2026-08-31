@@ -2,7 +2,7 @@ import { and, count, desc, eq, inArray, isNotNull, like, lte, max, or, type SQL,
 import { drizzle } from "drizzle-orm/d1";
 import { type Context, Hono } from "hono";
 
-import { omarchyStars, pluginSnapshots, plugins, updateEvents, verificationEvents } from "../db/schema";
+import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "../db/schema";
 import type {
 	AuthorDetailResponse,
 	AuthorsResponse,
@@ -14,8 +14,6 @@ import type {
 	HealthResponse,
 	HeatmapResponse,
 	LeaderboardResponse,
-	OmarchyStarsResponse,
-	OmarchyStarsStatsResponse,
 	PluginDetailResponse,
 	PluginListResponse,
 	StatsResponse,
@@ -33,9 +31,8 @@ import {
 } from "./charts";
 import { pollNewPlugins } from "./light-poll";
 import { runSnapshot } from "./snapshot";
-import { backfillStars, pollStars } from "./stars-poll";
 
-export const api = new Hono<{ Bindings: CloudflareBindings & { ADMIN_TOKEN?: string; GITHUB_TOKEN?: string } }>();
+export const api = new Hono<{ Bindings: CloudflareBindings & { ADMIN_TOKEN?: string } }>();
 
 type PluginRow = typeof plugins.$inferSelect;
 
@@ -590,81 +587,17 @@ api.post("/admin/light-poll", async (c) => {
 	return c.json(await pollNewPlugins(c.env));
 });
 
-// ── omarchy repo stars ────────────────────────────────────────────────────
-
-api.get("/omarchy-stars", async (c) => {
-	const db = drizzle(c.env.DB);
-	const [[{ current }], [{ at: lastRecordedAt }], [{ total }]] = await db.batch([
-		db
-			.select({ current: sql<number | null>`max(${omarchyStars.stars})` })
-			.from(omarchyStars)
-			.where(eq(omarchyStars.source, "poll")),
-		db
-			.select({ at: max(omarchyStars.recordedAt) })
-			.from(omarchyStars)
-			.where(eq(omarchyStars.source, "poll")),
-		db.select({ total: count() }).from(omarchyStars),
-	]);
-	return c.json({
-		current: current ?? 0,
-		lastRecordedAt: lastRecordedAt ?? null,
-		total: total ?? 0,
-	} satisfies OmarchyStarsResponse);
-});
-
-/** Cumulative max stars per bucket; the way a "stars over time" curve reads. */
-api.get("/stats/omarchy-stars", async (c) => {
-	const q = c.req.query();
-	const db = drizzle(c.env.DB);
-	const n = groupLen(q.groupBy);
-	const { from, to } = dateRange(q);
-	const bucket = sql<string>`substr(${omarchyStars.recordedAt}, 1, ${n})`;
-	const conds: SQL[] = [];
-	if (from) conds.push(sql`${omarchyStars.recordedAt} >= ${from}`);
-	if (to) conds.push(sql`${omarchyStars.recordedAt} <= ${to}`);
-	const rows = await db
-		.select({ bucket, stars: sql<number>`max(${omarchyStars.stars})` })
-		.from(omarchyStars)
-		.where(conds.length ? and(...conds) : undefined)
-		.groupBy(bucket)
-		.orderBy(bucket)
-		.all();
-	return c.json({
-		groupBy: q.groupBy ?? "month",
-		from: from ?? null,
-		to: to ?? null,
-		points: rows,
-	} satisfies OmarchyStarsStatsResponse);
-});
-
-api.post("/admin/stars-poll", async (c) => {
-	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
-	return c.json(await pollStars(c.env));
-});
-
-api.post("/admin/stars-backfill", async (c) => {
-	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
-	return c.json(await backfillStars(c.env));
-});
-
 // ── health ─────────────────────────────────────────────────────────────────
 
 api.get("/health", async (c) => {
 	const db = drizzle(c.env.DB);
-	const [snap] = await db.select({ at: max(pluginSnapshots.snapshotAt) }).from(pluginSnapshots).all();
+	const [snap] = await db
+		.select({ at: max(pluginSnapshots.snapshotAt) })
+		.from(pluginSnapshots)
+		.all();
 	const [{ pluginCount }] = await db.select({ pluginCount: count() }).from(plugins).all();
 	const [{ snapshotCount }] = await db.select({ snapshotCount: count() }).from(pluginSnapshots).all();
-	const [omarchyCurrent] = await db
-		.select({ stars: max(omarchyStars.stars), at: max(omarchyStars.recordedAt) })
-		.from(omarchyStars)
-		.where(eq(omarchyStars.source, "poll"))
-		.all();
-	return c.json({
-		lastSnapshotAt: snap?.at ?? null,
-		pluginCount,
-		snapshotCount,
-		omarchyStars: { current: omarchyCurrent?.stars ?? 0, lastRecordedAt: omarchyCurrent?.at ?? null },
-	} satisfies HealthResponse);
+	return c.json({ lastSnapshotAt: snap?.at ?? null, pluginCount, snapshotCount } satisfies HealthResponse);
 });
 
 api.get("/health/unverified", async (c) => {
