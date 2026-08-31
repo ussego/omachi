@@ -1,7 +1,6 @@
 {
 	"name": "omastats",
 	"type": "module",
-	"author": "ussego",
 	"scripts": {
 		"dev": "vite",
 		"build": "bun run assets && vite build",
