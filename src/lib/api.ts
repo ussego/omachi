@@ -33,7 +33,7 @@ import {
 } from "./charts";
 import { pollNewPlugins } from "./light-poll";
 import { runSnapshot } from "./snapshot";
-import { backfillStars, pollStars } from "./stars-poll";
+import { backfillStars, debugStars, pollStars } from "./stars-poll";
 
 export const api = new Hono<{ Bindings: CloudflareBindings & { ADMIN_TOKEN?: string; GITHUB_TOKEN?: string } }>();
 
@@ -645,6 +645,11 @@ api.post("/admin/stars-poll", async (c) => {
 api.post("/admin/stars-backfill", async (c) => {
 	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
 	return c.json(await backfillStars(c.env));
+});
+
+api.get("/admin/debug-stars", async (c) => {
+	if (c.req.header("x-admin-token") !== c.env.ADMIN_TOKEN) return c.json({ error: "unauthorized" }, 401);
+	return c.json(await debugStars(c.env));
 });
 
 // ── health ─────────────────────────────────────────────────────────────────

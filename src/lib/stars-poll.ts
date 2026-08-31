@@ -21,6 +21,39 @@ export interface BackfillStarsResult {
 	rateLimitRemaining: number | null;
 }
 
+/** One-shot diagnostic: hits /repos/{repo} and /repos/{repo}/stargazers with the
+ * Worker secret and reports the URL, token prefix, status, and rate-limit
+ * headers so we can tell token-type from URL bugs in one curl. */
+export async function debugStars(env: StarsEnv) {
+	const repo = repoFromEnv(env);
+	const api = env.GITHUB_API;
+	const tok = env.GITHUB_TOKEN ?? null;
+	const tokPrefix = tok ? tok.slice(0, 6) : null;
+	const tokLen = tok ? tok.length : 0;
+	const headers = ghHeaders(env, "v3");
+	const repoUrl = `${api}/repos/${repo}`;
+	const starsUrl = `${api}/repos/${repo}/stargazers?per_page=1`;
+	const [repoRes, starsRes] = await Promise.all([
+		fetch(repoUrl, { headers }),
+		fetch(starsUrl, { headers: ghHeaders(env, "star+json") }),
+	]);
+	return {
+		env: { api, repo, hasToken: tok != null, tokPrefix, tokLen },
+		repo: {
+			url: repoUrl,
+			status: repoRes.status,
+			ok: repoRes.ok,
+			rateLimitRemaining: repoRes.headers.get("x-ratelimit-remaining"),
+		},
+		stargazers: {
+			url: starsUrl,
+			status: starsRes.status,
+			ok: starsRes.ok,
+			rateLimitRemaining: starsRes.headers.get("x-ratelimit-remaining"),
+		},
+	};
+}
+
 /** GitHub accepts "owner/repo" only. */
 function repoFromEnv(env: StarsEnv): string {
 	const repo = env.OMARCHY_REPO;
