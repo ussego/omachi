@@ -38,12 +38,9 @@ export async function debugStars(env: StarsEnv) {
 	const headers = ghHeaders(env, "v3");
 	const repoUrl = `${api}/repos/${repo}`;
 	const starsUrl = `${api}/repos/${repo}/stargazers?per_page=1`;
-	const [repoRes, starsRes, starsPlainRes] = await Promise.all([
+	const [repoRes, starsRes] = await Promise.all([
 		fetch(repoUrl, { headers }),
 		fetch(starsUrl, { headers: ghHeaders(env, "star+json") }),
-		// Same URL without star+json — if this 200s and the other 404s, the
-		// bug is the Accept header (star+json media type is restricted).
-		fetch(starsUrl, { headers }),
 	]);
 	return {
 		env: { api, repo, hasToken: tok != null, tokKind },
@@ -58,13 +55,6 @@ export async function debugStars(env: StarsEnv) {
 			status: starsRes.status,
 			ok: starsRes.ok,
 			rateLimitRemaining: starsRes.headers.get("x-ratelimit-remaining"),
-		},
-		stargazersPlain: {
-			url: starsUrl,
-			accept: "application/vnd.github+json (default)",
-			status: starsPlainRes.status,
-			ok: starsPlainRes.ok,
-			rateLimitRemaining: starsPlainRes.headers.get("x-ratelimit-remaining"),
 		},
 	};
 }
