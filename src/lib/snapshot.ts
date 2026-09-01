@@ -35,7 +35,7 @@ export function pluginRow(p: CatalogPlugin) {
 	};
 }
 
-/** one snapshot row (pure; self-checked in snapshot.selftest.ts). */
+/** one snapshot row (pure; covered by snapshot.test.ts). */
 export function buildSnapshotRow(
 	p: CatalogPlugin,
 	stat: { views?: number | null; copies?: number | null; hearts?: number | null },
@@ -73,7 +73,7 @@ export function pluginRowWithCurrent(p: CatalogPlugin, s: ReturnType<typeof buil
  * Poll both upstream endpoints, upsert plugin metadata + current stats, append
  * one snapshot row per plugin, log verification/update events by diffing
  * against each plugin's previous snapshot, and prune old snapshots.
- * Called from the scheduled() handler.
+ * Called by the admin snapshot Server Route.
  *
  * D1 limits: 100 bound parameters per statement, 100 statements per batch.
  */

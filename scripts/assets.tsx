@@ -197,7 +197,7 @@ function packIco(frames: { size: number; png: Uint8Array }[]): Uint8Array {
 		out[entry] = frame.size;
 		out[entry + 1] = frame.size;
 		out[entry + 4] = 1; // planes
-		out[entry + 7] = 32; // bitcount (LE bytes 6-7)
+		out[entry + 6] = 32; // bitcount (LE bytes 6-7)
 		out[entry + 8] = frame.png.length & 0xff;
 		out[entry + 9] = (frame.png.length >>> 8) & 0xff;
 		out[entry + 10] = (frame.png.length >>> 16) & 0xff;

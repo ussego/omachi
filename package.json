@@ -19,7 +19,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply omastats --local",
     "db:migrate:remote": "wrangler d1 migrations apply omastats --remote",
-    "assets": "bun scripts/assets.tsx"
+    "assets": "bun scripts/assets.tsx",
+    "test": "bun test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -55,18 +56,19 @@
     "@cloudflare/vite-plugin": "^1.26.0",
     "@cloudflare/workers-types": "^5.20260828.1",
     "@tanstack/devtools-vite": "latest",
-    "@tanstack/router-plugin": "^1.168.35",
     "@tanstack/router-cli": "^1.132.0",
+    "@tanstack/router-plugin": "^1.168.35",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.2.0",
     "@types/node": "^26.4.0",
     "@types/pngjs": "^6.0.5",
-    "drizzle-kit": "^1.0.0-rc.4",
-    "pngjs": "^7.0.0",
-    "takumi-js": "^2.12.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "bun-types": "^1.4.0",
+    "drizzle-kit": "^1.0.0-rc.4",
+    "pngjs": "^7.0.0",
+    "takumi-js": "^2.12.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
     "wrangler": "^4.70.0"

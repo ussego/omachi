@@ -40,7 +40,7 @@
 		"includes": [
 			"**",
 			"!!**/src/components/ui/**/*.tsx",
-			"!!**/src/components/dither-kit/**/*.tsx",
+
 			"!!**/src/routeTree.gen.ts"
 		]
 	},
