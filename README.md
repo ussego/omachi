@@ -54,6 +54,18 @@ For production env vars, run `wrangler secret put MY_VAR` for each secret listed
 
 KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — see https://developers.cloudflare.com/workers/wrangler/configuration/.
 
+### Publish the migration
+
+The local repository was migrated from the nested `omastats/` checkout. When this migration is ready to publish, rename the GitHub repository and update the local remote before pushing. Run this sequence once:
+
+```bash
+gh repo rename omachi --repo ussego/omastats --yes
+git remote set-url origin git@github.com:ussego/omachi.git
+git push -u origin main
+```
+
+If the GitHub repository should remain named `omastats`, skip the rename and remote-update commands and run only `git push -u origin main`.
+
 
 
 ## Routing
