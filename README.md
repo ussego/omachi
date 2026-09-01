@@ -1,157 +1,211 @@
-# omastats
+Welcome to your new TanStack Start app!
 
-Analytics dashboard for the Omarchy plugin catalog. Cloudflare Worker (Hono) +
-D1, React SPA frontend (TanStack Router + Query, coss ui, dither-kit charts).
+# Getting Started
 
-<p align="center">
-  <img src="./public/og.png" alt="omastats share card" width="720" />
-</p>
+To run this application:
 
-The share card and favicon render at build time with
-[takumi](https://takumi.kane.tw), no headless browser, using the same
-dither-kit engine the charts run on. See [Brand assets](#brand-assets).
-
-## Architecture
-
-- **Cadence**: scheduled workflows in `.github/workflows/`. `light-poll.yml`
-  every 30 min, `heavy-poll.yml` every 6 h; each `curl`s the matching
-  `/api/admin/...` endpoint with the `ADMIN_TOKEN` GitHub secret. The
-  Worker's `scheduled()` handler stays for `wrangler triggers` and local
-  miniflare. Implementation: `src/lib/light-poll.ts`, `src/lib/snapshot.ts`.
-- **D1**: `plugins` (dimension, carries denormalized `current_*` so leaderboard/
-  list reads never scan snapshots), `plugin_snapshots` (fact, 90-day retention),
-  `verification_events` / `update_events` (derived).
-- **API** served by the same Worker (see routes below).
-
-Both upstream endpoints are current-state snapshots; history only accumulates
-from the first cron run onward. GitHub Actions cron has no SLA — a missed
-firing is not retried. If the original "failing occasionally" was caused by
-Workers CPU/D1 caps, this migration does not fix that.
-
-## Brand assets
-
-`bun run assets` renders the brand images into `public/` with takumi. Build
-time only; the Worker bundle never imports it.
-
-- **`og.png`** - the 1200×630 share card above.
-- **`favicon.ico`** (16/32/48) and **`favicon.png`** (64) - a blue dither "o"
-  on the dark rounded tile.
-
-<p align="center">
-  <img src="./public/favicon.png" alt="omastats favicon" width="64" />
-</p>
-
-Both reuse the site's own dither engine. `scripts/assets.tsx` imports
-`paintColumn` and the palette seeds from `src/components/dither-kit/`,
-rasterizes them to raw-RGBA bitmaps, and blooms them the same way the charts
-bloom. `bun run build` runs `assets` first, so the deployed copy stays
-current, and the script prints an ASCII preview of the favicon while it
-renders.
-
-## Setup
-
-```txt
+```bash
 bun install
-bun run assets       # regenerate public/og.png + favicons (also runs on build)
-bun run db:generate    # regenerate migrations from src/db/schema.ts
-bun run db:migrate:local   # apply migrations to local D1
-bun run db:migrate:remote  # apply migrations to remote D1
-bun run cf-typegen     # regenerate worker-configuration.d.ts from wrangler.jsonc
-bun run dev            # local dev (miniflare + D1 at .wrangler/state)
+bun --bun run dev
 ```
 
-Trigger a snapshot manually in dev:
+# Building For Production
 
-```txt
-curl -X POST http://localhost:5173/cdn-cgi/mf/scheduled
+To build this application for production:
+
+```bash
+bun --bun run build
 ```
 
-Or against production (admin token; same value lives as the
-`ADMIN_TOKEN` Cloudflare Worker secret and the GitHub repo secret):
+## Styling
 
-```txt
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/snapshot
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" https://stats.ussego.com/api/admin/light-poll
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+### Removing Tailwind CSS
+
+If you prefer not to use Tailwind CSS:
+
+1. Remove the demo pages in `src/routes/demo/`
+2. Replace the Tailwind import in `src/styles.css` with your own styles
+3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
+4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
+
+## Linting & Formatting
+
+This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
+
+
+```bash
+bun --bun run lint
+bun --bun run format
+bun --bun run check
 ```
 
-## Deploy
 
-Production deploys are driven by `.github/workflows/deploy.yml` on every
-push to `main` (and on manual `workflow_dispatch`). The workflow runs
-typecheck, lint, and the snapshot/badges/charts selftests before
-`bun run deploy`, so a broken main can't ship. It authenticates with the
-`CLOUDFLARE_API_TOKEN` repo secret (a scoped Cloudflare API token, see the
-workflow file for the required permissions).
+## Deploy to Cloudflare Workers
 
-To deploy locally instead, use the same command the action uses:
+This project uses the Cloudflare Vite plugin (configured in `vite.config.ts`) and `wrangler.jsonc`:
 
-```txt
-bun run deploy
+1. Install Wrangler: `npm install -g wrangler`
+2. Authenticate: `wrangler login`
+3. Deploy: `npx wrangler deploy`
+
+For production env vars, run `wrangler secret put MY_VAR` for each secret listed in `.env.example`. Public (non-secret) vars go in `wrangler.jsonc` under `vars`.
+
+KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — see https://developers.cloudflare.com/workers/wrangler/configuration/.
+
+
+
+## Routing
+
+This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
 ```
 
-`bun run deploy` does **not** run D1 migrations. Apply schema changes
-manually with `bun run db:migrate:remote` after reviewing the generated
-SQL — AGENTS.md: "Remote applies immediately: additive columns are safe,
-destructive changes are not."
+Then anywhere in your JSX you can use it like so:
 
-## API routes
-
-| Route | Description |
-|---|---|
-| `GET /api/health` | last snapshot time, plugin/snapshot counts |
-| `GET /api/plugins?q=&category=&author=&kind=&verification=&page=&pageSize=` | list/search plugins + latest stats; `q` ranks name-prefix matches first |
-| `GET /api/plugins/:id` | plugin detail, full snapshot history, averages |
-| `GET /api/stats/published?range=&groupBy=day\|month\|year&from=&to=` | publish counts over time (from `added_at`) |
-| `GET /api/stats/updated?...` | update-event counts over time |
-| `GET /api/stats/verified?...&toStatus=verified` | verification-transition counts over time |
-| `GET /api/stats/categories` | per-category count + avg hearts/views/copies |
-| `GET /api/stats/breakdown` | verification-status + install-status counts, totals |
-| `GET /api/stats/heatmap?from=&to=` | category × month counts (from `added_at`) |
-| `GET /api/leaderboard/:metric?limit=&sparkPoints=` | top N by `hearts`/`views`/`copies`/`copies_per_view`; `sparkPoints` embeds per-row snapshot history |
-| `GET /api/leaderboard/trending?days=7\|30` | biggest hearts/views growth in the last N days |
-| `GET /api/authors/leaderboard` | aggregate stats per author |
-| `GET /api/badges/:stat/:id` | shields.io endpoint badge — a plugin's stat (`id` with a dot) or an author's total (bare `id`); `?label=`/`?color=` override badge text/color |
-| `GET /api/badges/ranking/:stat/:id` | competition-rank badge (1 = highest, ties share a place); `stat` may also be `avg` |
-| `GET /api/health/broken` | plugins with unreachable/failed upstream or repo untouched >365d |
-| `POST /api/admin/snapshot` | force a heavy poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
-| `POST /api/admin/light-poll` | force a light poll now; header `x-admin-token` (Worker secret `ADMIN_TOKEN`) |
-
-`range` accepts `30d|90d|180d|365d|1y|all`; `from`/`to` are ISO dates. Buckets are UTC-based (ISO strings).
-
-## Charts
-
-JSON chart data sourced from omastats's own D1, rendered by
-[shieldcn](https://shieldcn.dev) — omastats doesn't render SVG. Point
-shieldcn's `/chart/json.svg` at these endpoints (the JSON shape matches its
-JSONPath example verbatim: `query=$.points[*].count` +
-`dateQuery=$.points[*].date`).
-
-```
-/api/charts/omastats/published.json              new plugins per period (addedAt)
-/api/charts/omastats/updated.json                plugin updates per period (update_events)
-/api/charts/omastats/verified.json               verification events per period (verification_events)
-/api/charts/omastats/verified.json?toStatus=broken filtered to one transition
-/api/charts/omastats/total.json                  cumulative plugin count (always-rising)
-/api/charts/plugin/{id}/hearts.json              single plugin's hearts over time
-/api/charts/plugin/{id}/views.json               single plugin's views over time
-/api/charts/plugin/{id}/copies.json              single plugin's copies over time
-/api/charts/author/{login}/hearts.json           author's total hearts across their plugins
-/api/charts/author/{login}/views.json            author's total views across their plugins
-/api/charts/author/{login}/copies.json           author's total copies across their plugins
+```tsx
+<Link to="/about">About</Link>
 ```
 
-The `.json` extension is optional — and must be **dropped** in shieldcn
-embeds: its fetcher rejects dot-suffixed URLs. `?groupBy=day|month|year`
-overrides the per-kind default: `day` for `updated`/`verified` (activity
-curves), `month` for `published`/`total` (growth). These routes are
-edge-cached like the rest of `/api/*`.
+This will create a link that will navigate to the `/about` route.
 
-Embed in markdown:
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
 
-```md
-![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published&theme=emerald)
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'My App' },
+    ],
+  }),
+  shellComponent: ({ children }) => (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <header>
+          <nav>
+            <Link to="/">Home</Link>
+            <Link to="/about">About</Link>
+          </nav>
+        </header>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  ),
+})
 ```
 
-For inline `?values=` charts, GitHub / npm charts, or arbitrary-JSON charts,
-use [shieldcn](https://shieldcn.dev) directly — omastats charts are
-intentionally scoped to its own catalog data.
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+## Server Functions
+
+TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
+
+```tsx
+import { createServerFn } from '@tanstack/react-start'
+
+const getServerTime = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return new Date().toISOString()
+})
+
+// Use in a component
+function MyComponent() {
+  const [time, setTime] = useState('')
+  
+  useEffect(() => {
+    getServerTime().then(setTime)
+  }, [])
+  
+  return <div>Server time: {time}</div>
+}
+```
+
+## API Routes
+
+You can create API routes by using the `server` property in your route definitions:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+
+export const Route = createFileRoute('/api/hello')({
+  server: {
+    handlers: {
+      GET: () => json({ message: 'Hello, World!' }),
+    },
+  },
+})
+```
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/people')({
+  loader: async () => {
+    const response = await fetch('https://swapi.dev/api/people')
+    return response.json()
+  },
+  component: PeopleComponent,
+})
+
+function PeopleComponent() {
+  const data = Route.useLoaderData()
+  return (
+    <ul>
+      {data.results.map((person) => (
+        <li key={person.name}>{person.name}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+
+For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).

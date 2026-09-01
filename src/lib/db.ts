@@ -1,7 +1,7 @@
 import { inArray, max } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/d1";
 
-import { pluginSnapshots } from "../db/schema";
+import { pluginSnapshots } from "@/db/schema";
 
 export const CHUNK = 100; // D1 batches cap at 100 statements
 

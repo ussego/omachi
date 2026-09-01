@@ -1,5 +1,5 @@
 // Wire contract shared by the Worker API (src/lib/api.ts) and the client
-// (src/lib/queries.ts). Pure types, no hono/drizzle imports, so the client
+// (src/lib/queries.ts). Pure types with no server-only imports, so the client
 // bundle never pulls server dependencies. api.ts annotates its responses with
 // `satisfies XResponse` so tsc fails if a handler drifts from the contract.
 

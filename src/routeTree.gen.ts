@@ -15,53 +15,194 @@ import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as ChartsRouteImport } from './routes/charts'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as LeaderboardsRouteImport } from './routes/leaderboards'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiPluginsRouteImport } from './routes/api/plugins'
 import { Route as AuthorsAuthorIdRouteImport } from './routes/authors/$authorId'
 import { Route as PluginsPluginIdRouteImport } from './routes/plugins/$pluginId'
+import { Route as ApiAdminLightPollRouteImport } from './routes/api/admin/light-poll'
+import { Route as ApiAdminSnapshotRouteImport } from './routes/api/admin/snapshot'
+import { Route as ApiAuthorsAuthorIdRouteImport } from './routes/api/authors/$authorId'
+import { Route as ApiAuthorsLeaderboardRouteImport } from './routes/api/authors/leaderboard'
+import { Route as ApiHealthBrokenRouteImport } from './routes/api/health/broken'
+import { Route as ApiHealthUnverifiedRouteImport } from './routes/api/health/unverified'
+import { Route as ApiLeaderboardMetricRouteImport } from './routes/api/leaderboard/$metric'
+import { Route as ApiLeaderboardTrendingRouteImport } from './routes/api/leaderboard/trending'
+import { Route as ApiPluginsIdRouteImport } from './routes/api/plugins/$id'
+import { Route as ApiStatsBreakdownRouteImport } from './routes/api/stats/breakdown'
+import { Route as ApiStatsCategoriesRouteImport } from './routes/api/stats/categories'
+import { Route as ApiStatsHeatmapRouteImport } from './routes/api/stats/heatmap'
+import { Route as ApiStatsPublishedRouteImport } from './routes/api/stats/published'
+import { Route as ApiStatsUpdatedRouteImport } from './routes/api/stats/updated'
+import { Route as ApiStatsVerifiedRouteImport } from './routes/api/stats/verified'
+import { Route as ApiBadgesStatIdRouteImport } from './routes/api/badges/$stat/$id'
+import { Route as ApiChartsOmastatsKindRouteImport } from './routes/api/charts/omastats/$kind'
+import { Route as ApiBadgesRankingStatIdRouteImport } from './routes/api/badges/ranking/$stat/$id'
+import { Route as ApiChartsAuthorLoginMetricRouteImport } from './routes/api/charts/author/$login/$metric'
+import { Route as ApiChartsPluginIdMetricRouteImport } from './routes/api/charts/plugin/$id/$metric'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
 const BadgesRoute = BadgesRouteImport.update({
   id: '/badges',
   path: '/badges',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/badges.lazy').then((d) => d.Route))
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/categories.lazy').then((d) => d.Route))
+} as any)
 const ChartsRoute = ChartsRouteImport.update({
   id: '/charts',
   path: '/charts',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/charts.lazy').then((d) => d.Route))
+} as any)
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/health.lazy').then((d) => d.Route))
+} as any)
 const LeaderboardsRoute = LeaderboardsRouteImport.update({
   id: '/leaderboards',
   path: '/leaderboards',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/leaderboards.lazy').then((d) => d.Route))
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPluginsRoute = ApiPluginsRouteImport.update({
+  id: '/api/plugins',
+  path: '/api/plugins',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthorsAuthorIdRoute = AuthorsAuthorIdRouteImport.update({
   id: '/authors/$authorId',
   path: '/authors/$authorId',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/authors/$authorId.lazy').then((d) => d.Route),
-)
+} as any)
 const PluginsPluginIdRoute = PluginsPluginIdRouteImport.update({
   id: '/plugins/$pluginId',
   path: '/plugins/$pluginId',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/plugins/$pluginId.lazy').then((d) => d.Route),
-)
+} as any)
+const ApiAdminLightPollRoute = ApiAdminLightPollRouteImport.update({
+  id: '/api/admin/light-poll',
+  path: '/api/admin/light-poll',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSnapshotRoute = ApiAdminSnapshotRouteImport.update({
+  id: '/api/admin/snapshot',
+  path: '/api/admin/snapshot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthorsAuthorIdRoute = ApiAuthorsAuthorIdRouteImport.update({
+  id: '/api/authors/$authorId',
+  path: '/api/authors/$authorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthorsLeaderboardRoute = ApiAuthorsLeaderboardRouteImport.update({
+  id: '/api/authors/leaderboard',
+  path: '/api/authors/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthBrokenRoute = ApiHealthBrokenRouteImport.update({
+  id: '/broken',
+  path: '/broken',
+  getParentRoute: () => ApiHealthRoute,
+} as any)
+const ApiHealthUnverifiedRoute = ApiHealthUnverifiedRouteImport.update({
+  id: '/unverified',
+  path: '/unverified',
+  getParentRoute: () => ApiHealthRoute,
+} as any)
+const ApiLeaderboardMetricRoute = ApiLeaderboardMetricRouteImport.update({
+  id: '/api/leaderboard/$metric',
+  path: '/api/leaderboard/$metric',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLeaderboardTrendingRoute = ApiLeaderboardTrendingRouteImport.update({
+  id: '/api/leaderboard/trending',
+  path: '/api/leaderboard/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPluginsIdRoute = ApiPluginsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiPluginsRoute,
+} as any)
+const ApiStatsBreakdownRoute = ApiStatsBreakdownRouteImport.update({
+  id: '/api/stats/breakdown',
+  path: '/api/stats/breakdown',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsCategoriesRoute = ApiStatsCategoriesRouteImport.update({
+  id: '/api/stats/categories',
+  path: '/api/stats/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsHeatmapRoute = ApiStatsHeatmapRouteImport.update({
+  id: '/api/stats/heatmap',
+  path: '/api/stats/heatmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsPublishedRoute = ApiStatsPublishedRouteImport.update({
+  id: '/api/stats/published',
+  path: '/api/stats/published',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsUpdatedRoute = ApiStatsUpdatedRouteImport.update({
+  id: '/api/stats/updated',
+  path: '/api/stats/updated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsVerifiedRoute = ApiStatsVerifiedRouteImport.update({
+  id: '/api/stats/verified',
+  path: '/api/stats/verified',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBadgesStatIdRoute = ApiBadgesStatIdRouteImport.update({
+  id: '/api/badges/$stat/$id',
+  path: '/api/badges/$stat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChartsOmastatsKindRoute = ApiChartsOmastatsKindRouteImport.update({
+  id: '/api/charts/omastats/$kind',
+  path: '/api/charts/omastats/$kind',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBadgesRankingStatIdRoute = ApiBadgesRankingStatIdRouteImport.update({
+  id: '/api/badges/ranking/$stat/$id',
+  path: '/api/badges/ranking/$stat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChartsAuthorLoginMetricRoute =
+  ApiChartsAuthorLoginMetricRouteImport.update({
+    id: '/api/charts/author/$login/$metric',
+    path: '/api/charts/author/$login/$metric',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiChartsPluginIdMetricRoute = ApiChartsPluginIdMetricRouteImport.update({
+  id: '/api/charts/plugin/$id/$metric',
+  path: '/api/charts/plugin/$id/$metric',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -70,8 +211,32 @@ export interface FileRoutesByFullPath {
   '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/api/health': typeof ApiHealthRouteWithChildren
+  '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/light-poll': typeof ApiAdminLightPollRoute
+  '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
+  '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
+  '/api/authors/leaderboard': typeof ApiAuthorsLeaderboardRoute
+  '/api/health/broken': typeof ApiHealthBrokenRoute
+  '/api/health/unverified': typeof ApiHealthUnverifiedRoute
+  '/api/leaderboard/$metric': typeof ApiLeaderboardMetricRoute
+  '/api/leaderboard/trending': typeof ApiLeaderboardTrendingRoute
+  '/api/plugins/$id': typeof ApiPluginsIdRoute
+  '/api/stats/breakdown': typeof ApiStatsBreakdownRoute
+  '/api/stats/categories': typeof ApiStatsCategoriesRoute
+  '/api/stats/heatmap': typeof ApiStatsHeatmapRoute
+  '/api/stats/published': typeof ApiStatsPublishedRoute
+  '/api/stats/updated': typeof ApiStatsUpdatedRoute
+  '/api/stats/verified': typeof ApiStatsVerifiedRoute
+  '/api/badges/$stat/$id': typeof ApiBadgesStatIdRoute
+  '/api/charts/omastats/$kind': typeof ApiChartsOmastatsKindRoute
+  '/api/badges/ranking/$stat/$id': typeof ApiBadgesRankingStatIdRoute
+  '/api/charts/author/$login/$metric': typeof ApiChartsAuthorLoginMetricRoute
+  '/api/charts/plugin/$id/$metric': typeof ApiChartsPluginIdMetricRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -80,8 +245,32 @@ export interface FileRoutesByTo {
   '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/api/health': typeof ApiHealthRouteWithChildren
+  '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/light-poll': typeof ApiAdminLightPollRoute
+  '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
+  '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
+  '/api/authors/leaderboard': typeof ApiAuthorsLeaderboardRoute
+  '/api/health/broken': typeof ApiHealthBrokenRoute
+  '/api/health/unverified': typeof ApiHealthUnverifiedRoute
+  '/api/leaderboard/$metric': typeof ApiLeaderboardMetricRoute
+  '/api/leaderboard/trending': typeof ApiLeaderboardTrendingRoute
+  '/api/plugins/$id': typeof ApiPluginsIdRoute
+  '/api/stats/breakdown': typeof ApiStatsBreakdownRoute
+  '/api/stats/categories': typeof ApiStatsCategoriesRoute
+  '/api/stats/heatmap': typeof ApiStatsHeatmapRoute
+  '/api/stats/published': typeof ApiStatsPublishedRoute
+  '/api/stats/updated': typeof ApiStatsUpdatedRoute
+  '/api/stats/verified': typeof ApiStatsVerifiedRoute
+  '/api/badges/$stat/$id': typeof ApiBadgesStatIdRoute
+  '/api/charts/omastats/$kind': typeof ApiChartsOmastatsKindRoute
+  '/api/badges/ranking/$stat/$id': typeof ApiBadgesRankingStatIdRoute
+  '/api/charts/author/$login/$metric': typeof ApiChartsAuthorLoginMetricRoute
+  '/api/charts/plugin/$id/$metric': typeof ApiChartsPluginIdMetricRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,8 +280,32 @@ export interface FileRoutesById {
   '/charts': typeof ChartsRoute
   '/health': typeof HealthRoute
   '/leaderboards': typeof LeaderboardsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/api/health': typeof ApiHealthRouteWithChildren
+  '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/light-poll': typeof ApiAdminLightPollRoute
+  '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
+  '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
+  '/api/authors/leaderboard': typeof ApiAuthorsLeaderboardRoute
+  '/api/health/broken': typeof ApiHealthBrokenRoute
+  '/api/health/unverified': typeof ApiHealthUnverifiedRoute
+  '/api/leaderboard/$metric': typeof ApiLeaderboardMetricRoute
+  '/api/leaderboard/trending': typeof ApiLeaderboardTrendingRoute
+  '/api/plugins/$id': typeof ApiPluginsIdRoute
+  '/api/stats/breakdown': typeof ApiStatsBreakdownRoute
+  '/api/stats/categories': typeof ApiStatsCategoriesRoute
+  '/api/stats/heatmap': typeof ApiStatsHeatmapRoute
+  '/api/stats/published': typeof ApiStatsPublishedRoute
+  '/api/stats/updated': typeof ApiStatsUpdatedRoute
+  '/api/stats/verified': typeof ApiStatsVerifiedRoute
+  '/api/badges/$stat/$id': typeof ApiBadgesStatIdRoute
+  '/api/charts/omastats/$kind': typeof ApiChartsOmastatsKindRoute
+  '/api/badges/ranking/$stat/$id': typeof ApiBadgesRankingStatIdRoute
+  '/api/charts/author/$login/$metric': typeof ApiChartsAuthorLoginMetricRoute
+  '/api/charts/plugin/$id/$metric': typeof ApiChartsPluginIdMetricRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,8 +316,32 @@ export interface FileRouteTypes {
     | '/charts'
     | '/health'
     | '/leaderboards'
+    | '/llms.txt'
+    | '/robots.txt'
+    | '/api/health'
+    | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/light-poll'
+    | '/api/admin/snapshot'
+    | '/api/authors/$authorId'
+    | '/api/authors/leaderboard'
+    | '/api/health/broken'
+    | '/api/health/unverified'
+    | '/api/leaderboard/$metric'
+    | '/api/leaderboard/trending'
+    | '/api/plugins/$id'
+    | '/api/stats/breakdown'
+    | '/api/stats/categories'
+    | '/api/stats/heatmap'
+    | '/api/stats/published'
+    | '/api/stats/updated'
+    | '/api/stats/verified'
+    | '/api/badges/$stat/$id'
+    | '/api/charts/omastats/$kind'
+    | '/api/badges/ranking/$stat/$id'
+    | '/api/charts/author/$login/$metric'
+    | '/api/charts/plugin/$id/$metric'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -113,8 +350,32 @@ export interface FileRouteTypes {
     | '/charts'
     | '/health'
     | '/leaderboards'
+    | '/llms.txt'
+    | '/robots.txt'
+    | '/api/health'
+    | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/light-poll'
+    | '/api/admin/snapshot'
+    | '/api/authors/$authorId'
+    | '/api/authors/leaderboard'
+    | '/api/health/broken'
+    | '/api/health/unverified'
+    | '/api/leaderboard/$metric'
+    | '/api/leaderboard/trending'
+    | '/api/plugins/$id'
+    | '/api/stats/breakdown'
+    | '/api/stats/categories'
+    | '/api/stats/heatmap'
+    | '/api/stats/published'
+    | '/api/stats/updated'
+    | '/api/stats/verified'
+    | '/api/badges/$stat/$id'
+    | '/api/charts/omastats/$kind'
+    | '/api/badges/ranking/$stat/$id'
+    | '/api/charts/author/$login/$metric'
+    | '/api/charts/plugin/$id/$metric'
   id:
     | '__root__'
     | '/'
@@ -123,8 +384,32 @@ export interface FileRouteTypes {
     | '/charts'
     | '/health'
     | '/leaderboards'
+    | '/llms.txt'
+    | '/robots.txt'
+    | '/api/health'
+    | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/light-poll'
+    | '/api/admin/snapshot'
+    | '/api/authors/$authorId'
+    | '/api/authors/leaderboard'
+    | '/api/health/broken'
+    | '/api/health/unverified'
+    | '/api/leaderboard/$metric'
+    | '/api/leaderboard/trending'
+    | '/api/plugins/$id'
+    | '/api/stats/breakdown'
+    | '/api/stats/categories'
+    | '/api/stats/heatmap'
+    | '/api/stats/published'
+    | '/api/stats/updated'
+    | '/api/stats/verified'
+    | '/api/badges/$stat/$id'
+    | '/api/charts/omastats/$kind'
+    | '/api/badges/ranking/$stat/$id'
+    | '/api/charts/author/$login/$metric'
+    | '/api/charts/plugin/$id/$metric'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,8 +419,29 @@ export interface RootRouteChildren {
   ChartsRoute: typeof ChartsRoute
   HealthRoute: typeof HealthRoute
   LeaderboardsRoute: typeof LeaderboardsRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  ApiHealthRoute: typeof ApiHealthRouteWithChildren
+  ApiPluginsRoute: typeof ApiPluginsRouteWithChildren
   AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
   PluginsPluginIdRoute: typeof PluginsPluginIdRoute
+  ApiAdminLightPollRoute: typeof ApiAdminLightPollRoute
+  ApiAdminSnapshotRoute: typeof ApiAdminSnapshotRoute
+  ApiAuthorsAuthorIdRoute: typeof ApiAuthorsAuthorIdRoute
+  ApiAuthorsLeaderboardRoute: typeof ApiAuthorsLeaderboardRoute
+  ApiLeaderboardMetricRoute: typeof ApiLeaderboardMetricRoute
+  ApiLeaderboardTrendingRoute: typeof ApiLeaderboardTrendingRoute
+  ApiStatsBreakdownRoute: typeof ApiStatsBreakdownRoute
+  ApiStatsCategoriesRoute: typeof ApiStatsCategoriesRoute
+  ApiStatsHeatmapRoute: typeof ApiStatsHeatmapRoute
+  ApiStatsPublishedRoute: typeof ApiStatsPublishedRoute
+  ApiStatsUpdatedRoute: typeof ApiStatsUpdatedRoute
+  ApiStatsVerifiedRoute: typeof ApiStatsVerifiedRoute
+  ApiBadgesStatIdRoute: typeof ApiBadgesStatIdRoute
+  ApiChartsOmastatsKindRoute: typeof ApiChartsOmastatsKindRoute
+  ApiBadgesRankingStatIdRoute: typeof ApiBadgesRankingStatIdRoute
+  ApiChartsAuthorLoginMetricRoute: typeof ApiChartsAuthorLoginMetricRoute
+  ApiChartsPluginIdMetricRoute: typeof ApiChartsPluginIdMetricRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -182,6 +488,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plugins': {
+      id: '/api/plugins'
+      path: '/api/plugins'
+      fullPath: '/api/plugins'
+      preLoaderRoute: typeof ApiPluginsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/authors/$authorId': {
       id: '/authors/$authorId'
       path: '/authors/$authorId'
@@ -196,8 +530,174 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PluginsPluginIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/light-poll': {
+      id: '/api/admin/light-poll'
+      path: '/api/admin/light-poll'
+      fullPath: '/api/admin/light-poll'
+      preLoaderRoute: typeof ApiAdminLightPollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/snapshot': {
+      id: '/api/admin/snapshot'
+      path: '/api/admin/snapshot'
+      fullPath: '/api/admin/snapshot'
+      preLoaderRoute: typeof ApiAdminSnapshotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/authors/$authorId': {
+      id: '/api/authors/$authorId'
+      path: '/api/authors/$authorId'
+      fullPath: '/api/authors/$authorId'
+      preLoaderRoute: typeof ApiAuthorsAuthorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/authors/leaderboard': {
+      id: '/api/authors/leaderboard'
+      path: '/api/authors/leaderboard'
+      fullPath: '/api/authors/leaderboard'
+      preLoaderRoute: typeof ApiAuthorsLeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health/broken': {
+      id: '/api/health/broken'
+      path: '/broken'
+      fullPath: '/api/health/broken'
+      preLoaderRoute: typeof ApiHealthBrokenRouteImport
+      parentRoute: typeof ApiHealthRoute
+    }
+    '/api/health/unverified': {
+      id: '/api/health/unverified'
+      path: '/unverified'
+      fullPath: '/api/health/unverified'
+      preLoaderRoute: typeof ApiHealthUnverifiedRouteImport
+      parentRoute: typeof ApiHealthRoute
+    }
+    '/api/leaderboard/$metric': {
+      id: '/api/leaderboard/$metric'
+      path: '/api/leaderboard/$metric'
+      fullPath: '/api/leaderboard/$metric'
+      preLoaderRoute: typeof ApiLeaderboardMetricRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/leaderboard/trending': {
+      id: '/api/leaderboard/trending'
+      path: '/api/leaderboard/trending'
+      fullPath: '/api/leaderboard/trending'
+      preLoaderRoute: typeof ApiLeaderboardTrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plugins/$id': {
+      id: '/api/plugins/$id'
+      path: '/$id'
+      fullPath: '/api/plugins/$id'
+      preLoaderRoute: typeof ApiPluginsIdRouteImport
+      parentRoute: typeof ApiPluginsRoute
+    }
+    '/api/stats/breakdown': {
+      id: '/api/stats/breakdown'
+      path: '/api/stats/breakdown'
+      fullPath: '/api/stats/breakdown'
+      preLoaderRoute: typeof ApiStatsBreakdownRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats/categories': {
+      id: '/api/stats/categories'
+      path: '/api/stats/categories'
+      fullPath: '/api/stats/categories'
+      preLoaderRoute: typeof ApiStatsCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats/heatmap': {
+      id: '/api/stats/heatmap'
+      path: '/api/stats/heatmap'
+      fullPath: '/api/stats/heatmap'
+      preLoaderRoute: typeof ApiStatsHeatmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats/published': {
+      id: '/api/stats/published'
+      path: '/api/stats/published'
+      fullPath: '/api/stats/published'
+      preLoaderRoute: typeof ApiStatsPublishedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats/updated': {
+      id: '/api/stats/updated'
+      path: '/api/stats/updated'
+      fullPath: '/api/stats/updated'
+      preLoaderRoute: typeof ApiStatsUpdatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats/verified': {
+      id: '/api/stats/verified'
+      path: '/api/stats/verified'
+      fullPath: '/api/stats/verified'
+      preLoaderRoute: typeof ApiStatsVerifiedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/badges/$stat/$id': {
+      id: '/api/badges/$stat/$id'
+      path: '/api/badges/$stat/$id'
+      fullPath: '/api/badges/$stat/$id'
+      preLoaderRoute: typeof ApiBadgesStatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/charts/omastats/$kind': {
+      id: '/api/charts/omastats/$kind'
+      path: '/api/charts/omastats/$kind'
+      fullPath: '/api/charts/omastats/$kind'
+      preLoaderRoute: typeof ApiChartsOmastatsKindRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/badges/ranking/$stat/$id': {
+      id: '/api/badges/ranking/$stat/$id'
+      path: '/api/badges/ranking/$stat/$id'
+      fullPath: '/api/badges/ranking/$stat/$id'
+      preLoaderRoute: typeof ApiBadgesRankingStatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/charts/author/$login/$metric': {
+      id: '/api/charts/author/$login/$metric'
+      path: '/api/charts/author/$login/$metric'
+      fullPath: '/api/charts/author/$login/$metric'
+      preLoaderRoute: typeof ApiChartsAuthorLoginMetricRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/charts/plugin/$id/$metric': {
+      id: '/api/charts/plugin/$id/$metric'
+      path: '/api/charts/plugin/$id/$metric'
+      fullPath: '/api/charts/plugin/$id/$metric'
+      preLoaderRoute: typeof ApiChartsPluginIdMetricRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface ApiHealthRouteChildren {
+  ApiHealthBrokenRoute: typeof ApiHealthBrokenRoute
+  ApiHealthUnverifiedRoute: typeof ApiHealthUnverifiedRoute
+}
+
+const ApiHealthRouteChildren: ApiHealthRouteChildren = {
+  ApiHealthBrokenRoute: ApiHealthBrokenRoute,
+  ApiHealthUnverifiedRoute: ApiHealthUnverifiedRoute,
+}
+
+const ApiHealthRouteWithChildren = ApiHealthRoute._addFileChildren(
+  ApiHealthRouteChildren,
+)
+
+interface ApiPluginsRouteChildren {
+  ApiPluginsIdRoute: typeof ApiPluginsIdRoute
+}
+
+const ApiPluginsRouteChildren: ApiPluginsRouteChildren = {
+  ApiPluginsIdRoute: ApiPluginsIdRoute,
+}
+
+const ApiPluginsRouteWithChildren = ApiPluginsRoute._addFileChildren(
+  ApiPluginsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -206,9 +706,40 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsRoute: ChartsRoute,
   HealthRoute: HealthRoute,
   LeaderboardsRoute: LeaderboardsRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  ApiHealthRoute: ApiHealthRouteWithChildren,
+  ApiPluginsRoute: ApiPluginsRouteWithChildren,
   AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,
   PluginsPluginIdRoute: PluginsPluginIdRoute,
+  ApiAdminLightPollRoute: ApiAdminLightPollRoute,
+  ApiAdminSnapshotRoute: ApiAdminSnapshotRoute,
+  ApiAuthorsAuthorIdRoute: ApiAuthorsAuthorIdRoute,
+  ApiAuthorsLeaderboardRoute: ApiAuthorsLeaderboardRoute,
+  ApiLeaderboardMetricRoute: ApiLeaderboardMetricRoute,
+  ApiLeaderboardTrendingRoute: ApiLeaderboardTrendingRoute,
+  ApiStatsBreakdownRoute: ApiStatsBreakdownRoute,
+  ApiStatsCategoriesRoute: ApiStatsCategoriesRoute,
+  ApiStatsHeatmapRoute: ApiStatsHeatmapRoute,
+  ApiStatsPublishedRoute: ApiStatsPublishedRoute,
+  ApiStatsUpdatedRoute: ApiStatsUpdatedRoute,
+  ApiStatsVerifiedRoute: ApiStatsVerifiedRoute,
+  ApiBadgesStatIdRoute: ApiBadgesStatIdRoute,
+  ApiChartsOmastatsKindRoute: ApiChartsOmastatsKindRoute,
+  ApiBadgesRankingStatIdRoute: ApiBadgesRankingStatIdRoute,
+  ApiChartsAuthorLoginMetricRoute: ApiChartsAuthorLoginMetricRoute,
+  ApiChartsPluginIdMetricRoute: ApiChartsPluginIdMetricRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -1,10 +1,9 @@
 /** @jsxImportSource react */
 "use client";
 
+import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { cva, type VariantProps } from "class-variance-authority";
 import type React from "react";
-
-import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 
 import { cn } from "@/lib/utils";
 

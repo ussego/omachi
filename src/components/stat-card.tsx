@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import { fmt } from "@/lib/format";
 
 /** Summary stat tile: label + big mono figure + optional tooltip footnote. */

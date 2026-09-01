@@ -1,8 +1,8 @@
 import type { BatchItem } from "drizzle-orm/batch";
 import { drizzle } from "drizzle-orm/d1";
 
-import { plugins } from "../db/schema";
-import { pluginRow, writeBatches } from "./snapshot";
+import { plugins } from "@/db/schema";
+import { pluginRow, writeBatches } from "@/lib/snapshot";
 
 export interface LightPollResult {
 	inserted: number;

@@ -1,30 +1,31 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "omastats",
-	"compatibility_date": "2025-08-03",
-	"main": "./src/index.tsx",
-	"assets": {
-		"not_found_handling": "single-page-application"
-	},
-	"placement": { "mode": "smart" },
-	"routes": [{ "pattern": "stats.ussego.com", "custom_domain": true }],
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "omastats",
-			"database_id": "0cac7fd0-435e-4b2d-a995-ed34f6979275",
-			"migrations_dir": "migrations",
-			"migrations_pattern": "migrations/*/migration.sql"
-		}
-	],
-	"observability": {
-		"logs": {
-			"enabled": true,
-			"invocation_logs": true
-		}
-	},
-	"vars": {
-		"CATALOG_URL": "https://plugins.omarchy.org/catalog.json",
-		"STATS_URL": "https://api.omarchyplugins.com/v1/stats"
-	}
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "omachi",
+  "compatibility_date": "2025-09-02",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "placement": { "mode": "smart" },
+  "routes": [{ "pattern": "stats.ussego.com", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "omastats",
+      "database_id": "0cac7fd0-435e-4b2d-a995-ed34f6979275",
+      "migrations_dir": "migrations",
+      "migrations_pattern": "migrations/*/migration.sql"
+    }
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  },
+  "vars": {
+    "CATALOG_URL": "https://plugins.omarchy.org/catalog.json",
+    "STATS_URL": "https://api.omarchyplugins.com/v1/stats"
+  },
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry"
 }

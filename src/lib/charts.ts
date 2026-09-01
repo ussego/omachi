@@ -16,8 +16,8 @@
 
 import { and, asc, count, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
-import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "../db/schema";
-import { CHUNK, type DrizzleDb } from "./db";
+import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "@/db/schema";
+import { CHUNK, type DrizzleDb } from "@/lib/db";
 
 /** A single point on a cumulative time series. `count` matches shieldcn's JSONPath example. */
 export interface SeriesPoint {

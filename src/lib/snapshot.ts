@@ -3,9 +3,9 @@ import type { BatchItem } from "drizzle-orm/batch";
 import { drizzle } from "drizzle-orm/d1";
 import type { z } from "zod";
 
-import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "../db/schema";
-import { type DrizzleDb, latestSnapshotsFor } from "./db";
-import { type catalogPluginSchema, catalogSchema, statsSchema } from "./upstream";
+import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "@/db/schema";
+import { type DrizzleDb, latestSnapshotsFor } from "@/lib/db";
+import { type catalogPluginSchema, catalogSchema, statsSchema } from "@/lib/upstream";
 
 export interface SnapshotResult {
 	snapshots: number;

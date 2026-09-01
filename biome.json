@@ -1,14 +1,20 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.11/schema.json",
 	"vcs": {
-		"enabled": true,
+		"enabled": false,
 		"clientKind": "git",
-		"useIgnoreFile": true,
-		"defaultBranch": "main"
+		"useIgnoreFile": false
 	},
 	"files": {
-		"includes": ["**", "!!**/node_modules", "!!**/dist", "!!**/.wrangler", "!worker-configuration.d.ts"],
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": [
+			"**/src/**/*",
+			"**/scripts/**/*",
+			"**/.vscode/**/*",
+			"**/index.html",
+			"**/vite.config.ts",
+			"!**/src/routeTree.gen.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -25,15 +31,6 @@
 			},
 			"a11y": {
 				"noSvgWithoutTitle": "off"
-			},
-			"nursery": {
-				"useSortedClasses": {
-					"fix": "safe",
-					"level": "warn",
-					"options": {
-						"functions": ["clsx", "cva", "tw", "tw.*"]
-					}
-				}
 			}
 		},
 		"domains": {
@@ -62,27 +59,7 @@
 	"assist": {
 		"enabled": true,
 		"actions": {
-			"source": {
-				"organizeImports": {
-					"level": "on",
-					"options": {
-						"groups": [
-							[":BUN:", ":NODE:"],
-							":BLANK_LINE:",
-							[":PACKAGE:", "!@*/**"],
-							":BLANK_LINE:",
-							":PACKAGE:",
-							":BLANK_LINE:",
-							"@/components/ui/**/*",
-							":BLANK_LINE:",
-							"@/components/**/*",
-							":BLANK_LINE:",
-							":ALIAS:",
-							":PATH:"
-						]
-					}
-				}
-			}
+			"preset": "recommended"
 		}
 	}
 }

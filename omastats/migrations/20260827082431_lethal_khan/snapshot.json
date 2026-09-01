@@ -1,0 +1,509 @@
+{
+	"version": "7",
+	"dialect": "sqlite",
+	"id": "c6adaa63-cffc-44ea-b3f0-7b1b4493e079",
+	"prevIds": ["00000000-0000-0000-0000-000000000000"],
+	"ddl": [
+		{
+			"name": "plugin_snapshots",
+			"entityType": "tables"
+		},
+		{
+			"name": "plugins",
+			"entityType": "tables"
+		},
+		{
+			"name": "update_events",
+			"entityType": "tables"
+		},
+		{
+			"name": "verification_events",
+			"entityType": "tables"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "plugin_id",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "snapshot_at",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "views",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "copies",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "hearts",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "verification_status",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "version",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "repository_updated_at",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "upstream_check_status",
+			"entityType": "columns",
+			"table": "plugin_snapshots"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "name",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "description",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "author",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "category",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "kind",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "license",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "tags",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "added_at",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "repo",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "stars",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "install_available",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "status",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "source_type",
+			"entityType": "columns",
+			"table": "plugins"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "update_events"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "plugin_id",
+			"entityType": "columns",
+			"table": "update_events"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "occurred_at",
+			"entityType": "columns",
+			"table": "update_events"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "from_version",
+			"entityType": "columns",
+			"table": "update_events"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "to_version",
+			"entityType": "columns",
+			"table": "update_events"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "verification_events"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "plugin_id",
+			"entityType": "columns",
+			"table": "verification_events"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "occurred_at",
+			"entityType": "columns",
+			"table": "verification_events"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "from_status",
+			"entityType": "columns",
+			"table": "verification_events"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "to_status",
+			"entityType": "columns",
+			"table": "verification_events"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "plugin_snapshots_pk",
+			"table": "plugin_snapshots",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "plugins_pk",
+			"table": "plugins",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "update_events_pk",
+			"table": "update_events",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "verification_events_pk",
+			"table": "verification_events",
+			"entityType": "pks"
+		},
+		{
+			"columns": [
+				{
+					"value": "plugin_id",
+					"isExpression": false
+				},
+				{
+					"value": "snapshot_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "snapshots_plugin_time_idx",
+			"entityType": "indexes",
+			"table": "plugin_snapshots"
+		},
+		{
+			"columns": [
+				{
+					"value": "snapshot_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "snapshots_time_idx",
+			"entityType": "indexes",
+			"table": "plugin_snapshots"
+		},
+		{
+			"columns": [
+				{
+					"value": "added_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "plugins_added_at_idx",
+			"entityType": "indexes",
+			"table": "plugins"
+		},
+		{
+			"columns": [
+				{
+					"value": "author",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "plugins_author_idx",
+			"entityType": "indexes",
+			"table": "plugins"
+		},
+		{
+			"columns": [
+				{
+					"value": "occurred_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "update_events_time_idx",
+			"entityType": "indexes",
+			"table": "update_events"
+		},
+		{
+			"columns": [
+				{
+					"value": "plugin_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "update_events_plugin_idx",
+			"entityType": "indexes",
+			"table": "update_events"
+		},
+		{
+			"columns": [
+				{
+					"value": "occurred_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "verification_events_time_idx",
+			"entityType": "indexes",
+			"table": "verification_events"
+		},
+		{
+			"columns": [
+				{
+					"value": "plugin_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "verification_events_plugin_idx",
+			"entityType": "indexes",
+			"table": "verification_events"
+		}
+	],
+	"renames": []
+}

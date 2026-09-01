@@ -92,4 +92,4 @@ export function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props): R
 	return <TabsPrimitive.Panel className={cn("flex-1 outline-none", className)} data-slot="tabs-content" {...props} />;
 }
 
-export { TabsPrimitive, TabsTab as TabsTrigger, TabsPanel as TabsContent, type TabsSize, type TabsVariant };
+export { TabsPanel as TabsContent, TabsPrimitive, type TabsSize, TabsTab as TabsTrigger, type TabsVariant };

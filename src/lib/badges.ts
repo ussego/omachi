@@ -1,7 +1,7 @@
-import { and, count, eq, isNotNull, sql, type SQL } from "drizzle-orm";
+import { and, count, eq, isNotNull, type SQL, sql } from "drizzle-orm";
 
-import { plugins } from "../db/schema";
-import type { DrizzleDb } from "./db";
+import { plugins } from "@/db/schema";
+import type { DrizzleDb } from "@/lib/db";
 
 const STATS = ["views", "copies", "hearts"] as const;
 export type Stat = (typeof STATS)[number];

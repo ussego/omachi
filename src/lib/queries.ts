@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { toastManager } from "@/components/ui/toast";
 
@@ -10,6 +9,7 @@ import type {
 	BreakdownResponse,
 	BrokenResponse,
 	CategoriesResponse,
+	ChartSeriesResponse,
 	HealthResponse,
 	HeatmapResponse,
 	LeaderboardResponse,
@@ -64,6 +64,13 @@ const statsFn = (kind: "published" | "updated" | "verified") => {
 export const usePublishedStats = statsFn("published");
 export const useUpdatedStats = statsFn("updated");
 export const useVerifiedStats = statsFn("verified");
+
+export function useTotalStats(groupBy: Granularity) {
+	return useQuery({
+		queryKey: ["stats", "total", groupBy],
+		queryFn: () => get<ChartSeriesResponse>(`/api/charts/omastats/total?groupBy=${groupBy}`),
+	});
+}
 
 export function usePluginList(q: string, page: number, pageSize = 50) {
 	return useQuery({
