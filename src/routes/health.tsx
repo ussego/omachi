@@ -93,7 +93,7 @@ function HealthPage() {
 				<p className="text-muted-foreground text-sm">
 					Unreachable/failed upstream, or repository untouched for &gt;{broken.staleDays} days
 				</p>
-				<BrokenPluginsTable plugins={broken.plugins} loading={false} />
+				<BrokenPluginsTable plugins={broken.plugins} />
 			</div>
 
 			<GraphRule />
@@ -114,7 +114,7 @@ function HealthPage() {
 						</TabsList>
 					</Tabs>
 				</div>
-				<UnverifiedPluginsTable plugins={unverified.plugins} loading={false} />
+				<UnverifiedPluginsTable plugins={unverified.plugins} />
 			</div>
 		</div>
 	);

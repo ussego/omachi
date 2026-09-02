@@ -287,7 +287,7 @@ function OverviewPage() {
 						View all
 					</Link>
 				</div>
-				<TrendingTable top={trending.top} loading={false} />
+				<TrendingTable top={trending.top} />
 			</section>
 		</div>
 	);

@@ -200,7 +200,7 @@ function TrendingLeaderboard() {
 					<TabsTab value="30">30 days</TabsTab>
 				</TabsList>
 			</Tabs>
-			<TrendingTable top={data.top} loading={false} limit={10} />
+			<TrendingTable top={data.top} limit={10} />
 		</div>
 	);
 }

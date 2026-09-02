@@ -1,7 +1,4 @@
 import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-
-import { toastManager } from "@/components/ui/toast";
 
 import { apiUrl } from "./api-url";
 import type {
@@ -184,43 +181,4 @@ export function usePluginList(q: string, page: number, pageSize = 50) {
 
 export function useAuthors(enabled = true) {
 	return useQuery({ ...authorsQuery(), enabled, placeholderData: keepPreviousData });
-}
-
-// ── transitional hooks ─────────────────────────────────────────────────────
-// Thin useQuery wrappers kept only until every route reads its data through
-// loaders; deleted together with useSkeletonDelay/useErrorToast afterwards.
-
-export const usePublishedStats = statsHook("published");
-export const useUpdatedStats = statsHook("updated");
-export const useVerifiedStats = statsHook("verified");
-
-function statsHook(kind: "published" | "updated" | "verified") {
-	return (range: string | undefined, groupBy: Granularity, from?: string, to?: string) =>
-		useQuery(statsQuery(kind, { range: range ?? "all", groupBy, from, to }));
-}
-
-export const useTotalStats = (groupBy: Granularity) => useQuery(totalStatsQuery(groupBy));
-export const useRecentPlugins = (limit = 8) => useQuery(recentPluginsQuery(limit));
-export const usePluginDetail = (pluginId: string) => useQuery(pluginDetailQuery(pluginId));
-export const useLeaderboard = (metric: string, limit = 25, sparkPoints = 10) =>
-	useQuery({ ...leaderboardQuery(metric, limit, sparkPoints), placeholderData: keepPreviousData });
-export const useTrending = (days: 7 | 30) =>
-	useQuery({ ...trendingQuery(days), placeholderData: keepPreviousData });
-export const useAuthorDetail = (authorId: string) => useQuery(authorDetailQuery(authorId));
-export const useBreakdown = () => useQuery(breakdownQuery());
-export const useCategories = () => useQuery(categoriesQuery());
-export const useHeatmap = (from?: string, to?: string) => useQuery(heatmapQuery(from, to));
-export const useHealth = () => useQuery(healthQuery());
-export const useBrokenPlugins = () => useQuery(brokenPluginsQuery());
-export const useUnverifiedPlugins = (range: string) => useQuery(unverifiedPluginsQuery(range));
-
-// ── transitional helpers ───────────────────────────────────────────────────
-// Removed once every route reads from loaders (loader errors render through
-// errorComponent instead of toasts).
-
-/** One toast per failed fetch, keyed so refetch failures don't stack. */
-export function useErrorToast(isError: boolean, message: string) {
-	useEffect(() => {
-		if (isError) toastManager.add({ type: "error", title: "Failed to load", description: message });
-	}, [isError, message]);
 }

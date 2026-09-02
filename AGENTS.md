@@ -87,9 +87,15 @@ the environment truth for scripts, bindings, and deployment identity.
    `x-cache: HIT|MISS`. `/api/health*` responses remain uncached.
 6. **Frontend**: The same Worker serves the TanStack Start application shell.
    File-based routes live in `src/routes/`; generated `src/routeTree.gen.ts`
-   is never hand-edited. Data access uses the API hooks in `src/lib/queries.ts`.
-   UI primitives are owned shadcn source files in `src/components/ui/`, and
-   charts use the matching mdx-graphs visual vocabulary with the blue accent.
+   is never hand-edited. Route loaders ensure the `queryOptions` factories in
+   `src/lib/queries.ts` against the edge-cached API routes (SSR self-fetches
+   an absolute URL derived from the request, so per-view D1 reads still hit
+   the edge cache first); components read the cache with `useSuspenseQuery`.
+   Query-affecting view state lives in zod-validated search params keyed by
+   `loaderDeps`. The command palette's keystroke-driven queries stay on plain
+   `useQuery`. UI primitives are owned shadcn source files in
+   `src/components/ui/`, and charts use the matching mdx-graphs visual
+   vocabulary with the blue accent.
 
 ## The mirror
 
