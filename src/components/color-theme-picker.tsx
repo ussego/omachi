@@ -146,7 +146,7 @@ export function ColorThemePicker() {
 			<PopoverTrigger
 				aria-label={triggerLabel}
 				title={triggerLabel}
-				className="graph-frame h-7 inline-flex items-center gap-2 px-3 py-1.5 font-mono text-xs tracking-widest text-foreground uppercase transition-colors hover:text-muted-foreground"
+				className="graph-frame h-7 inline-flex items-center justify-center gap-2 px-3 font-mono text-xs tracking-widest text-foreground uppercase transition-colors hover:text-muted-foreground"
 			>
 				<span
 					aria-hidden="true"
