@@ -160,3 +160,10 @@ frame utilities (`graph-frame`, `graph-frame-sides`, `graph-rule`,
 `graph-rule-soft`), `+` corner marks, `[ TITLE ]` mono captions, one blue
 accent (`--graph-accent`), zero radius, and mono uppercase chrome text. Follow
 it for any UI change; extend `docs/design.md` when the language grows.
+
+Color themes (the header picker) are a generated, committed CSS layer:
+`bun run themes:generate` reads the Omarchy built-in themes from
+`/usr/share/omarchy/themes/<theme>/colors.toml` and rewrites
+`src/themes/themes.css` + `src/themes/themes.ts`. Run it after system theme
+or `src/styles.css` token changes; never hand-edit `src/themes/**` (excluded
+from Biome). See the "Color themes" section in `docs/design.md`.

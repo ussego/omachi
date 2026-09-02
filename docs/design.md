@@ -2,8 +2,9 @@
 
 Omachi's chrome and charts share one vocabulary: technical-drawing ("blueprint") frames — dashed
 rules, `+` corner marks, bracketed mono captions, a single blue accent, Geist Mono. Nothing is
-rounded, and nothing adds a second hue. Follow this document for any UI change; extend it when the
-language grows.
+rounded, and nothing adds a second hue — per color theme: the accent hue may change with the theme
+picker, but a theme never mixes hues (see "Color themes" below). Follow this document for any UI
+change; extend it when the language grows.
 
 ## Tokens — `src/styles.css` is the single source of truth
 
@@ -12,12 +13,50 @@ language grows.
   - Page headings (`h1`/`h2`): `font-heading` (sans). The mono uppercase voice belongs to chrome
     labels and charts, not to page titles.
 - **Radius**: `--radius: 0`. Never add rounding.
-- **Accent** (the only hue): `--graph-accent` — blue, hue 255 (light `oklch(0.5 0.18 255)`,
-  dark `oklch(0.7 0.12 255)`), plus `--graph-accent-2`/`-3` for secondary series. Everything else
-  is neutral.
+- **Accent** (the site's only hue by default): `--graph-accent` — blue, hue 255 (light
+  `oklch(0.5 0.18 255)`, dark `oklch(0.7 0.12 255)`), plus `--graph-accent-2`/`-3` for secondary
+  series. Everything else is neutral. The header's color-theme picker can swap the accent hue (and
+  the neutrals with it) per palette — see "Color themes".
 - **Frame inks**: `--graph-frame` (charts and controls), `--graph-frame-soft` (page frame, roughly
   half the contrast), `--graph-muted`, `--graph-faint`.
-- Components use tokens only (`bg-background`, `text-graph-accent`, …). No raw color values.
+- Components use tokens only (`bg-background`, `text-graph-accent`, …). No raw color values
+  (except `src/themes/themes.ts`, the generated swatch metadata).
+
+## Color themes
+
+The theme control (`src/components/color-theme-picker.tsx`, header) carries the light/dark/auto
+mode row and the color-theme grid: the **Omachi** default — the tokens above, no overrides — plus
+the Omarchy built-in themes from their `colors.toml` files. It is a client-side layer only: the
+mode writes `localStorage["theme"]` and toggles `.light`/`.dark`; picking a palette writes
+`localStorage["color-theme"]` and a `data-color-theme` attribute on `<html>`; CSS custom properties
+do the rest, so charts, frames, and chrome re-theme together.
+
+- **Native mode**: a theme renders its own background/foreground/accent in its natural light/dark
+  mode (`:root[data-color-theme="…"]` for light themes, `:root[data-color-theme="…"].dark` for
+  dark themes). `colors.toml` maps: `background`/`foreground`/`accent` directly; surfaces
+  (`--card`/`--popover`/`--sidebar`) from the theme's adjacent background keys; the shadcn fills
+  (`--secondary`/`--muted`/`--accent`) all take `selection`, which sits near the background in
+  every theme (omarchy's `muted` key is a dimmed *text* color, not a UI fill — it only backstops a
+  missing `selection`); text on fills is the theme's own `foreground`; `--destructive` from `red`.
+  The
+  neutral ramp (`--graph-frame*`, `--contrast-*`, `--muted-foreground`, `--ring`) is reproduced by
+  interpolating the theme's background→foreground pair by the same oklch lightness fraction the
+  site tokens use, so contrast stays design-calibrated. Series shades `--graph-accent-2`/`-3`
+  step toward the background/foreground in the same directions as the default.
+- **Other mode** (adaptation block): the site's own neutrals keep their contrast and only the
+  accent family moves — the theme accent's hue rebuilt at the site's per-mode lightness/chroma
+  targets (`:root[data-color-theme="…"]` for dark themes in light mode, `….dark` for light themes
+  in dark mode). `--chart-1..5` stay neutral in every theme: charts remain single-hue.
+- **Generated, not hand-written**: `bun run themes:generate` reads
+  `/usr/share/omarchy/themes/<theme>/colors.toml` and rewrites `src/themes/themes.css` (the token
+  blocks) and `src/themes/themes.ts` (swatch metadata) — both committed, never hand-edited
+  (`src/themes/**` is excluded from Biome). Run it after system theme or styles.css token changes;
+  deploys don't run it (CI never sees /usr/share/omarchy).
+- **Performance**: themes.css is not in the critical path. `__root.tsx`'s pre-paint script
+  injects the stylesheet only when a non-default palette is already stored (so returning users
+  see no flash), and the picker injects it lazily on the first pick; visitors on the default see
+  no extra bytes. Flipping palettes afterwards is one attribute change — a single style recalc,
+  no re-render, no server cost.
 
 ## Frame grammar (the utilities)
 
@@ -51,7 +90,7 @@ language grows.
   Logo `[O]` = the Omachi mark: an accent `O` between brackets, mono, uppercase,
   `tracking-widest`, `aria-label="Omachi — home"` carries the name. Nav links = mono uppercase
   `text-xs`; active page `text-graph-accent`, inactive `text-muted-foreground`. Header controls
-  (theme toggle, search, GitHub/Sponsor, menu) all carry the dashed `graph-frame`.
+  (theme, search, GitHub/Sponsor, menu) all carry the dashed `graph-frame`.
 - **Footer**: full-width soft dashed rule at the top; `[O]` brand mark in accent with the Omachi
   name in the muted line beneath; captions mono muted `text-xs`.
 - **Tabs** (`src/components/ui/tabs.tsx`): triggers mono uppercase `text-xs`; default variant is a
@@ -91,12 +130,13 @@ language grows.
 Do:
 
 - Use the `graph-frame` family for any box or border.
-- Keep corners square, colors semantic, chrome labels mono uppercase, and the one accent hue.
+- Keep corners square, colors semantic, chrome labels mono uppercase, and one accent hue per
+  color theme.
 
 Don't:
 
-- Add hues beyond the blue accent and neutrals, rounded cards, or solid heavy borders where a
-  dashed frame belongs.
+- Add hues beyond the active theme's accent and neutrals, rounded cards, or solid heavy borders
+  where a dashed frame belongs.
 - Draw charts with SVG or chart libraries — the glyph vocabulary (`GraphPlot`, `GraphRank`,
   `GraphStack`, …) is the chart language.
 - Add loops or pulses beyond the march, or raw color values in components.
@@ -104,6 +144,9 @@ Don't:
 ## Where things live
 
 - Tokens and utilities: `src/styles.css` (theme block, `@utility` blocks, keyframes).
+- Color themes: `src/themes/themes.css` + `src/themes/themes.ts` (generated by
+  `scripts/generate-themes.ts`), `src/components/color-theme-picker.tsx`.
 - Chart primitives: `src/components/graph-frame/`.
-- Chrome: `src/components/header.tsx`, `footer.tsx`, `theme-toggle.tsx`, `command-palette.tsx`,
-  `graph-stat.tsx`, `src/components/ui/tabs.tsx`; the shell in `src/routes/__root.tsx`.
+- Chrome: `src/components/header.tsx`, `footer.tsx`, `color-theme-picker.tsx`,
+  `command-palette.tsx`, `graph-stat.tsx`, `src/components/ui/tabs.tsx`; the shell in
+  `src/routes/__root.tsx`.

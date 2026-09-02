@@ -8,6 +8,7 @@ import { GraphCorners } from "@/components/graph-frame/graph-frame";
 import Header from "@/components/header";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
+import themesCss from "@/themes/themes.css?url";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -18,7 +19,9 @@ const SITE_DESC =
 	"An independent companion dashboard for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges.";
 const SITE_URL = "https://stats.ussego.com";
 
-const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`;
+const THEME_CSS_HREF = JSON.stringify(themesCss);
+
+const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;var palette=window.localStorage.getItem('color-theme');if(palette&&palette!=='omachi'){root.setAttribute('data-color-theme',palette);var link=document.createElement('link');link.rel='stylesheet';link.href=${THEME_CSS_HREF};document.head.appendChild(link)}else{root.removeAttribute('data-color-theme')}}catch(e){}})();`;
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	head: () => ({

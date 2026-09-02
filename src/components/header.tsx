@@ -1,7 +1,7 @@
 import { IconHeart, IconMenu } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { ColorThemePicker } from "@/components/color-theme-picker";
 import { CommandPalette } from "@/components/command-palette";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	Drawer,
@@ -143,9 +143,9 @@ export default function Header() {
 						</Link>
 					))}
 				</nav>
-				<div className="flex flex-1 items-center justify-end gap-1 lg:flex-none">
-					<ThemeToggle />
-					<CommandPalette />
+					<div className="flex flex-1 items-center justify-end gap-1 lg:flex-none">
+						<ColorThemePicker />
+						<CommandPalette />
 					<a
 						href="https://github.com/ussego/omachi"
 						target="_blank"
