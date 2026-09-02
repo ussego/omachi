@@ -2,17 +2,17 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody, GraphTick, GraphTrack } from "@/components/ui/graph-frame";
+import { Graph, GraphBody, GraphTick, GraphTrack } from "@/components/graph-frame/graph-frame";
 import {
 	fadeUp,
 	type Glyphs,
 	type GraphPalette,
+	graphTransition,
 	isMonoPalette,
 	resolveGlyphs,
 	seriesClass,
 	seriesDim,
-	staggerList,
-} from "@/lib/graph-motion";
+} from "@/components/graph-frame/graph-motion";
 
 const DEFAULT_GLYPHS = ["█", "▓", "▒", "░", "#", "=", "+", "-"];
 
@@ -66,7 +66,6 @@ function paintRow(segments: StackSegment[], ticks: number, glyphs: readonly stri
 function GraphStack({ title, rows, accent, ticks = 24, glyphs, palette, corner, className }: GraphStackProps) {
 	const reduce = useReducedMotion();
 	const item = fadeUp(reduce);
-	const list = staggerList(reduce, 0.05);
 	const set = glyphs == null ? DEFAULT_GLYPHS : resolveGlyphs(glyphs);
 	const legend: string[] = [];
 
@@ -81,15 +80,8 @@ function GraphStack({ title, rows, accent, ticks = 24, glyphs, palette, corner, 
 	return (
 		<Graph title={title} className={className} corner={corner}>
 			<GraphBody className="flex flex-col gap-6">
-				<motion.ul
-					className="flex flex-col gap-3"
-					initial={reduce ? false : "hidden"}
-					role="list"
-					variants={list}
-					viewport={{ once: true, amount: 0.4 }}
-					whileInView="show"
-				>
-					{rows.map((row) => {
+				<ul className="flex flex-col gap-3" role="list">
+					{rows.map((row, index) => {
 						const painted = paintRow(row.segments, ticks, set, accent);
 
 						return (
@@ -97,19 +89,20 @@ function GraphStack({ title, rows, accent, ticks = 24, glyphs, palette, corner, 
 								aria-label={`${row.label}: ${row.segments
 									.map((segment) => `${segment.label} ${segment.value}`)
 									.join(", ")}`}
-								className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-4"
+								className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-4 sm:grid-cols-[7rem_minmax(0,1fr)]"
+								animate="show"
+								initial={reduce ? false : "hidden"}
 								key={row.label}
+								transition={graphTransition(reduce, { delay: Math.min(index * 0.05, 0.8) })}
 								variants={item}
 							>
 								<span className="truncate text-foreground">{row.label}</span>
 								<GraphTrack>
 									{painted.flatMap((piece) =>
-										Array.from({ length: piece.count }, (_, tickIndex) => ({
-											key: `${piece.label}-${tickIndex}`,
-										})).map((tick) => (
+										Array.from({ length: piece.count }, (_, index) => (
 											<GraphTick
 												className={seriesClass(palette, legend.indexOf(piece.label))}
-												key={tick.key}
+												key={`${piece.label}-${index}`}
 												style={seriesDim(palette, isMonoPalette(palette) ? piece.accent : true)}
 											>
 												{piece.glyph}
@@ -120,8 +113,8 @@ function GraphStack({ title, rows, accent, ticks = 24, glyphs, palette, corner, 
 							</motion.li>
 						);
 					})}
-				</motion.ul>
-				<ul className="flex flex-wrap gap-x-4 gap-y-1">
+				</ul>
+				<ul className="flex flex-wrap gap-x-4 gap-y-1" role="list">
 					{legend.map((label, index) => {
 						const glyph = set[index % set.length] ?? "█";
 						const highlighted = isMonoPalette(palette) ? (accent ? label === accent : index === 0) : true;

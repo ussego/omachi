@@ -112,10 +112,16 @@ export type AuthorDetailResponse = {
 		kind: string | null;
 		status: string | null;
 		repo: string | null;
+		addedAt: string | null;
 		views: number | null;
 		copies: number | null;
 		hearts: number | null;
 	}[];
+	/**
+	 * Per-poll sums across the author's plugins (one point per snapshotAt),
+	 * ascending. Copies are 0 for manual-setup plugins, which never record them.
+	 */
+	activity: { snapshotAt: string; views: number; copies: number; hearts: number }[];
 };
 
 export type BreakdownRow = { status: string | null; count: number };

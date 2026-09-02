@@ -2,17 +2,17 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody } from "@/components/ui/graph-frame";
+import { Graph, GraphBody } from "@/components/graph-frame/graph-frame";
 import {
 	fadeUp,
 	type Glyphs,
 	type GraphPalette,
+	graphTransition,
 	intensityClass,
 	intensityGlyph,
 	intensityLevel,
 	resolveGlyphs,
-	staggerList,
-} from "@/lib/graph-motion";
+} from "@/components/graph-frame/graph-motion";
 import { cn } from "@/lib/utils";
 
 type HeatRow = {
@@ -38,20 +38,17 @@ function IntensityScale({ glyphs, palette }: { glyphs: readonly string[]; palett
 		<p className="flex items-center gap-2 text-graph-muted">
 			<span>Less</span>
 			<span aria-hidden="true" className="flex select-none">
-				{glyphs.map((glyph, glyphIndex) => {
-					const key = `${glyph}-${glyphIndex}`;
-					return (
-						<span
-							className={cn(
-								"w-[1ch] text-center",
-								intensityClass(Math.round((glyphIndex / Math.max(glyphs.length - 1, 1)) * 4), palette),
-							)}
-							key={key}
-						>
-							{glyph}
-						</span>
-					);
-				})}
+				{glyphs.map((glyph, index) => (
+					<span
+						className={cn(
+							"w-[1ch] text-center",
+							intensityClass(Math.round((index / Math.max(glyphs.length - 1, 1)) * 4), palette),
+						)}
+						key={`${glyph}-${index}`}
+					>
+						{glyph}
+					</span>
+				))}
 			</span>
 			<span>More</span>
 		</p>
@@ -72,7 +69,6 @@ function GraphHeatmap({
 }: GraphHeatmapProps) {
 	const reduce = useReducedMotion();
 	const item = fadeUp(reduce);
-	const list = staggerList(reduce, 0.04);
 	const peak = max ?? Math.max(0, ...rows.flatMap((row) => row.values), 0);
 	const template = `7rem repeat(${Math.max(columns.length, 1)}, minmax(1.25ch, 1fr))`;
 	const set = resolveGlyphs(glyphs);
@@ -89,22 +85,18 @@ function GraphHeatmap({
 							</span>
 						))}
 					</div>
-					<motion.ul
-						className="flex flex-col gap-1"
-						initial={reduce ? false : "hidden"}
-						role="list"
-						variants={list}
-						viewport={{ once: true, amount: 0.4 }}
-						whileInView="show"
-					>
-						{rows.map((row) => (
+					<ul className="flex flex-col gap-1" role="list">
+						{rows.map((row, index) => (
 							<motion.li
 								aria-label={`${row.label}: ${columns
 									.map((column, index) => `${column} ${row.values[index] ?? 0}`)
 									.join(", ")}`}
+								animate="show"
 								className="grid items-center gap-x-1"
+								initial={reduce ? false : "hidden"}
 								key={row.label}
 								style={{ gridTemplateColumns: template }}
+								transition={graphTransition(reduce, { delay: Math.min(index * 0.04, 0.8) })}
 								variants={item}
 							>
 								<span className="truncate text-foreground">{row.label}</span>
@@ -127,7 +119,7 @@ function GraphHeatmap({
 								})}
 							</motion.li>
 						))}
-					</motion.ul>
+					</ul>
 				</div>
 				{legend || caption ? (
 					<div className="flex flex-wrap items-center justify-between gap-3">

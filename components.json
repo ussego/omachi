@@ -21,5 +21,7 @@
   "rtl": false,
   "menuColor": "default-translucent",
   "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@markdown-graphs": "https://mdx-graphs.kshv.me/r/{name}.json"
+  }
 }

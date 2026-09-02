@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import type { TrendingResponse } from "@/lib/api-types";
 import { fmt } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 
 const SKELETON = ["a", "b", "c", "d", "e"];
 
@@ -20,6 +21,9 @@ export function TrendingTable({
 	limit?: number;
 }) {
 	const rows = top.slice(0, limit);
+	// Skeleton only after the grace period; inside it the real table chrome
+	// stays visible with an empty body instead of a flashing placeholder.
+	const showSkeleton = useSkeletonDelay(loading);
 
 	if (!loading && rows.length === 0) {
 		return (
@@ -41,7 +45,7 @@ export function TrendingTable({
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{loading
+				{showSkeleton
 					? SKELETON.slice(0, 5).map((k) => (
 							<TableRow key={k}>
 								<TableCell colSpan={5}>

@@ -134,3 +134,11 @@ The current Git remote is `git@github.com:ussego/omastats.git`. The
 Worker deployment identity is already `omachi`; the D1 database remains
 `omastats`. The publish workflow documented in `README.md` renames the GitHub
 repository and updates the remote only if that repository rename is desired.
+
+## Design
+
+The site follows the blueprint design language in `docs/design.md`: dashed
+frame utilities (`graph-frame`, `graph-frame-sides`, `graph-rule`,
+`graph-rule-soft`), `+` corner marks, `[ TITLE ]` mono captions, one blue
+accent (`--graph-accent`), zero radius, and mono uppercase chrome text. Follow
+it for any UI change; extend `docs/design.md` when the language grows.

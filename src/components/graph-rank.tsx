@@ -2,8 +2,15 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody, GraphTick, GraphTrack } from "@/components/ui/graph-frame";
-import { fadeUp, type Glyphs, type GraphPalette, staggerList, toneClass, trackMarks } from "@/lib/graph-motion";
+import { Graph, GraphBody, GraphTick, GraphTrack } from "@/components/graph-frame/graph-frame";
+import {
+	fadeUp,
+	type Glyphs,
+	type GraphPalette,
+	graphTransition,
+	toneClass,
+	trackMarks,
+} from "@/components/graph-frame/graph-motion";
 
 type RankItem = {
 	label: string;
@@ -35,7 +42,6 @@ function formatValue(item: RankItem) {
 function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, className }: GraphRankProps) {
 	const reduce = useReducedMotion();
 	const item = fadeUp(reduce);
-	const list = staggerList(reduce, 0.05);
 	const peak = max ?? Math.max(...items.map((entry) => entry.value), 1);
 	const marks = trackMarks(glyphs, {
 		empty: "-",
@@ -46,22 +52,22 @@ function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, cla
 	return (
 		<Graph title={title} className={className} corner={corner}>
 			<GraphBody className="flex flex-col gap-3">
-				<motion.ol
-					className="flex w-full list-none flex-col gap-2"
-					initial={reduce ? false : "hidden"}
-					variants={list}
-					viewport={{ once: true, amount: 0.4 }}
-					whileInView="show"
-				>
-					{items.map((entry) => {
-						const filled = Math.min(ticks, Math.round((Math.max(entry.value, 0) / peak) * ticks));
+				<ol className="flex w-full list-none flex-col gap-2">
+					{items.map((entry, index) => {
+						const raw = Math.round((Math.max(entry.value, 0) / peak) * ticks);
+						// Nonzero rows always get at least one mark so small
+						// values never read as an empty track.
+						const filled = entry.value > 0 ? Math.max(1, Math.min(ticks, raw)) : 0;
 						const shown = formatValue(entry);
 
 						return (
 							<motion.li
 								aria-label={`${entry.label} ${shown}`}
-								className="grid grid-cols-[7rem_minmax(0,1fr)_7rem] items-center gap-x-4"
+								className="grid grid-cols-[5rem_minmax(0,1fr)_5rem] items-center gap-x-4 sm:grid-cols-[7rem_minmax(0,1fr)_7rem]"
+								animate="show"
+								initial={reduce ? false : "hidden"}
 								key={entry.label}
+								transition={graphTransition(reduce, { delay: Math.min(index * 0.05, 0.8) })}
 								variants={item}
 							>
 								<span className="truncate text-foreground">{entry.label}</span>
@@ -70,17 +76,18 @@ function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, cla
 										[
 									</span>
 									<GraphTrack>
-										{Array.from({ length: ticks }, (_, tickIndex) => ({
-											key: `tick-${tickIndex}`,
-											on: tickIndex < filled,
-										})).map((tick) => (
-											<GraphTick
-												className={tick.on ? toneClass(palette, "primary") : "text-graph-frame"}
-												key={tick.key}
-											>
-												{tick.on ? marks.fill : marks.empty}
-											</GraphTick>
-										))}
+										{Array.from({ length: ticks }, (_, index) => {
+											const on = index < filled;
+
+											return (
+												<GraphTick
+													className={on ? toneClass(palette, "primary") : "text-graph-frame"}
+													key={index}
+												>
+													{on ? marks.fill : marks.empty}
+												</GraphTick>
+											);
+										})}
 									</GraphTrack>
 									<span aria-hidden="true" className="text-graph-frame select-none">
 										]
@@ -90,7 +97,7 @@ function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, cla
 							</motion.li>
 						);
 					})}
-				</motion.ol>
+				</ol>
 			</GraphBody>
 		</Graph>
 	);

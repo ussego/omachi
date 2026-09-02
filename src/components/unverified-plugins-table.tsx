@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import type { UnverifiedResponse } from "@/lib/api-types";
 import { fmtDate, truncate } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 
 const SKELETON = ["a", "b", "c", "d", "e"];
 
@@ -17,6 +18,7 @@ export function UnverifiedPluginsTable({
 	plugins: UnverifiedResponse["plugins"];
 	loading: boolean;
 }) {
+	const showSkeleton = useSkeletonDelay(loading);
 	return (
 		<Table>
 			<TableHeader>
@@ -28,7 +30,7 @@ export function UnverifiedPluginsTable({
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{loading
+				{showSkeleton
 					? SKELETON.map((k) => (
 							<TableRow key={k}>
 								<TableCell colSpan={4}>

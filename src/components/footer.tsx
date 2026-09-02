@@ -1,5 +1,5 @@
 import { HeartIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 function GithubIcon({ className }: { className?: string }) {
 	return (
@@ -20,44 +20,43 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function Footer() {
 	return (
-		<footer className="mt-16">
-			<div className="mx-auto w-full max-w-5xl">
-				<div className="border-t px-4 pt-6 pb-7 sm:px-6">
-					<div className="flex w-full flex-wrap items-end justify-between gap-3">
-						<div className="flex flex-col">
-							<span className="font-heading text-lg">Omachi</span>
-							<span className="text-muted-foreground text-sm">
-								An independent companion dashboard for the Omarchy plugin catalog
-							</span>
-						</div>
-						<div className="flex flex-wrap items-center justify-end gap-3">
-							<span className="font-mono text-muted-foreground text-xs">
-								snapshots every 6h · new plugins every 30m
-							</span>
-							<div className="flex gap-1">
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									aria-label="GitHub repository"
-									title="GitHub repository"
-									render={
-										<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />
-									}
-								>
-									<GithubIcon className="size-4" />
-								</Button>
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									aria-label="Sponsor on GitHub"
-									title="Sponsor on GitHub"
-									render={
-										<a href="https://github.com/sponsors/ussego" target="_blank" rel="noreferrer" />
-									}
-								>
-									<HeartIcon className="size-4" />
-								</Button>
-							</div>
+		<footer className="shrink-0">
+			<div aria-hidden="true" className="graph-rule-soft" />
+			<div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-7 sm:px-6">
+				<div className="flex w-full flex-wrap items-end justify-between gap-3">
+					<div className="flex flex-col">
+						<span className="font-mono text-sm tracking-widest text-graph-accent uppercase">
+							[ Omachi ]
+						</span>
+						<span className="text-muted-foreground text-sm">
+							An independent companion dashboard for the Omarchy plugin catalog
+						</span>
+					</div>
+					<div className="flex flex-wrap items-center justify-end gap-3">
+						<span className="font-mono text-muted-foreground text-xs">
+							snapshots every 6h · new plugins every 30m
+						</span>
+						<div className="flex gap-1">
+							<a
+								href="https://github.com/ussego/omastats"
+								target="_blank"
+								rel="noreferrer"
+								aria-label="GitHub repository"
+								title="GitHub repository"
+								className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+							>
+								<GithubIcon className="size-4" />
+							</a>
+							<a
+								href="https://github.com/sponsors/ussego"
+								target="_blank"
+								rel="noreferrer"
+								aria-label="Sponsor on GitHub"
+								title="Sponsor on GitHub"
+								className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+							>
+								<HeartIcon className="size-4" />
+							</a>
 						</div>
 					</div>
 				</div>

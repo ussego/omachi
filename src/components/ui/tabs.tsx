@@ -41,7 +41,7 @@ export function TabsList({
 				"relative z-0 flex w-fit max-w-full items-center gap-x-0.5 overflow-x-auto overflow-y-clip text-muted-foreground",
 				"data-[orientation=vertical]:flex-col",
 				variant === "default"
-					? "rounded-lg bg-muted p-0.5 text-muted-foreground"
+					? "graph-frame bg-background p-0.5 text-muted-foreground"
 					: "data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-tab]:hover:bg-accent",
 				className,
 			)}
@@ -54,8 +54,8 @@ export function TabsList({
 				className={cn(
 					"absolute bottom-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-(--active-tab-bottom) transition-[width,translate] duration-200 ease-in-out",
 					variant === "underline"
-						? "z-10 bg-primary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5 data-[orientation=vertical]:-translate-x-px data-[orientation=horizontal]:translate-y-px"
-						: "-z-1 rounded-md bg-background shadow-sm/5 dark:bg-input",
+						? "z-10 bg-graph-accent data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5 data-[orientation=vertical]:-translate-x-px data-[orientation=horizontal]:translate-y-px"
+						: "-z-1 rounded-md bg-muted",
 				)}
 				data-slot="tab-indicator"
 			/>
@@ -76,7 +76,7 @@ export function TabsTab({
 	return (
 		<TabsPrimitive.Tab
 			className={cn(
-				"relative flex shrink-0 grow cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-transparent font-medium text-base outline-none transition-[color,background-color,box-shadow] hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start data-active:text-foreground data-disabled:opacity-64 sm:text-sm",
+				"relative flex shrink-0 grow cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-transparent font-mono text-xs tracking-wide uppercase outline-none transition-[color,background-color,box-shadow] hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start data-active:text-foreground data-disabled:opacity-64",
 				segmentedControlItemLayoutClassName,
 				segmentedControlItemSizeClassNames[resolvedSize],
 				className,

@@ -2,8 +2,9 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { Code, CopyButton, Snippet } from "@/components/snippet";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export const Route = createFileRoute("/charts")({
 	head: () => ({
@@ -64,13 +65,15 @@ function ChartsPage() {
 		<div className="flex flex-col gap-8">
 			<div className="flex items-center justify-between gap-4">
 				<h1 className="font-heading text-2xl">Charts</h1>
-				<Button
-					variant="outline"
-					render={<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />}
+				<a
+					href="https://github.com/ussego/omastats"
+					target="_blank"
+					rel="noreferrer"
+					className={buttonVariants({ variant: "outline" })}
 				>
 					<ExternalLinkIcon data-icon="inline-start" />
 					<span>Source</span>
-				</Button>
+				</a>
 			</div>
 
 			<p className="max-w-2xl text-muted-foreground">
@@ -81,7 +84,7 @@ function ChartsPage() {
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Live examples</h2>
 				{EXAMPLES.map((e) => (
-					<div key={e.path} className="flex flex-col gap-1.5 rounded-lg border bg-muted/30 p-4">
+					<div key={e.path} className="graph-frame flex flex-col gap-1.5 bg-muted/30 p-4">
 						<img src={e.src} alt={e.path} loading="lazy" />
 						<div className="flex items-center gap-2">
 							<code className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs">
@@ -92,6 +95,8 @@ function ChartsPage() {
 					</div>
 				))}
 			</div>
+
+			<GraphRule />
 
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Endpoints</h2>

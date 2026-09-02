@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import type { BrokenResponse } from "@/lib/api-types";
 import { fmtDate } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 
 const SKELETON = ["a", "b", "c", "d", "e"];
 
@@ -21,6 +22,7 @@ export function BrokenPluginsTable({
 	limit?: number;
 }) {
 	const rows = limit ? plugins.slice(0, limit) : plugins;
+	const showSkeleton = useSkeletonDelay(loading);
 	return (
 		<Table>
 			<TableHeader>
@@ -32,7 +34,7 @@ export function BrokenPluginsTable({
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{loading
+				{showSkeleton
 					? SKELETON.slice(0, 5).map((k) => (
 							<TableRow key={k}>
 								<TableCell colSpan={4}>

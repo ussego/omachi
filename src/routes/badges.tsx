@@ -2,8 +2,9 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { Code, CopyButton, Snippet } from "@/components/snippet";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/badges")({
@@ -52,13 +53,15 @@ function BadgesPage() {
 		<div className="flex flex-col gap-8">
 			<div className="flex items-center justify-between gap-4">
 				<h1 className="font-heading text-2xl">Badges</h1>
-				<Button
-					variant="outline"
-					render={<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />}
+				<a
+					href="https://github.com/ussego/omastats"
+					target="_blank"
+					rel="noreferrer"
+					className={buttonVariants({ variant: "outline" })}
 				>
 					<ExternalLinkIcon data-icon="inline-start" />
 					<span>Source</span>
-				</Button>
+				</a>
 			</div>
 
 			<p className="max-w-2xl text-muted-foreground">
@@ -91,6 +94,8 @@ function BadgesPage() {
 					</TableBody>
 				</Table>
 			</div>
+
+			<GraphRule />
 
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Endpoints</h2>

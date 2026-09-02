@@ -2,17 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { HeartIcon, MenuIcon } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
-	Sheet,
-	SheetClose,
-	SheetFooter,
-	SheetHeader,
-	SheetPanel,
-	SheetPopup,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/sheet";
+	Drawer,
+	DrawerClose,
+	DrawerContent,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
+	DrawerTrigger,
+} from "@/components/ui/drawer";
 
 const NAV = [
 	{ to: "/leaderboards", label: "Leaderboards" },
@@ -42,105 +41,136 @@ function GithubIcon({ className }: { className?: string }) {
 
 function MobileNav() {
 	return (
-		<Sheet>
-			<SheetTrigger render={<Button variant="outline" size="icon-sm" aria-label="Menu" className="lg:hidden" />}>
+		<Drawer>
+			<DrawerTrigger
+				render={<Button variant="ghost" size="icon-sm" aria-label="Menu" className="graph-frame lg:hidden" />}
+			>
 				<MenuIcon className="size-4" />
-			</SheetTrigger>
-			<SheetPopup side="right" className="max-w-72">
-				<SheetHeader>
-					<SheetTitle className="text-lg">Menu</SheetTitle>
-				</SheetHeader>
-				<SheetPanel>
-					<nav className="flex flex-col gap-3">
-						{NAV.map((item) => (
-							<SheetClose
-								key={item.to}
-								render={
-									<Link
-										to={item.to}
-										className="flex items-center gap-2 font-medium text-2xl transition-colors hover:text-foreground"
-										activeProps={{ className: "text-foreground" }}
-										inactiveProps={{ className: "text-muted-foreground" }}
-									/>
-								}
-							>
-								{item.label}
-							</SheetClose>
-						))}
-					</nav>
-				</SheetPanel>
-				<SheetFooter>
-					<Button
-						variant="ghost"
-						size="sm"
-						render={<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />}
+			</DrawerTrigger>
+			<DrawerContent>
+				<DrawerHeader>
+					<DrawerTitle>Menu</DrawerTitle>
+				</DrawerHeader>
+				<nav className="flex flex-col gap-1 p-4 pt-2">
+					{NAV.map((item) => (
+						<DrawerClose
+							key={item.to}
+							render={
+								<Link
+									to={item.to}
+									activeProps={{ className: "text-graph-accent" }}
+									inactiveProps={{ className: "text-muted-foreground" }}
+									className="group relative rounded-none px-2.5 py-2.5 font-mono text-xs tracking-wide uppercase transition-colors hover:text-foreground"
+								/>
+							}
+						>
+							<span
+								aria-hidden="true"
+								className="graph-frame graph-frame-march pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100"
+							/>
+							{item.label}
+						</DrawerClose>
+					))}
+				</nav>
+				<DrawerFooter>
+					<a
+						href="https://github.com/ussego/omastats"
+						target="_blank"
+						rel="noreferrer"
+						className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full justify-start" })}
 					>
 						<GithubIcon className="size-4" />
 						GitHub
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						render={<a href="https://github.com/sponsors/ussego" target="_blank" rel="noreferrer" />}
+					</a>
+					<a
+						href="https://github.com/sponsors/ussego"
+						target="_blank"
+						rel="noreferrer"
+						className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full justify-start" })}
 					>
 						<HeartIcon className="size-4" />
 						Sponsor
-					</Button>
-				</SheetFooter>
-			</SheetPopup>
-		</Sheet>
+					</a>
+				</DrawerFooter>
+			</DrawerContent>
+		</Drawer>
 	);
 }
 
 export default function Header() {
 	return (
-		<header className="sticky top-0 z-40 shrink-0">
-			<div className="mx-auto w-full max-w-5xl">
-				<div className="mx-4 flex h-14 items-center gap-4 rounded-b-none border border-t-0 bg-background/80 px-4 backdrop-blur sm:mx-6">
-					<Link to="/" className="font-heading text-lg tracking-tight">
-						Omachi
-					</Link>
-					{/* Keep nav links whitespace-nowrap and hide them below lg: Ecosystem Health only fits in the fixed-height bar at lg. */}
-					<nav className="hidden flex-1 items-center gap-1 whitespace-nowrap text-sm lg:flex">
-						{NAV.map((item) => (
-							<Link
-								key={item.to}
-								to={item.to}
-								activeProps={{ className: "font-medium text-foreground" }}
-								inactiveProps={{ className: "text-muted-foreground" }}
-								className="rounded-none px-2.5 py-1.5 transition-colors hover:text-foreground"
-							>
-								{item.label}
-							</Link>
-						))}
-					</nav>
-					<div className="flex flex-1 items-center justify-end gap-1 lg:flex-none">
-						<ThemeToggle />
-						<CommandPalette />
-						<Button
-							variant="outline"
-							size="icon-sm"
-							aria-label="GitHub repository"
-							title="GitHub repository"
-							className="hidden lg:inline-flex"
-							render={<a href="https://github.com/ussego/omastats" target="_blank" rel="noreferrer" />}
+		<header className="sticky top-0 z-40 shrink-0 bg-background/80 backdrop-blur">
+			<div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+				<Link
+					to="/"
+					className="group relative inline-block font-mono text-sm tracking-widest text-graph-accent uppercase"
+				>
+					<span
+						aria-hidden="true"
+						className="graph-frame graph-frame-march pointer-events-none absolute -inset-1 opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100"
+					/>
+					<span className="inline-block -translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+						[{" "}
+					</span>
+					Omachi
+					<span className="inline-block translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+						{" "}
+						]
+					</span>
+				</Link>
+				{/* Keep nav links whitespace-nowrap and hide them below lg: Ecosystem Health only fits in the fixed-height bar at lg. */}
+				<nav className="hidden flex-1 items-center gap-1 whitespace-nowrap lg:flex">
+					{NAV.map((item) => (
+						<Link
+							key={item.to}
+							to={item.to}
+							activeProps={{ className: "text-graph-accent" }}
+							inactiveProps={{ className: "text-muted-foreground" }}
+							className="group relative rounded-none px-2.5 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors hover:text-foreground"
 						>
-							<GithubIcon className="size-4" />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon-sm"
-							aria-label="Sponsor on GitHub"
-							title="Sponsor on GitHub"
-							className="hidden lg:inline-flex"
-							render={<a href="https://github.com/sponsors/ussego" target="_blank" rel="noreferrer" />}
-						>
-							<HeartIcon className="size-4" />
-						</Button>
-						<MobileNav />
-					</div>
+							<span
+								aria-hidden="true"
+								className="graph-frame graph-frame-march pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100"
+							/>
+							{item.label}
+						</Link>
+					))}
+				</nav>
+				<div className="flex flex-1 items-center justify-end gap-1 lg:flex-none">
+					<ThemeToggle />
+					<CommandPalette />
+					<a
+						href="https://github.com/ussego/omastats"
+						target="_blank"
+						rel="noreferrer"
+						aria-label="GitHub repository"
+						title="GitHub repository"
+						className={buttonVariants({
+							variant: "ghost",
+							size: "icon-sm",
+							className: "graph-frame hidden lg:inline-flex",
+						})}
+					>
+						<GithubIcon className="size-4" />
+					</a>
+					<a
+						href="https://github.com/sponsors/ussego"
+						target="_blank"
+						rel="noreferrer"
+						aria-label="Sponsor on GitHub"
+						title="Sponsor on GitHub"
+						className={buttonVariants({
+							variant: "ghost",
+							size: "icon-sm",
+							className: "graph-frame hidden lg:inline-flex",
+						})}
+					>
+						<HeartIcon className="size-4" />
+					</a>
+					<MobileNav />
 				</div>
 			</div>
+			<div aria-hidden="true" className="graph-rule-soft absolute inset-x-0 bottom-0" />
 		</header>
 	);
 }

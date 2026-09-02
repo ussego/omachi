@@ -3,8 +3,10 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { GraphSpark } from "@/components/graph-spark";
-import { StatCard } from "@/components/stat-card";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
+import { GraphPlot } from "@/components/graph-plot";
+import { GraphStatSkeleton } from "@/components/graph-skeleton";
+import { GraphStat } from "@/components/graph-stat";
 import { TrendingTable } from "@/components/trending-table";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,7 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { ChartSeriesResponse, StatsResponse } from "@/lib/api-types";
-import { fmt, fmtDateTime, fmtRelative, pct } from "@/lib/format";
+import { fmt, fmtMonthDay, fmtRelative, pct } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 import {
 	type Granularity,
 	useBreakdown,
@@ -60,12 +63,24 @@ function TrendChart({
 }) {
 	const { data, isLoading, isError, error } = query;
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
+	// Skeleton only after the grace period; inside it the real frame renders
+	// with empty data, so fast loads just see the chart fill in.
+	const showSkeleton = useSkeletonDelay(isLoading);
 	// Keep the series identity stable while sibling queries settle so the graph
 	// entrance does not replay on every page render.
-	const values = useMemo(() => (data?.points ?? []).map((point) => point.count), [data]);
+	const points = useMemo(() => data?.points ?? [], [data]);
+	const values = useMemo(() => points.map((point) => point.count), [points]);
+	const labels = useMemo(
+		() => points.map((point) => fmtMonthDay("bucket" in point ? point.bucket : point.date)),
+		[points],
+	);
 	return (
-		<div className="flex flex-col gap-2">
-			{isLoading ? <Skeleton className="h-56 w-full" /> : <GraphSpark title={title} data={values} />}
+		<div className="flex min-w-0 flex-col gap-2">
+			{showSkeleton ? (
+				<Skeleton className="h-56 w-full" />
+			) : (
+				<GraphPlot title={title} data={values} labels={labels} className="w-full" />
+			)}
 		</div>
 	);
 }
@@ -98,15 +113,17 @@ function OverviewPage() {
 	);
 
 	const weekCount = (publishedWeek.data?.points ?? []).reduce((a, p) => a + p.count, 0);
+	const showRecentSkeleton = useSkeletonDelay(recent.isLoading);
+	const showStatSkeleton = useSkeletonDelay(health.isLoading || breakdown.isLoading || publishedWeek.isLoading);
 	const custom = Boolean(customFrom || customTo);
 
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap items-end justify-between gap-4">
-				<div>
+				<div className="flex flex-wrap items-baseline gap-x-3">
 					<h1 className="font-heading text-2xl">Overview</h1>
-					<p className="text-muted-foreground text-sm">
-						Last snapshot {fmtRelative(health.data?.lastSnapshotAt ?? null)}
+					<p className="text-muted-foreground text-xs">
+						last snapshot {fmtRelative(health.data?.lastSnapshotAt ?? null)}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -139,8 +156,10 @@ function OverviewPage() {
 							render={
 								<Button
 									variant={custom ? "secondary" : "ghost"}
-									size="sm"
-									className="text-muted-foreground transition-colors hover:text-foreground"
+									size="default"
+									// Default height matches the sm tabs list's outer
+									// height (h-6.5 items + p-0.5 list padding).
+									className="graph-frame font-mono tracking-wide text-muted-foreground uppercase transition-colors hover:text-foreground"
 								>
 									Custom
 								</Button>
@@ -177,38 +196,34 @@ function OverviewPage() {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-				<StatCard
-					label="Total plugins"
-					value={health.data?.pluginCount ?? null}
-					loading={health.isLoading}
-					footnote={`Last snapshot: ${fmtDateTime(health.data?.lastSnapshotAt ?? null)}`}
+			{showStatSkeleton ? (
+				<GraphStatSkeleton title="Catalog" items={4} />
+			) : (
+				<GraphStat
+					title="Catalog"
+					items={[
+						{ accent: true, value: fmt(health.data?.pluginCount ?? null), label: "total plugins" },
+						{
+							value: breakdown.data
+								? `${pct(breakdown.data.verifiedCount, breakdown.data.totalPlugins)}%`
+								: "—",
+							label: "verified",
+						},
+						{ value: publishedWeek.isLoading ? "—" : fmt(weekCount), label: "published this week" },
+						{ value: fmt(health.data?.snapshotCount ?? null), label: "snapshots stored" },
+					]}
 				/>
-				<StatCard
-					label="Verified"
-					value={breakdown.data ? `${pct(breakdown.data.verifiedCount, breakdown.data.totalPlugins)}%` : null}
-					loading={breakdown.isLoading}
-					footnote={`${fmt(breakdown.data?.verifiedCount ?? null)} of ${fmt(breakdown.data?.totalPlugins ?? null)} plugins`}
-				/>
-				<StatCard
-					label="Published this week"
-					value={publishedWeek.isLoading ? null : weekCount}
-					loading={publishedWeek.isLoading}
-					footnote="Plugins added to the catalog in the last 7 days"
-				/>
-				<StatCard
-					label="Snapshots stored"
-					value={health.data?.snapshotCount ?? null}
-					loading={health.isLoading}
-				/>
-			</div>
+			)}
 
-			<div className="grid gap-8 lg:grid-cols-4">
+			<TrendChart title="Total" query={total} />
+
+			<div className="grid gap-8 md:grid-cols-3">
 				<TrendChart title="Published" query={published} />
 				<TrendChart title="Verified" query={verified} />
 				<TrendChart title="Updated" query={updated} />
-				<TrendChart title="Total" query={total} />
 			</div>
+
+			<GraphRule />
 
 			<div className="flex flex-col gap-3">
 				<div className="flex items-baseline justify-between">
@@ -224,7 +239,7 @@ function OverviewPage() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{recent.isLoading
+						{showRecentSkeleton
 							? SKELETON.slice(0, 4).map((k) => (
 									<TableRow key={k}>
 										<TableCell colSpan={4}>
@@ -267,6 +282,8 @@ function OverviewPage() {
 					</TableBody>
 				</Table>
 			</div>
+
+			<GraphRule />
 
 			<section className="flex flex-col gap-3">
 				<div className="flex items-baseline justify-between">

@@ -3,11 +3,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { GraphHeatmap } from "@/components/graph-heatmap";
-import { GraphStack } from "@/components/graph-stack";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
+import { GraphRank } from "@/components/graph-rank";
+import { GraphRankSkeleton } from "@/components/graph-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { CategoriesResponse } from "@/lib/api-types";
+import { useSkeletonDelay } from "@/lib/loading";
 
 import { useCategories, useErrorToast, useHeatmap } from "@/lib/queries";
 
@@ -46,7 +49,13 @@ const METRICS: {
 const MONTH_FMT = new Intl.DateTimeFormat(undefined, { month: "short", year: "2-digit" });
 const MONTH_SHORT = new Intl.DateTimeFormat(undefined, { month: "short" });
 
-function Heatmap({ points }: { points: { category: string | null; month: string; count: number }[] }) {
+function Heatmap({
+	points,
+	loading,
+}: {
+	points: { category: string | null; month: string; count: number }[];
+	loading: boolean;
+}) {
 	const { rows, columns, max } = useMemo(() => {
 		const totals = new Map<string, number>();
 		for (const point of points) {
@@ -74,7 +83,25 @@ function Heatmap({ points }: { points: { category: string | null; month: string;
 		};
 	}, [points]);
 
-	if (rows.length === 0 || columns.length === 0) return <Skeleton className="h-64 w-full" />;
+	// Skeleton only after the grace period; inside it the real heatmap frame
+	// renders empty so the layout stays put when the grid fades in.
+	const showSkeleton = useSkeletonDelay(loading);
+
+	if (showSkeleton) {
+		return (
+			<div className="flex flex-col gap-2">
+				<Skeleton className="h-6 w-full" />
+				<Skeleton className="h-[26rem] w-full" />
+			</div>
+		);
+	}
+	if (loading) {
+		// Still within the grace period: keep the warm frame with an empty grid.
+		return <GraphHeatmap title="ACTIVITY" columns={[]} rows={[]} max={1} className="w-full" />;
+	}
+	if (rows.length === 0 || columns.length === 0) {
+		return <p className="py-8 text-center text-muted-foreground text-sm">No activity yet.</p>;
+	}
 	return <GraphHeatmap title="ACTIVITY" columns={columns} rows={rows} max={max} className="w-full" />;
 }
 
@@ -89,6 +116,7 @@ function CategoriesPage() {
 	useErrorToast(heatmap.isError, heatmap.error instanceof Error ? heatmap.error.message : String(heatmap.error));
 
 	const m = METRICS.find((x) => x.value === metric) ?? METRICS[0];
+	const showSkeleton = useSkeletonDelay(categories.isLoading);
 	const chartRows = (categories.data?.rows ?? []).slice(0, 15).map((r) => ({
 		name: r.category ?? "(none)",
 		value: m.get(r) ?? 0,
@@ -108,26 +136,22 @@ function CategoriesPage() {
 						))}
 					</TabsList>
 				</Tabs>
-				{categories.isLoading ? (
-					<Skeleton className="h-64 w-full" />
+				{showSkeleton ? (
+					<GraphRankSkeleton title="CATEGORIES" rows={15} />
 				) : (
-					<GraphStack
+					<GraphRank
 						title="CATEGORIES"
-						rows={[
-							{
-								label: m.label,
-								segments: chartRows.map((row) => ({ label: row.name, value: row.value })),
-							},
-						]}
-						palette="multi"
+						items={chartRows.map((row) => ({ label: row.name, value: row.value }))}
 						className="w-full"
 					/>
 				)}
 			</div>
 
+			<GraphRule />
+
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Activity by month</h2>
-				<Heatmap points={heatmap.data?.points ?? []} />
+				<Heatmap points={heatmap.data?.points ?? []} loading={heatmap.isLoading} />
 			</div>
 		</div>
 	);

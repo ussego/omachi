@@ -3,6 +3,7 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { GraphRank } from "@/components/graph-rank";
+import { GraphRankSkeleton } from "@/components/graph-skeleton";
 import { GraphSpark } from "@/components/graph-spark";
 import { PluginAvatar } from "@/components/plugin-avatar";
 import { TrendingTable } from "@/components/trending-table";
@@ -13,6 +14,7 @@ import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { LeaderboardRow } from "@/lib/api-types";
 import { fmt } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 import { useAuthors, useErrorToast, useLeaderboard, useTrending } from "@/lib/queries";
 
 const SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
@@ -70,19 +72,37 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 	const [limit, setLimit] = useState(25);
 	const { data, isLoading, isError, error } = useLeaderboard(metric.value, limit, 10);
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
+	// Skeleton only after the grace period: warm edge-cache hits resolve before
+	// it and never flash a placeholder.
+	const showSkeleton = useSkeletonDelay(isLoading);
 
 	const rows = data?.rows ?? [];
 	// Stable across renders: the rank entrance replays whenever the data array
 	// identity changes, and this map would otherwise make a fresh array on
-	// every re-render.
+	// every re-render. Disambiguate the label by author when multiple plugins
+	// share a name (e.g. three plugins all named "Notification Center"); the
+	// upstream GraphRank keys by label, so collisions would otherwise warn.
 	const chartRows = useMemo(
-		() => rows.map((r) => ({ label: r.name ?? r.pluginId, value: metric.score(r) ?? 0 })),
+		() =>
+			rows.map((r, _i, all) => {
+				const name = r.name ?? r.pluginId;
+				const sameNameCount = all.filter((other) => (other.name ?? other.pluginId) === name).length;
+				const showAuthor = sameNameCount > 1 && r.author;
+				return {
+					label: showAuthor ? `${name} · ${r.author}` : name,
+					value: metric.score(r) ?? 0,
+				};
+			}),
 		[rows, metric],
 	);
 
 	return (
 		<div className="flex flex-col gap-6">
-			{isLoading ? <Skeleton className="h-64 w-full" /> : <GraphRank title={metric.label} items={chartRows} />}
+			{showSkeleton ? (
+				<GraphRankSkeleton title={metric.label} rows={limit} />
+			) : (
+				<GraphRank title={metric.label} items={chartRows} />
+			)}
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -94,7 +114,15 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{rows.map((r, i) => (
+					{showSkeleton
+						? SKELETON.slice(0, 8).map((k) => (
+								<TableRow key={k}>
+									<TableCell colSpan={5}>
+										<Skeleton className="h-5 w-full" />
+									</TableCell>
+								</TableRow>
+							))
+						: rows.map((r, i) => (
 						<TableRow key={r.pluginId}>
 							<TableCell className="font-mono tabular-nums">{i + 1}</TableCell>
 							<TableCell>
@@ -123,7 +151,13 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 							<TableCell className="text-right font-mono tabular-nums">{fmt(metric.score(r))}</TableCell>
 							<TableCell>
 								{(r.spark?.length ?? 0) > 1 ? (
-									<GraphSpark title="Trend" data={metric.spark(r)} className="w-32" />
+									<GraphSpark
+										title=""
+										data={metric.spark(r)}
+										corner=""
+										className="w-32 bg-none"
+										bodyClassName="px-0 py-0 sm:px-0 sm:py-0"
+									/>
 								) : (
 									<span className="text-muted-foreground text-xs">—</span>
 								)}
@@ -165,6 +199,7 @@ function AuthorsLeaderboard() {
 	const [limit, setLimit] = useState(25);
 	const { data, isLoading, isError, error } = useAuthors();
 	useErrorToast(isError, error instanceof Error ? error.message : String(error));
+	const showSkeleton = useSkeletonDelay(isLoading);
 
 	const rows = (data?.rows ?? []).slice(0, limit);
 	const rankItems = rows.map((row) => ({
@@ -175,7 +210,11 @@ function AuthorsLeaderboard() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{isLoading ? <Skeleton className="h-64 w-full" /> : <GraphRank title="AUTHOR HEARTS" items={rankItems} />}
+			{showSkeleton ? (
+				<GraphRankSkeleton title="AUTHOR HEARTS" rows={limit} />
+			) : (
+				<GraphRank title="AUTHOR HEARTS" items={rankItems} />
+			)}
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -188,7 +227,7 @@ function AuthorsLeaderboard() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{isLoading
+					{showSkeleton
 						? SKELETON.slice(0, 8).map((k) => (
 								<TableRow key={k}>
 									<TableCell colSpan={6}>

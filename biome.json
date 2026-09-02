@@ -40,6 +40,8 @@
 		"includes": [
 			"**",
 			"!!**/src/components/ui/**/*.tsx",
+			"!!**/src/components/graph-frame/**",
+			"!!**/src/components/graph-*.tsx",
 
 			"!!**/src/routeTree.gen.ts"
 		]

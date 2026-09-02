@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import Footer from "@/components/footer";
+import { GraphCorners } from "@/components/graph-frame/graph-frame";
 import Header from "@/components/header";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
@@ -58,7 +59,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body className="font-sans antialiased wrap-anywhere">
 				<Header />
 				<main className="flex min-h-[calc(100dvh-3.5rem)] flex-col">
-					<div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</div>
+					<div className="graph-frame-sides relative mx-auto w-full max-w-6xl flex-1">
+						<GraphCorners ink="text-graph-frame-soft" className="hidden sm:flex" />
+						<div className="px-4 py-8 sm:px-6">{children}</div>
+					</div>
 					<Footer />
 				</main>
 				<TanStackDevtools

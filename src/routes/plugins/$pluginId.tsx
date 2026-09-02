@@ -2,13 +2,15 @@
 
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { GraphSpark } from "@/components/graph-spark";
-import { StatCard } from "@/components/stat-card";
+import { GraphRule as FigureRule, Graph, GraphBody } from "@/components/graph-frame/graph-frame";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
+import { GraphPlot } from "@/components/graph-plot";
+import { GraphStat } from "@/components/graph-stat";
+import { GraphPlotSkeleton, GraphStatSkeleton } from "@/components/graph-skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fmt, fmtDate } from "@/lib/format";
+import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
 import { useErrorToast, useLeaderboard, usePluginDetail } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +26,8 @@ export const Route = createFileRoute("/plugins/$pluginId")({
 	}),
 	component: PluginDetailPage,
 });
+
+const DETAILS_SKELETON = ["a", "b", "c", "d", "e", "f"];
 
 function verificationVariant(status: string | null): "success" | "warning" | "secondary" {
 	if (status === "verified") return "success";
@@ -83,11 +87,52 @@ function PluginDetailPage() {
 	);
 
 	if (isLoading) {
+		// Mirror the settled layout so the swap to real content never jumps:
+		// header block, three plot frames, and the stat card row.
 		return (
-			<div className="flex flex-col gap-6">
-				<Skeleton className="h-10 w-1/2" />
-				<Skeleton className="h-64 w-full" />
-				<Skeleton className="h-24 w-full" />
+			<div className="flex flex-col gap-8">
+				<div className="flex flex-wrap items-stretch gap-4">
+					<Graph title="Details" className="min-w-0 flex-1 select-none" aria-hidden="true">
+						<GraphBody className="flex flex-col gap-5">
+							<div className="flex flex-col gap-2">
+								<Skeleton className="h-8 w-1/2" />
+								<Skeleton className="h-4 w-full max-w-2xl" />
+								<Skeleton className="h-4 w-2/3 max-w-2xl" />
+								<Skeleton className="h-4 w-1/2 max-w-2xl" />
+							</div>
+							<FigureRule />
+							<div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+								{DETAILS_SKELETON.map((k) => (
+									<div className="flex flex-col gap-1.5" key={k}>
+										<Skeleton className="h-3 w-16" />
+										<Skeleton className="h-4 w-28" />
+									</div>
+								))}
+							</div>
+						</GraphBody>
+					</Graph>
+					<Graph title="Rank" className="w-full select-none sm:w-48" aria-hidden="true">
+						<GraphBody className="flex flex-col gap-3 px-5 py-5">
+							<div className="flex flex-col gap-1.5">
+								<Skeleton className="h-9 w-20" />
+								<Skeleton className="h-4 w-32" />
+							</div>
+							<FigureRule />
+							<Skeleton className="h-4 w-36" />
+							<Skeleton className="h-4 w-24" />
+						</GraphBody>
+					</Graph>
+				</div>
+
+				<div className="grid gap-6 lg:grid-cols-3">
+					<GraphPlotSkeleton title="Hearts" />
+					<GraphPlotSkeleton title="Views" />
+					<GraphPlotSkeleton title="Copies" />
+				</div>
+
+				<GraphRule />
+
+				<GraphStatSkeleton title="Averages" items={3} />
 			</div>
 		);
 	}
@@ -104,103 +149,148 @@ function PluginDetailPage() {
 
 	const { plugin, snapshots, averages } = data;
 	const last = snapshots[snapshots.length - 1];
+	// Manual-setup plugins aren't installed through the catalog, so the feed
+	// never records copies for them — don't draw an all-zero Copies plot.
+	const manualSetup = plugin.status === "Manual setup";
 
 	return (
 		<div className="flex flex-col gap-8">
-			<div className="flex flex-wrap items-start gap-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto]">
-				<div className="flex flex-col gap-2">
-					<h1 className="text-balance font-heading text-2xl">{plugin.name ?? plugin.id}</h1>
-					<div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-						<div className="flex flex-wrap items-center gap-1.5">
-							{plugin.category && <Badge variant="secondary">{plugin.category}</Badge>}
-							{plugin.author && (
-								<Link
-									to="/authors/$authorId"
-									params={{ authorId: plugin.author }}
-									className="text-muted-foreground text-sm hover:underline"
-								>
-									by {plugin.author}
-								</Link>
-							)}
-						</div>
-						<div className="flex flex-wrap items-center gap-1.5">
-							<Badge
-								variant={verificationVariant(last?.verificationStatus ?? null)}
-								className="font-mono uppercase"
+			<div className="flex flex-wrap items-stretch gap-4">
+				<Graph title="Details" className="min-w-0 flex-1">
+					<GraphBody className="flex flex-col gap-5">
+						<div className="flex flex-col gap-2">
+							<h1 className="text-balance font-heading text-2xl">{plugin.name ?? plugin.id}</h1>
+							<p
+								ref={descRef}
+								className={cn(
+									"max-w-2xl text-pretty text-muted-foreground text-sm",
+									!descExpanded && "line-clamp-3",
+								)}
 							>
-								{last?.verificationStatus ?? "unknown"}
-							</Badge>
-							{plugin.status && (
-								<Badge variant={statusVariant(plugin.status)} className="font-mono uppercase">
-									{plugin.status}
-								</Badge>
-							)}
-							{plugin.license && (
-								<Badge variant="outline" className="font-mono uppercase">
-									{plugin.license}
-								</Badge>
+								{plugin.description}
+							</p>
+							{(descClamped || descExpanded) && (
+								<button
+									type="button"
+									onClick={() => setDescExpanded((e) => !e)}
+									aria-expanded={descExpanded}
+									className="w-fit cursor-pointer text-muted-foreground text-xs underline decoration-dotted underline-offset-2 hover:text-foreground"
+								>
+									{descExpanded ? "Show less" : "Show more"}
+								</button>
 							)}
 						</div>
-					</div>
-					<p
-						ref={descRef}
-						className={cn(
-							"max-w-2xl text-pretty text-muted-foreground text-sm",
-							!descExpanded && "line-clamp-3",
-						)}
-					>
-						{plugin.description}
-					</p>
-					{(descClamped || descExpanded) && (
-						<button
-							type="button"
-							onClick={() => setDescExpanded((e) => !e)}
-							aria-expanded={descExpanded}
-							className="w-fit cursor-pointer text-muted-foreground text-xs underline decoration-dotted underline-offset-2 hover:text-foreground"
-						>
-							{descExpanded ? "Show less" : "Show more"}
-						</button>
-					)}
-					<p className="font-mono text-muted-foreground text-xs">
-						{plugin.id} · added {fmtDate(plugin.addedAt)}
-					</p>
-				</div>
-				<div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:flex-col sm:items-end sm:gap-2 sm:text-right">
-					<div className="flex flex-col">
-						<span className="text-muted-foreground text-xs">Current rank (hearts)</span>
-						<span className="font-mono text-2xl tabular-nums">#{rankOf(plugin.id) ?? "—"}</span>
-					</div>
-					<div className="flex flex-col items-end gap-2">
-						<Button
-							render={
-								<a
-									href={`https://plugins.omarchy.org/plugin.html?id=${plugin.id}`}
-									target="_blank"
-									rel="noreferrer"
-								/>
-							}
-						>
-							Omarchy Plugins ↗
-						</Button>
-						{plugin.repo && (
+						<FigureRule />
+						<dl className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">author</dt>
+								<dd>
+									{plugin.author ? (
+										<Link
+											to="/authors/$authorId"
+											params={{ authorId: plugin.author }}
+											className="text-muted-foreground hover:text-foreground hover:underline"
+										>
+											{plugin.author}
+										</Link>
+									) : (
+										"—"
+									)}
+								</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">plugin id</dt>
+								<dd className="break-all">{plugin.id}</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">category</dt>
+								<dd>{plugin.category ?? "—"}</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">license</dt>
+								<dd>{plugin.license ?? "—"}</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">added</dt>
+								<dd>{fmtDate(plugin.addedAt)}</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">status</dt>
+								<dd className="flex flex-wrap items-center gap-1.5">
+									<Badge
+										variant={verificationVariant(last?.verificationStatus ?? null)}
+										className="font-mono uppercase"
+									>
+										{last?.verificationStatus ?? "unknown"}
+									</Badge>
+									{plugin.status && (
+										<Badge variant={statusVariant(plugin.status)} className="font-mono uppercase">
+											{plugin.status}
+										</Badge>
+									)}
+								</dd>
+								</div>
+							</dl>
+					</GraphBody>
+				</Graph>
+				<Graph title="Rank" className="w-full sm:w-48">
+					<GraphBody className="flex flex-col gap-3 px-5 py-5">
+						<div className="flex flex-col gap-1.5">
+							<p className="text-3xl tracking-tight tabular-nums sm:text-4xl">
+								#{rankOf(plugin.id) ?? "—"}
+							</p>
+							<p className="text-graph-muted">current rank (hearts)</p>
+						</div>
+						<FigureRule />
+						<div className="flex flex-col items-start gap-2">
 							<a
-								href={plugin.repo}
+								href={`https://plugins.omarchy.org/plugin.html?id=${plugin.id}`}
 								target="_blank"
 								rel="noreferrer"
-								className="font-mono text-muted-foreground text-sm hover:text-foreground hover:underline"
+								className="font-mono text-xs tracking-wide text-graph-accent uppercase transition-colors hover:text-foreground"
 							>
-								GitHub{typeof plugin.stars === "number" ? ` · ${fmt(plugin.stars)} ★` : ""}
+								omarchy plugins ↗
 							</a>
-						)}
-					</div>
-				</div>
+							{plugin.repo && (
+								<a
+									href={plugin.repo}
+									target="_blank"
+									rel="noreferrer"
+									className="font-mono text-xs tracking-wide text-muted-foreground uppercase transition-colors hover:text-foreground"
+								>
+									github{typeof plugin.stars === "number" ? ` · ${fmt(plugin.stars)} ★` : ""}
+								</a>
+							)}
+						</div>
+					</GraphBody>
+				</Graph>
 			</div>
 
 			{snapshots.length > 0 ? (
 				<div className="grid gap-6 lg:grid-cols-3">
-					<GraphSpark title="Hearts" data={rows.map((row) => row.hearts)} />
-					<GraphSpark title="Views" data={rows.map((row) => row.views)} />
-					<GraphSpark title="Copies" data={rows.map((row) => row.copies)} />
+					<GraphPlot
+						title="Hearts"
+						data={rows.map((row) => row.hearts)}
+						labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+					/>
+					<GraphPlot
+						title="Views"
+						data={rows.map((row) => row.views)}
+						labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+					/>
+					{manualSetup ? (
+						<Graph title="Copies" className="w-full">
+							<GraphBody className="flex h-full flex-col items-center justify-center px-5 py-7 text-center sm:px-8">
+								<p className="text-graph-muted">copies aren't tracked for manual-setup plugins</p>
+							</GraphBody>
+						</Graph>
+					) : (
+						<GraphPlot
+							title="Copies"
+							data={rows.map((row) => row.copies)}
+							labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+						/>
+					)}
 				</div>
 			) : (
 				<Empty>
@@ -208,11 +298,16 @@ function PluginDetailPage() {
 				</Empty>
 			)}
 
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-				<StatCard label="Average hearts" value={averages.hearts} />
-				<StatCard label="Average views" value={averages.views} />
-				<StatCard label="Average copies" value={averages.copies} />
-			</div>
+			<GraphRule />
+
+			<GraphStat
+				title="Averages"
+				items={[
+					{ value: fmt(averages.hearts), label: "average hearts" },
+					{ value: fmt(averages.views), label: "average views" },
+					...(manualSetup ? [] : [{ value: fmt(averages.copies), label: "average copies" }]),
+				]}
+			/>
 		</div>
 	);
 }

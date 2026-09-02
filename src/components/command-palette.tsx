@@ -98,15 +98,17 @@ export function CommandPalette() {
 			<CommandDialogTrigger
 				render={
 					<Button
-						variant="outline"
+						variant="ghost"
 						size="sm"
-						className="w-8 justify-center px-0 font-normal sm:w-44 sm:justify-between sm:px-[calc(--spacing(2.5)-1px)] lg:w-56"
+						className="graph-frame w-8 justify-center px-0 font-normal sm:w-44 sm:justify-between sm:px-[calc(--spacing(2.5)-1px)] lg:w-56"
 					/>
 				}
 			>
 				<span className="sr-only">Search pages or plugins</span>
 				<SearchIcon className="size-4" />
-				<span className="hidden text-muted-foreground sm:inline">Search</span>
+				<span className="hidden font-mono text-xs tracking-wide text-muted-foreground uppercase sm:inline">
+					Search
+				</span>
 				<KbdGroup className="hidden sm:flex">
 					<Kbd>Ctrl</Kbd>
 					<Kbd>K</Kbd>

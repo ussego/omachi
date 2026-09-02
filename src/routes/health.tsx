@@ -3,13 +3,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BrokenPluginsTable } from "@/components/broken-plugins-table";
-import { GraphStack } from "@/components/graph-stack";
+import { GraphRule } from "@/components/graph-frame/graph-rule";
+import { GraphRank } from "@/components/graph-rank";
+import { GraphRankSkeleton } from "@/components/graph-skeleton";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { UnverifiedPluginsTable } from "@/components/unverified-plugins-table";
 
-import { fmt } from "@/lib/format";
+import { useSkeletonDelay } from "@/lib/loading";
 import { useBreakdown, useBrokenPlugins, useErrorToast, useUnverifiedPlugins } from "@/lib/queries";
 
 export const Route = createFileRoute("/health")({
@@ -26,40 +27,37 @@ export const Route = createFileRoute("/health")({
 	component: HealthPage,
 });
 
-function StatusBreakdown({
+function StatusChart({
 	title,
 	rows,
 	loading,
+	skeletonRows = 4,
 }: {
 	title: string;
 	rows: { status: string | null; count: number }[] | undefined;
 	loading: boolean;
+	skeletonRows?: number;
 }) {
-	const data = useMemo(
-		() => (rows ?? []).map((row) => ({ label: row.status ?? "unknown", value: row.count })),
+	const items = useMemo(
+		() =>
+			(rows ?? [])
+				.map((row) => ({ label: row.status ?? "unknown", value: row.count }))
+				.sort((left, right) => right.value - left.value),
 		[rows],
 	);
-	const total = data.reduce((sum, row) => sum + row.value, 0);
+	// Skeleton only after the grace period; inside it the real frame renders
+	// with empty rows so fast loads never flash a placeholder.
+	const showSkeleton = useSkeletonDelay(loading);
+	if (showSkeleton) {
+		return <GraphRankSkeleton title={title} rows={skeletonRows} className="w-full" />;
+	}
+	if (loading || items.length > 0) {
+		return <GraphRank title={title} items={items} className="w-full" />;
+	}
 	return (
-		<div className="flex flex-col gap-2">
-			<h2 className="text-center font-medium text-muted-foreground text-sm">
-				{title} <span className="font-mono tabular-nums">({fmt(total)})</span>
-			</h2>
-			{loading ? (
-				<Skeleton className="h-56 w-full" />
-			) : data.length === 0 ? (
-				<Empty>
-					<EmptyTitle>No data</EmptyTitle>
-				</Empty>
-			) : (
-				<GraphStack
-					title="BREAKDOWN"
-					rows={[{ label: "plugins", segments: data }]}
-					palette="multi"
-					className="w-full"
-				/>
-			)}
-		</div>
+		<Empty>
+			<EmptyTitle>No data</EmptyTitle>
+		</Empty>
 	);
 }
 
@@ -82,18 +80,21 @@ function HealthPage() {
 		<div className="flex flex-col gap-8">
 			<h1 className="font-heading text-2xl">Ecosystem Health</h1>
 
-			<div className="grid gap-8 lg:grid-cols-2">
-				<StatusBreakdown
-					title="Verification status"
+			<div className="flex flex-col gap-12">
+				<StatusChart
+					title="INSTALL AVAILABILITY"
+					rows={breakdown.data?.installStatus}
+					loading={breakdown.isLoading}
+					skeletonRows={5}
+				/>
+				<StatusChart
+					title="VERIFICATION STATUS"
 					rows={breakdown.data?.verification}
 					loading={breakdown.isLoading}
 				/>
-				<StatusBreakdown
-					title="Install availability"
-					rows={breakdown.data?.installStatus}
-					loading={breakdown.isLoading}
-				/>
 			</div>
+
+			<GraphRule />
 
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Broken plugins</h2>
@@ -102,6 +103,8 @@ function HealthPage() {
 				</p>
 				<BrokenPluginsTable plugins={broken.data?.plugins ?? []} loading={broken.isLoading} />
 			</div>
+
+			<GraphRule />
 
 			<div className="flex flex-col gap-3">
 				<div className="flex items-center justify-between">
