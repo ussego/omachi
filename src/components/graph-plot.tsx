@@ -96,7 +96,7 @@ function GraphPlot({
 
 										return (
 											<motion.span
-												className={cn("h-[1em] w-full text-center", tone)}
+												className={cn("h-[1em] w-full text-center leading-none", tone)}
 												initial={reduce || !shown || glyph === " " ? false : { opacity: 0 }}
 												key={row}
 												transition={graphTransition(reduce, {
@@ -117,14 +117,15 @@ function GraphPlot({
 				{start || end ? (
 					<>
 						<div className="flex gap-3">
-							<span className="invisible w-[4ch] shrink-0 tabular-nums">{yLabel}</span>
-							<GraphRule className="flex-1" />
-						</div>
-						<div className="flex gap-3">
-							<span className="invisible w-[4ch] shrink-0 tabular-nums">{yLabel}</span>
-							<div className="flex flex-1 justify-between text-graph-muted">
-								<span>{start}</span>
-								{end && end !== start ? <span>{end}</span> : null}
+							<span aria-hidden="true" className="invisible w-[4ch] shrink-0 leading-none tabular-nums">
+								{yLabel}
+							</span>
+							<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+								<GraphRule className="w-full" />
+								<div className="flex justify-between leading-none text-graph-muted">
+									<span>{start}</span>
+									{end && end !== start ? <span>{end}</span> : null}
+								</div>
 							</div>
 						</div>
 					</>

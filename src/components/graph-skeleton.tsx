@@ -98,12 +98,11 @@ export function GraphPlotSkeleton({
 					<Skeleton className="w-full" style={{ height: `${height}em` }} />
 				</div>
 				<div className="flex gap-3">
-					<span aria-hidden="true" className="invisible w-[4ch] shrink-0" />
-					<Skeleton className="h-5 w-full" />
-				</div>
-				<div className="flex gap-3">
-					<span aria-hidden="true" className="invisible w-[4ch] shrink-0" />
-					<Skeleton className="h-5 w-1/2" />
+					<span aria-hidden="true" className="invisible w-[4ch] shrink-0 leading-none" />
+					<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+						<Skeleton className="h-px w-full" />
+						<Skeleton className="h-3.5 w-1/2" />
+					</div>
 				</div>
 			</GraphBody>
 		</Graph>

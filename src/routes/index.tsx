@@ -215,12 +215,16 @@ function OverviewPage() {
 				/>
 			)}
 
-			<TrendChart title="Total" query={total} />
+			<div className="flex flex-col gap-8">
+				<div className="grid gap-8 md:grid-cols-2">
+					<TrendChart title="Published" query={published} />
+					<TrendChart title="Total" query={total} />
+				</div>
 
-			<div className="grid gap-8 md:grid-cols-3">
-				<TrendChart title="Published" query={published} />
-				<TrendChart title="Verified" query={verified} />
-				<TrendChart title="Updated" query={updated} />
+				<div className="grid gap-8 md:grid-cols-2">
+					<TrendChart title="Verified" query={verified} />
+					<TrendChart title="Updated" query={updated} />
+				</div>
 			</div>
 
 			<GraphRule />
