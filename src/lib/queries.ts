@@ -1,8 +1,9 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { toastManager } from "@/components/ui/toast";
 
+import { apiUrl } from "./api-url";
 import type {
 	AuthorDetailResponse,
 	AuthorsResponse,
@@ -20,7 +21,7 @@ import type {
 	UnverifiedResponse,
 } from "./api-types";
 
-// ── fetch helper ───────────────────────────────────────────────────────────
+// ── api access ─────────────────────────────────────────────────────────────
 
 /** A failed API call, carrying the HTTP status so callers can branch on it. */
 export class HttpError extends Error {
@@ -34,129 +35,111 @@ export class HttpError extends Error {
 }
 
 async function get<T>(path: string): Promise<T> {
-	const res = await fetch(path);
+	const res = await fetch(await apiUrl(path));
 	if (!res.ok) throw new HttpError(res.status, res.statusText);
 	return res.json() as Promise<T>;
 }
 
-// ── hooks ──────────────────────────────────────────────────────────────────
+// ── query options ──────────────────────────────────────────────────────────
+//
+// Route loaders call `queryClient.ensureQueryData(...)` with these so SSR
+// ships resolved data and hover-preload warms the edge cache; components read
+// the same cache with `useSuspenseQuery`. The dashboard's data plane is this
+// app's own edge-cached /api server routes — see the comment on `apiUrl`.
 
 export type Granularity = "day" | "month" | "year";
 
-/** One toast per failed fetch, keyed so refetch failures don't stack. */
-export function useErrorToast(isError: boolean, message: string) {
-	useEffect(() => {
-		if (isError) toastManager.add({ type: "error", title: "Failed to load", description: message });
-	}, [isError, message]);
+const daysOf = (range: string) => (range === "all" ? undefined : range);
+
+export function statsQuery(
+	kind: "published" | "updated" | "verified",
+	opts: { range: string; groupBy: Granularity; from?: string; to?: string },
+) {
+	return queryOptions({
+		queryKey: ["stats", kind, daysOf(opts.range), opts.groupBy, opts.from ?? null, opts.to ?? null],
+		queryFn: () => {
+			const q = new URLSearchParams({ groupBy: opts.groupBy });
+			if (daysOf(opts.range)) q.set("range", daysOf(opts.range)!);
+			if (opts.from) q.set("from", opts.from);
+			if (opts.to) q.set("to", opts.to);
+			return get<StatsResponse>(`/api/stats/${kind}?${q}`);
+		},
+	});
 }
 
-const daysOf = (range: string | undefined) => (range === "all" ? undefined : range);
-
-function statsQueryKey(kind: "published" | "updated" | "verified") {
-	return (range: string | undefined, groupBy: Granularity, from?: string, to?: string) =>
-		["stats", kind, daysOf(range), groupBy, from ?? null, to ?? null] as const;
-}
-
-const statsFn = (kind: "published" | "updated" | "verified") => {
-	const key = statsQueryKey(kind);
-	return (range: string | undefined, groupBy: Granularity, from?: string, to?: string) =>
-		useQuery({
-			queryKey: key(range, groupBy, from, to),
-			queryFn: () => {
-				const q = new URLSearchParams({ groupBy });
-				if (daysOf(range)) q.set("range", daysOf(range)!);
-				if (from) q.set("from", from);
-				if (to) q.set("to", to);
-				return get<StatsResponse>(`/api/stats/${kind}?${q}`);
-			},
-		});
-};
-
-export const usePublishedStats = statsFn("published");
-export const useUpdatedStats = statsFn("updated");
-export const useVerifiedStats = statsFn("verified");
-
-export function useTotalStats(groupBy: Granularity) {
-	return useQuery({
+export function totalStatsQuery(groupBy: Granularity) {
+	return queryOptions({
 		queryKey: ["stats", "total", groupBy],
 		queryFn: () => get<ChartSeriesResponse>(`/api/charts/omastats/total?groupBy=${groupBy}`),
 	});
 }
 
-export function usePluginList(q: string, page: number, pageSize = 50) {
-	return useQuery({
+export function pluginListQuery(q: string, page: number, pageSize = 50) {
+	return queryOptions({
 		queryKey: ["plugins", q, page, pageSize],
 		queryFn: () =>
 			get<PluginListResponse>(`/api/plugins?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`),
-		// Keep the previous page of results while the next query loads —
-		// otherwise the palette blanks and refills on every keystroke.
-		placeholderData: keepPreviousData,
 	});
 }
 
-export function useRecentPlugins(limit = 8) {
-	return useQuery({
+export function recentPluginsQuery(limit = 8) {
+	return queryOptions({
 		queryKey: ["plugins", "recent", limit],
 		queryFn: () => get<PluginListResponse>(`/api/plugins?sort=addedAt&page=1&pageSize=${limit}`),
 	});
 }
 
-export function usePluginDetail(pluginId: string) {
-	return useQuery({
+export function pluginDetailQuery(pluginId: string) {
+	return queryOptions({
 		queryKey: ["plugins", pluginId],
 		queryFn: () => get<PluginDetailResponse>(`/api/plugins/${encodeURIComponent(pluginId)}`),
-		enabled: pluginId.length > 0,
 	});
 }
 
-export function useLeaderboard(metric: string, limit = 25, sparkPoints = 10) {
-	return useQuery({
+export function leaderboardQuery(metric: string, limit = 25, sparkPoints = 10) {
+	return queryOptions({
 		queryKey: ["leaderboard", metric, limit, sparkPoints],
 		queryFn: () => get<LeaderboardResponse>(`/api/leaderboard/${metric}?limit=${limit}&sparkPoints=${sparkPoints}`),
-		placeholderData: keepPreviousData,
 	});
 }
 
-export function useTrending(days: 7 | 30) {
-	return useQuery({
+export function trendingQuery(days: 7 | 30) {
+	return queryOptions({
 		queryKey: ["trending", days],
 		queryFn: () => get<TrendingResponse>(`/api/leaderboard/trending?days=${days}`),
-		placeholderData: keepPreviousData,
 	});
 }
 
-export function useAuthors(enabled = true) {
-	return useQuery({
+export function authorsQuery() {
+	return queryOptions({
 		queryKey: ["authors"],
 		queryFn: () => get<AuthorsResponse>("/api/authors/leaderboard"),
-		placeholderData: keepPreviousData,
-		enabled,
 	});
 }
 
-export function useAuthorDetail(authorId: string) {
-	return useQuery({
+export function authorDetailQuery(authorId: string) {
+	return queryOptions({
 		queryKey: ["authors", authorId],
 		queryFn: () => get<AuthorDetailResponse>(`/api/authors/${encodeURIComponent(authorId)}`),
 	});
 }
 
-export function useBreakdown() {
-	return useQuery({
+export function breakdownQuery() {
+	return queryOptions({
 		queryKey: ["breakdown"],
 		queryFn: () => get<BreakdownResponse>("/api/stats/breakdown"),
 	});
 }
 
-export function useCategories() {
-	return useQuery({
+export function categoriesQuery() {
+	return queryOptions({
 		queryKey: ["categories"],
 		queryFn: () => get<CategoriesResponse>("/api/stats/categories"),
 	});
 }
 
-export function useHeatmap(from?: string, to?: string) {
-	return useQuery({
+export function heatmapQuery(from?: string, to?: string) {
+	return queryOptions({
 		queryKey: ["heatmap", from ?? null, to ?? null],
 		queryFn: () => {
 			const q = new URLSearchParams();
@@ -167,23 +150,77 @@ export function useHeatmap(from?: string, to?: string) {
 	});
 }
 
-export function useHealth() {
-	return useQuery({
+export function healthQuery() {
+	return queryOptions({
 		queryKey: ["health"],
 		queryFn: () => get<HealthResponse>("/api/health"),
 	});
 }
 
-export function useBrokenPlugins() {
-	return useQuery({
+export function brokenPluginsQuery() {
+	return queryOptions({
 		queryKey: ["broken"],
 		queryFn: () => get<BrokenResponse>("/api/health/broken"),
 	});
 }
 
-export function useUnverifiedPlugins(range: string) {
-	return useQuery({
+export function unverifiedPluginsQuery(range: string) {
+	return queryOptions({
 		queryKey: ["unverified", range],
 		queryFn: () => get<UnverifiedResponse>(`/api/health/unverified?range=${range}`),
 	});
+}
+
+// ── interaction-driven hooks ───────────────────────────────────────────────
+//
+// The command palette fetches on keystrokes rather than on navigation, so it
+// stays on plain useQuery — route loaders would refetch the whole list on
+// every debounced change with no keepPreviousData smoothness.
+
+/** Previous results stay on screen while the next query loads. */
+export function usePluginList(q: string, page: number, pageSize = 50) {
+	return useQuery({ ...pluginListQuery(q, page, pageSize), placeholderData: keepPreviousData });
+}
+
+export function useAuthors(enabled = true) {
+	return useQuery({ ...authorsQuery(), enabled, placeholderData: keepPreviousData });
+}
+
+// ── transitional hooks ─────────────────────────────────────────────────────
+// Thin useQuery wrappers kept only until every route reads its data through
+// loaders; deleted together with useSkeletonDelay/useErrorToast afterwards.
+
+export const usePublishedStats = statsHook("published");
+export const useUpdatedStats = statsHook("updated");
+export const useVerifiedStats = statsHook("verified");
+
+function statsHook(kind: "published" | "updated" | "verified") {
+	return (range: string | undefined, groupBy: Granularity, from?: string, to?: string) =>
+		useQuery(statsQuery(kind, { range: range ?? "all", groupBy, from, to }));
+}
+
+export const useTotalStats = (groupBy: Granularity) => useQuery(totalStatsQuery(groupBy));
+export const useRecentPlugins = (limit = 8) => useQuery(recentPluginsQuery(limit));
+export const usePluginDetail = (pluginId: string) => useQuery(pluginDetailQuery(pluginId));
+export const useLeaderboard = (metric: string, limit = 25, sparkPoints = 10) =>
+	useQuery({ ...leaderboardQuery(metric, limit, sparkPoints), placeholderData: keepPreviousData });
+export const useTrending = (days: 7 | 30) =>
+	useQuery({ ...trendingQuery(days), placeholderData: keepPreviousData });
+export const useAuthorDetail = (authorId: string) => useQuery(authorDetailQuery(authorId));
+export const useBreakdown = () => useQuery(breakdownQuery());
+export const useCategories = () => useQuery(categoriesQuery());
+export const useHeatmap = (from?: string, to?: string) => useQuery(heatmapQuery(from, to));
+export const useHealth = () => useQuery(healthQuery());
+export const useBrokenPlugins = () => useQuery(brokenPluginsQuery());
+export const useUnverifiedPlugins = (range: string) => useQuery(unverifiedPluginsQuery(range));
+
+// ── transitional helpers ───────────────────────────────────────────────────
+// Removed once every route reads from loaders (loader errors render through
+// errorComponent instead of toasts).
+
+/** One toast per failed fetch, keyed so refetch failures don't stack. */
+export function useErrorToast(isError: boolean, message: string) {
+	useEffect(() => {
+		if (isError) toastManager.add({ type: "error", title: "Failed to load", description: message });
+	}, [isError, message]);
 }
