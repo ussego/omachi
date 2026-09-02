@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export function CopyButton({ text }: { text: string }) {
 				setCopied(true);
 			}}
 		>
-			{copied ? <CheckIcon className="text-green-600" /> : <CopyIcon />}
+			{copied ? <IconCheck className="text-green-600" /> : <IconCopy />}
 		</Button>
 	);
 }

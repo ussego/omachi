@@ -1,5 +1,5 @@
+import { IconHeart, IconMenu } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { HeartIcon, MenuIcon } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,7 +45,7 @@ function MobileNav() {
 			<DrawerTrigger
 				render={<Button variant="ghost" size="icon-sm" aria-label="Menu" className="graph-frame lg:hidden" />}
 			>
-				<MenuIcon className="size-4" />
+				<IconMenu className="size-4" />
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>
@@ -88,7 +88,7 @@ function MobileNav() {
 						rel="noreferrer"
 						className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full justify-start" })}
 					>
-						<HeartIcon className="size-4" />
+						<IconHeart className="size-4" />
 						Sponsor
 					</a>
 				</DrawerFooter>
@@ -110,11 +110,17 @@ export default function Header() {
 						aria-hidden="true"
 						className="graph-frame graph-frame-march pointer-events-none absolute -inset-1 opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100"
 					/>
-					<span aria-hidden="true" className="inline-block -translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+					<span
+						aria-hidden="true"
+						className="inline-block -translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0"
+					>
 						[{" "}
 					</span>
 					O
-					<span aria-hidden="true" className="inline-block translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+					<span
+						aria-hidden="true"
+						className="inline-block translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0"
+					>
 						{" "}
 						]
 					</span>
@@ -166,7 +172,7 @@ export default function Header() {
 							className: "graph-frame hidden lg:inline-flex",
 						})}
 					>
-						<HeartIcon className="size-4" />
+						<IconHeart className="size-4" />
 					</a>
 					<MobileNav />
 				</div>

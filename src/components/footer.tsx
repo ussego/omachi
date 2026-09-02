@@ -1,4 +1,4 @@
-import { HeartIcon } from "lucide-react";
+import { IconHeart } from "@tabler/icons-react";
 import { buttonVariants } from "@/components/ui/button";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -25,9 +25,7 @@ export default function Footer() {
 			<div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-7 sm:px-6">
 				<div className="flex w-full flex-wrap items-end justify-between gap-3">
 					<div className="flex flex-col">
-						<span className="font-mono text-sm tracking-widest text-graph-accent uppercase">
-							[O]
-						</span>
+						<span className="font-mono text-sm tracking-widest text-graph-accent uppercase">[O]</span>
 						<span className="text-muted-foreground text-sm">
 							Omachi — an independent companion dashboard for the Omarchy plugin catalog
 						</span>
@@ -55,7 +53,7 @@ export default function Footer() {
 								title="Sponsor on GitHub"
 								className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
 							>
-								<HeartIcon className="size-4" />
+								<IconHeart className="size-4" />
 							</a>
 						</div>
 					</div>

@@ -2,17 +2,17 @@
 "use client";
 
 import { Toast } from "@base-ui/react/toast";
-import { CircleAlertIcon, CircleCheckIcon, InfoIcon, LoaderCircleIcon, TriangleAlertIcon } from "lucide-react";
+import { IconAlertCircle, IconAlertTriangle, IconCircleCheck, IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
 import type React from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const TOAST_ICONS = {
-	error: CircleAlertIcon,
-	info: InfoIcon,
-	loading: LoaderCircleIcon,
-	success: CircleCheckIcon,
-	warning: TriangleAlertIcon,
+	error: IconAlertCircle,
+	info: IconInfoCircle,
+	loading: IconLoader2,
+	success: IconCircleCheck,
+	warning: IconAlertTriangle,
 } as const;
 
 type SwipeDirection = "up" | "down" | "left" | "right";

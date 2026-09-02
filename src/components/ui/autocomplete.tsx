@@ -2,7 +2,7 @@
 "use client";
 
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
-import { ChevronsUpDownIcon, XIcon } from "lucide-react";
+import { IconSelector, IconX } from "@tabler/icons-react";
 import type React from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,7 +66,7 @@ export function AutocompleteInput({
 					{...triggerProps}
 				>
 					<AutocompletePrimitive.Icon data-slot="autocomplete-icon">
-						<ChevronsUpDownIcon />
+						<IconSelector />
 					</AutocompletePrimitive.Icon>
 				</AutocompleteTrigger>
 			)}
@@ -78,7 +78,7 @@ export function AutocompleteInput({
 					)}
 					{...clearProps}
 				>
-					<XIcon />
+					<IconX />
 				</AutocompleteClear>
 			)}
 		</AutocompletePrimitive.InputGroup>
@@ -226,7 +226,7 @@ export function AutocompleteClear({ className, ...props }: AutocompletePrimitive
 			data-slot="autocomplete-clear"
 			{...props}
 		>
-			<XIcon />
+			<IconX />
 		</AutocompletePrimitive.Clear>
 	);
 }

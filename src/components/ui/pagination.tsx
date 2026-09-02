@@ -3,7 +3,7 @@
 
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
+import { IconChevronLeft, IconChevronRight, IconDots } from "@tabler/icons-react";
 import type * as React from "react";
 import { type Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,7 @@ export function PaginationPrevious({
 			size="default"
 			{...props}
 		>
-			<ChevronLeftIcon className="sm:-ms-1" />
+			<IconChevronLeft className="sm:-ms-1" />
 			<span className="max-sm:hidden">Previous</span>
 		</PaginationLink>
 	);
@@ -92,7 +92,7 @@ export function PaginationNext({
 			{...props}
 		>
 			<span className="max-sm:hidden">Next</span>
-			<ChevronRightIcon className="sm:-me-1" />
+			<IconChevronRight className="sm:-me-1" />
 		</PaginationLink>
 	);
 }
@@ -105,7 +105,7 @@ export function PaginationEllipsis({ className, ...props }: React.ComponentProps
 			data-slot="pagination-ellipsis"
 			{...props}
 		>
-			<MoreHorizontalIcon className="size-5 sm:size-4" />
+			<IconDots className="size-5 sm:size-4" />
 			<span className="sr-only">More pages</span>
 		</span>
 	);

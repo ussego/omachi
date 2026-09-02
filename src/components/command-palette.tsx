@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
 
+import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ export function CommandPalette() {
 				}
 			>
 				<span className="sr-only">Search pages or plugins</span>
-				<SearchIcon className="size-4" />
+				<IconSearch className="size-4" />
 				<span className="hidden font-mono text-xs tracking-wide text-muted-foreground uppercase sm:inline">
 					Search
 				</span>

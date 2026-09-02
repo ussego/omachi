@@ -2,7 +2,7 @@
 "use client";
 
 import { DayPicker } from "@daypicker/react";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon } from "lucide-react";
+import { IconChevronLeft, IconChevronRight, IconSelector } from "@tabler/icons-react";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -66,14 +66,14 @@ export function Calendar({
 			orientation?: "left" | "right" | "up" | "down";
 		}): React.ReactElement => {
 			if (orientation === "left") {
-				return <ChevronLeftIcon className={cn(className, "rtl:rotate-180")} {...props} aria-hidden="true" />;
+				return <IconChevronLeft className={cn(className, "rtl:rotate-180")} {...props} aria-hidden="true" />;
 			}
 
 			if (orientation === "right") {
-				return <ChevronRightIcon className={cn(className, "rtl:rotate-180")} {...props} aria-hidden="true" />;
+				return <IconChevronRight className={cn(className, "rtl:rotate-180")} {...props} aria-hidden="true" />;
 			}
 
-			return <ChevronsUpDownIcon className={className} {...props} aria-hidden="true" />;
+			return <IconSelector className={className} {...props} aria-hidden="true" />;
 		},
 	};
 

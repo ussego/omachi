@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
 
+import { IconExternalLink } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ExternalLinkIcon } from "lucide-react";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { Code, CopyButton, Snippet } from "@/components/snippet";
 import { buttonVariants } from "@/components/ui/button";
@@ -59,7 +59,7 @@ function BadgesPage() {
 					rel="noreferrer"
 					className={buttonVariants({ variant: "outline" })}
 				>
-					<ExternalLinkIcon data-icon="inline-start" />
+					<IconExternalLink data-icon="inline-start" />
 					<span>Source</span>
 				</a>
 			</div>
