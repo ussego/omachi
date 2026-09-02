@@ -1,24 +1,33 @@
 /** @jsxImportSource react */
 
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { z } from "zod";
 import { GraphRank } from "@/components/graph-rank";
-import { GraphRankSkeleton } from "@/components/graph-skeleton";
 import { GraphSpark } from "@/components/graph-spark";
 import { PluginAvatar } from "@/components/plugin-avatar";
 import { TrendingTable } from "@/components/trending-table";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { LeaderboardRow } from "@/lib/api-types";
 import { fmt } from "@/lib/format";
-import { useSkeletonDelay } from "@/lib/loading";
-import { useAuthors, useErrorToast, useLeaderboard, useTrending } from "@/lib/queries";
+import { authorsQuery, leaderboardQuery, trendingQuery } from "@/lib/queries";
 
-const SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 const VALID_TABS = ["hearts", "views", "copies", "copies_per_view", "trending", "authors"] as const;
+const LIMITS = [25, 50, 100] as const;
+const DEFAULTS = { tab: "hearts", limit: 25, days: 7 } as const;
+
+// Zod v4 schema passed straight to validateSearch; `.catch` coerces garbage
+// to the default instead of erroring the route. Tab, Top-N, and trending
+// window live in the URL so leaderboard views are shareable.
+const leaderboardsSearchSchema = z.object({
+	tab: z.enum(VALID_TABS).default(DEFAULTS.tab).catch(DEFAULTS.tab),
+	limit: z.number().int().min(10).max(100).default(DEFAULTS.limit).catch(DEFAULTS.limit),
+	days: z.union([z.literal(7), z.literal(30)]).default(DEFAULTS.days).catch(DEFAULTS.days),
+});
 
 export const Route = createFileRoute("/leaderboards")({
 	head: () => ({
@@ -31,9 +40,16 @@ export const Route = createFileRoute("/leaderboards")({
 			},
 		],
 	}),
-	validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
-		tab: (VALID_TABS as readonly string[]).includes(search.tab as string) ? (search.tab as string) : undefined,
-	}),
+	validateSearch: leaderboardsSearchSchema,
+	search: { middlewares: [stripSearchParams(DEFAULTS)] },
+	// Only the active tab's data is fetched; deps changes (tab/limit/days)
+	// re-run the loader regardless of staleTime.
+	loaderDeps: ({ search: { tab, limit, days } }) => ({ tab, limit, days }),
+	loader: ({ deps, context: { queryClient } }) => {
+		if (deps.tab === "trending") return queryClient.ensureQueryData(trendingQuery(deps.days));
+		if (deps.tab === "authors") return queryClient.ensureQueryData(authorsQuery());
+		return queryClient.ensureQueryData(leaderboardQuery(deps.tab, deps.limit, 10));
+	},
 	component: LeaderboardsPage,
 });
 
@@ -69,14 +85,11 @@ const METRIC_TABS = [
 ] as const;
 
 function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] }) {
-	const [limit, setLimit] = useState(25);
-	const { data, isLoading, isError, error } = useLeaderboard(metric.value, limit, 10);
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	// Skeleton only after the grace period: warm edge-cache hits resolve before
-	// it and never flash a placeholder.
-	const showSkeleton = useSkeletonDelay(isLoading);
+	const { limit } = Route.useSearch();
+	const navigate = useNavigate({ from: "/leaderboards" });
+	const { data } = useSuspenseQuery(leaderboardQuery(metric.value, limit, 10));
 
-	const rows = data?.rows ?? [];
+	const rows = data.rows;
 	// Stable across renders: the rank entrance replays whenever the data array
 	// identity changes, and this map would otherwise make a fresh array on
 	// every re-render. Disambiguate the label by author when multiple plugins
@@ -98,11 +111,7 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 
 	return (
 		<div className="flex flex-col gap-6">
-			{showSkeleton ? (
-				<GraphRankSkeleton title={metric.label} rows={limit} />
-			) : (
-				<GraphRank title={metric.label} items={chartRows} />
-			)}
+			<GraphRank title={metric.label} items={chartRows} />
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -114,15 +123,7 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{showSkeleton
-						? SKELETON.slice(0, 8).map((k) => (
-								<TableRow key={k}>
-									<TableCell colSpan={5}>
-										<Skeleton className="h-5 w-full" />
-									</TableCell>
-								</TableRow>
-							))
-						: rows.map((r, i) => (
+					{rows.map((r, i) => (
 						<TableRow key={r.pluginId}>
 							<TableCell className="font-mono tabular-nums">{i + 1}</TableCell>
 							<TableCell>
@@ -166,42 +167,50 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 					))}
 				</TableBody>
 			</Table>
-			<div className="flex items-center justify-end gap-1">
-				{[25, 50, 100].map((n) => (
-					<Button key={n} variant={limit === n ? "secondary" : "ghost"} size="sm" onClick={() => setLimit(n)}>
-						Top {n}
-					</Button>
-				))}
-			</div>
+			<TopLimitButtons limit={limit} onChange={(n) => navigate({ search: (prev) => ({ ...prev, limit: n }) })} />
+		</div>
+	);
+}
+
+function TopLimitButtons({ limit, onChange }: { limit: number; onChange: (n: (typeof LIMITS)[number]) => void }) {
+	return (
+		<div className="flex items-center justify-end gap-1">
+			{LIMITS.map((n) => (
+				<Button key={n} variant={limit === n ? "secondary" : "ghost"} size="sm" onClick={() => onChange(n)}>
+					Top {n}
+				</Button>
+			))}
 		</div>
 	);
 }
 
 function TrendingLeaderboard() {
-	const [days, setDays] = useState<7 | 30>(7);
-	const { data, isLoading, isError, error } = useTrending(days);
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
+	const { days } = Route.useSearch();
+	const navigate = useNavigate({ from: "/leaderboards" });
+	const { data } = useSuspenseQuery(trendingQuery(days));
 
 	return (
 		<div className="flex flex-col gap-6">
-			<Tabs value={String(days)} onValueChange={(v) => setDays(v === "30" ? 30 : 7)}>
+			<Tabs
+				value={String(days)}
+				onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, days: v === "30" ? 30 : 7 }) })}
+			>
 				<TabsList>
 					<TabsTab value="7">7 days</TabsTab>
 					<TabsTab value="30">30 days</TabsTab>
 				</TabsList>
 			</Tabs>
-			<TrendingTable top={data?.top ?? []} loading={isLoading} limit={10} />
+			<TrendingTable top={data.top} loading={false} limit={10} />
 		</div>
 	);
 }
 
 function AuthorsLeaderboard() {
-	const [limit, setLimit] = useState(25);
-	const { data, isLoading, isError, error } = useAuthors();
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	const showSkeleton = useSkeletonDelay(isLoading);
+	const { limit } = Route.useSearch();
+	const navigate = useNavigate({ from: "/leaderboards" });
+	const { data } = useSuspenseQuery(authorsQuery());
 
-	const rows = (data?.rows ?? []).slice(0, limit);
+	const rows = data.rows.slice(0, limit);
 	const rankItems = rows.map((row) => ({
 		label: row.author ?? "(unknown)",
 		value: row.hearts ?? 0,
@@ -210,11 +219,7 @@ function AuthorsLeaderboard() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{showSkeleton ? (
-				<GraphRankSkeleton title="AUTHOR HEARTS" rows={limit} />
-			) : (
-				<GraphRank title="AUTHOR HEARTS" items={rankItems} />
-			)}
+			<GraphRank title="AUTHOR HEARTS" items={rankItems} />
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -227,60 +232,42 @@ function AuthorsLeaderboard() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{showSkeleton
-						? SKELETON.slice(0, 8).map((k) => (
-								<TableRow key={k}>
-									<TableCell colSpan={6}>
-										<Skeleton className="h-5 w-full" />
-									</TableCell>
-								</TableRow>
-							))
-						: rows.map((r, i) => (
-								<TableRow key={r.author}>
-									<TableCell className="font-mono tabular-nums">{i + 1}</TableCell>
-									<TableCell className="font-medium">
-										<Link
-											to="/authors/$authorId"
-											params={{ authorId: r.author ?? "" }}
-											className="flex items-center gap-3 hover:underline"
-										>
-											<PluginAvatar name={r.author ?? ""} className="size-5 shrink-0" />
-											{r.author}
-										</Link>
-									</TableCell>
-									<TableCell className="text-right font-mono tabular-nums">
-										{fmt(r.plugins)}
-									</TableCell>
-									<TableCell className="text-right font-mono tabular-nums">{fmt(r.hearts)}</TableCell>
-									<TableCell className="text-right font-mono tabular-nums">{fmt(r.views)}</TableCell>
-									<TableCell className="text-right font-mono tabular-nums">{fmt(r.copies)}</TableCell>
-								</TableRow>
-							))}
+					{rows.map((r, i) => (
+						<TableRow key={r.author}>
+							<TableCell className="font-mono tabular-nums">{i + 1}</TableCell>
+							<TableCell className="font-medium">
+								<Link
+									to="/authors/$authorId"
+									params={{ authorId: r.author ?? "" }}
+									className="flex items-center gap-3 hover:underline"
+								>
+									<PluginAvatar name={r.author ?? ""} className="size-5 shrink-0" />
+									{r.author}
+								</Link>
+							</TableCell>
+							<TableCell className="text-right font-mono tabular-nums">
+								{fmt(r.plugins)}
+							</TableCell>
+							<TableCell className="text-right font-mono tabular-nums">{fmt(r.hearts)}</TableCell>
+							<TableCell className="text-right font-mono tabular-nums">{fmt(r.views)}</TableCell>
+							<TableCell className="text-right font-mono tabular-nums">{fmt(r.copies)}</TableCell>
+						</TableRow>
+					))}
 				</TableBody>
 			</Table>
-			<div className="flex items-center justify-end gap-1">
-				{[25, 50, 100].map((n) => (
-					<Button key={n} variant={limit === n ? "secondary" : "ghost"} size="sm" onClick={() => setLimit(n)}>
-						Top {n}
-					</Button>
-				))}
-			</div>
+			<TopLimitButtons limit={limit} onChange={(n) => navigate({ search: (prev) => ({ ...prev, limit: n }) })} />
 		</div>
 	);
 }
 
 function LeaderboardsPage() {
-	const { tab: tabParam } = useSearch({ from: "/leaderboards" });
-	const tab = tabParam ?? "hearts";
+	const { tab } = Route.useSearch();
 	const navigate = useNavigate({ from: "/leaderboards" });
 	const metric = METRIC_TABS.find((m) => m.value === tab);
-	const changeTab = (value: string) => {
-		navigate({ search: { tab: value } });
-	};
 	return (
 		<div className="flex flex-col gap-6">
 			<h1 className="font-heading text-2xl">Leaderboards</h1>
-			<Tabs value={tab} onValueChange={changeTab}>
+			<Tabs value={tab} onValueChange={(value) => navigate({ search: (prev) => ({ ...prev, tab: value as typeof tab }) })}>
 				<TabsList variant="underline">
 					{METRIC_TABS.map((m) => (
 						<TabsTab key={m.value} value={m.value}>
