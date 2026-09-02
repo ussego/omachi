@@ -38,10 +38,10 @@ export function TabsList({
 	return (
 		<TabsPrimitive.List
 			className={cn(
-				"relative z-0 flex w-fit max-w-full items-center gap-x-0.5 overflow-x-auto overflow-y-clip text-muted-foreground",
+				"relative z-0 flex w-fit max-w-full items-center gap-x-0.5 overflow-x-auto overflow-y-clip text-muted-foreground no-scrollbar scroll-fade-x",
 				"data-[orientation=vertical]:flex-col",
 				variant === "default"
-					? "graph-frame bg-background p-0.5 text-muted-foreground"
+					? "graph-frame bg-background p-0.5 text-muted-foreground mask-clip-content"
 					: "data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-tab]:hover:bg-accent",
 				className,
 			)}

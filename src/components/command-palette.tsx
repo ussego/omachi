@@ -100,7 +100,7 @@ export function CommandPalette() {
 					<Button
 						variant="ghost"
 						size="sm"
-						className="graph-frame w-8 justify-center px-0 font-normal sm:w-44 sm:justify-between sm:px-[calc(--spacing(2.5)-1px)] lg:w-56"
+						className="graph-frame w-8 justify-center px-0 font-normal sm:w-44 sm:justify-between sm:px-[calc(--spacing(2.5)-1px)] 2xl:w-56"
 					/>
 				}
 			>
