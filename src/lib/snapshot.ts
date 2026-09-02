@@ -1,10 +1,10 @@
-import { inArray, lte, sql } from "drizzle-orm";
+import { inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { drizzle } from "drizzle-orm/d1";
 import type { z } from "zod";
 
-import { pluginSnapshots, plugins, updateEvents, verificationEvents } from "@/db/schema";
-import { type DrizzleDb, latestSnapshotsFor } from "@/lib/db";
+import { meta, pluginSnapshots, plugins, updateEvents, verificationEvents } from "@/db/schema";
+import type { DrizzleDb } from "@/lib/db";
 import { type catalogPluginSchema, catalogSchema, statsSchema } from "@/lib/upstream";
 
 export interface SnapshotResult {
@@ -69,10 +69,41 @@ export function pluginRowWithCurrent(p: CatalogPlugin, s: ReturnType<typeof buil
 	};
 }
 
+/** Previous verification/version state per plugin, keyed by plugin id. */
+export type PrevState = Map<string, { verificationStatus: string | null; version: string | null }>;
+
+/** Diff snapshots against the previous state (pure; covered by snapshot.test.ts). */
+export function buildEventRows(prev: PrevState, snapshotRows: ReturnType<typeof buildSnapshotRow>[], snapshotAt: string) {
+	const verifyRows: { pluginId: string; occurredAt: string; fromStatus: string | null; toStatus: string | null }[] = [];
+	const updateRows: { pluginId: string; occurredAt: string; fromVersion: string | null; toVersion: string | null }[] =
+		[];
+	for (const snapshot of snapshotRows) {
+		const last = prev.get(snapshot.pluginId);
+		if (!last) continue;
+		if (last.verificationStatus !== snapshot.verificationStatus) {
+			verifyRows.push({
+				pluginId: snapshot.pluginId,
+				occurredAt: snapshotAt,
+				fromStatus: last.verificationStatus,
+				toStatus: snapshot.verificationStatus,
+			});
+		}
+		if (last.version !== snapshot.version) {
+			updateRows.push({
+				pluginId: snapshot.pluginId,
+				occurredAt: snapshotAt,
+				fromVersion: last.version,
+				toVersion: snapshot.version,
+			});
+		}
+	}
+	return { verifyRows, updateRows };
+}
+
 /**
  * Poll both upstream endpoints, upsert plugin metadata + current stats, append
  * one snapshot row per plugin, log verification/update events by diffing
- * against each plugin's previous snapshot, and prune old snapshots.
+ * against each plugin's previous mirror state, and prune old snapshots.
  * Called by the admin snapshot Server Route.
  *
  * D1 limits: 100 bound parameters per statement, 100 statements per batch.
@@ -87,10 +118,34 @@ export async function runSnapshot(env: CloudflareBindings): Promise<SnapshotResu
 	const db = drizzle(env.DB);
 	const snapshotAt = new Date().toISOString();
 
+	// Running total of plugin_snapshots rows, maintained so /api/health reads
+	// one meta row instead of full-scanning the table. Seeded by migration.
+	const bumpCounter = (delta: number) =>
+		db
+			.insert(meta)
+			.values({ key: "snapshot_count", value: delta })
+			.onConflictDoUpdate({ target: meta.key, set: { value: sql`${meta.value} + ${delta}` } });
+
 	// 1. Build snapshot rows first; the plugin upsert carries them as current*.
 	const snapshotRows = catalog.plugins.map((p) => buildSnapshotRow(p, stats.plugins[p.id] ?? {}, snapshotAt));
 
-	// 2. Upsert plugin dimension rows: metadata + denormalized current stats,
+	// 2. Previous verification/version state per plugin, read from the mirror
+	//    BEFORE the upsert below overwrites it. One statement replaces the old
+	//    chunked max(id)-per-plugin scan of plugin_snapshots.
+	const prevRows = await db
+		.select({
+			id: plugins.id,
+			verificationStatus: plugins.currentVerificationStatus,
+			version: plugins.currentVersion,
+		})
+		.from(plugins)
+		.where(isNotNull(plugins.currentSnapshotAt))
+		.all();
+	const prev: PrevState = new Map(
+		prevRows.map((r) => [r.id, { verificationStatus: r.verificationStatus, version: r.version }]),
+	);
+
+	// 3. Upsert plugin dimension rows: metadata + denormalized current stats,
 	//    in a single statement per plugin (metadata rarely changes, stats always).
 	const upserts: BatchItem<"sqlite">[] = [];
 	catalog.plugins.forEach((p, i) => {
@@ -129,43 +184,15 @@ export async function runSnapshot(env: CloudflareBindings): Promise<SnapshotResu
 	});
 	await writeBatches(db, upserts);
 
-	// 3. Latest snapshot per plugin, to diff against.
-	const prev = await latestSnapshotsFor(
-		db,
-		catalog.plugins.map((p) => p.id),
-	);
-
-	// 4. Diff snapshots against the previous one → verification/update events.
-	const verifyRows: { pluginId: string; occurredAt: string; fromStatus: string | null; toStatus: string | null }[] =
-		[];
-	const updateRows: { pluginId: string; occurredAt: string; fromVersion: string | null; toVersion: string | null }[] =
-		[];
-	catalog.plugins.forEach((p, i) => {
-		const snapshot = snapshotRows[i];
-		const last = prev.get(p.id);
-		if (!last) return;
-		if (last.verificationStatus !== snapshot.verificationStatus) {
-			verifyRows.push({
-				pluginId: p.id,
-				occurredAt: snapshotAt,
-				fromStatus: last.verificationStatus,
-				toStatus: snapshot.verificationStatus,
-			});
-		}
-		if (last.version !== snapshot.version) {
-			updateRows.push({
-				pluginId: p.id,
-				occurredAt: snapshotAt,
-				fromVersion: last.version,
-				toVersion: snapshot.version,
-			});
-		}
-	});
+	// 4. Diff snapshots against the mirror state → verification/update events.
+	const { verifyRows, updateRows } = buildEventRows(prev, snapshotRows, snapshotAt);
 
 	// 5. Write snapshots + events, single-row statements in batches (D1 caps
-	//    bound params per statement, so one row each).
+	//    bound params per statement, so one row each). The counter increment
+	//    rides the snapshot batches, so no extra batch call is spent.
 	const snapshots: BatchItem<"sqlite">[] = [];
 	for (const row of snapshotRows) snapshots.push(db.insert(pluginSnapshots).values([row]));
+	snapshots.push(bumpCounter(snapshotRows.length));
 	const events: BatchItem<"sqlite">[] = [];
 	for (const row of verifyRows) events.push(db.insert(verificationEvents).values([row]));
 	for (const row of updateRows) events.push(db.insert(updateEvents).values([row]));
@@ -174,8 +201,9 @@ export async function runSnapshot(env: CloudflareBindings): Promise<SnapshotResu
 
 	// 6. Retention: keep raw snapshots for 90 days (covers range=90d), prune
 	//    older rows in bounded chunks so no single run deletes a huge swath.
+	//    The counter tracks the deletions so it stays the true row total.
 	const cutoff = new Date(Date.now() - 90 * 864e5).toISOString();
-	await db
+	const pruned = await db
 		.delete(pluginSnapshots)
 		.where(
 			inArray(
@@ -187,7 +215,9 @@ export async function runSnapshot(env: CloudflareBindings): Promise<SnapshotResu
 					.limit(5000),
 			),
 		)
-		.run();
+		.run()
+		.then((res) => res.meta.changes ?? 0);
+	if (pruned > 0) await bumpCounter(-pruned).run();
 
 	return {
 		snapshots: snapshotRows.length,

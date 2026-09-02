@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { buildSnapshotRow, pluginRow, pluginRowWithCurrent } from "@/lib/snapshot";
+import { buildEventRows, buildSnapshotRow, pluginRow, pluginRowWithCurrent, type PrevState } from "@/lib/snapshot";
 
 describe("snapshot mappings", () => {
 	const plugin = {
@@ -43,5 +43,38 @@ describe("snapshot mappings", () => {
 
 		expect(snapshot.views).toBeNull();
 		expect(pluginRowWithCurrent(plugin, snapshot).currentHearts).toBeNull();
+	});
+});
+
+describe("buildEventRows", () => {
+	const at = "2026-06-01T00:00:00.000Z";
+	const row = (id: string, verificationStatus: string | null, version: string | null) =>
+		buildSnapshotRow({ id, name: id, verificationStatus, version } as never, {}, at);
+
+	it("emits no events for plugins without previous state (first snapshot)", () => {
+		const events = buildEventRows(new Map(), [row("p1", "verified", "1.0")], at);
+		expect(events.verifyRows).toEqual([]);
+		expect(events.updateRows).toEqual([]);
+	});
+
+	it("emits verification and update events on change", () => {
+		const prev: PrevState = new Map([["p1", { verificationStatus: "unverified", version: "1.0" }]]);
+		const events = buildEventRows(prev, [row("p1", "verified", "2.0")], at);
+		expect(events.verifyRows).toEqual([{ pluginId: "p1", occurredAt: at, fromStatus: "unverified", toStatus: "verified" }]);
+		expect(events.updateRows).toEqual([{ pluginId: "p1", occurredAt: at, fromVersion: "1.0", toVersion: "2.0" }]);
+	});
+
+	it("stays silent when nothing changed", () => {
+		const prev: PrevState = new Map([["p1", { verificationStatus: "verified", version: "1.0" }]]);
+		const events = buildEventRows(prev, [row("p1", "verified", "1.0")], at);
+		expect(events.verifyRows).toEqual([]);
+		expect(events.updateRows).toEqual([]);
+	});
+
+	it("emits an event when a value becomes null", () => {
+		const prev: PrevState = new Map([["p1", { verificationStatus: "verified", version: "1.0" }]]);
+		const events = buildEventRows(prev, [row("p1", null, "1.0")], at);
+		expect(events.verifyRows).toEqual([{ pluginId: "p1", occurredAt: at, fromStatus: "verified", toStatus: null }]);
+		expect(events.updateRows).toEqual([]);
 	});
 });

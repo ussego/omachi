@@ -167,7 +167,8 @@ export type HeatmapResponse = {
 export type HealthResponse = {
 	lastSnapshotAt: string | null;
 	pluginCount: number;
-	snapshotCount: number;
+	// Running total from the meta table; null until the first heavy poll seeds it.
+	snapshotCount: number | null;
 };
 
 export type BrokenResponse = {

@@ -66,6 +66,14 @@ export const pluginRelations = sqliteTable("plugin_relations", {
 	refreshedAt: text("refreshed_at"),
 });
 
+// meta: single-row counters maintained by the heavy poll, so request-time
+// endpoints never full-scan a fact table (the snapshot count alone scans the
+// whole plugin_snapshots table). key/value keeps future counters cheap.
+export const meta = sqliteTable("meta", {
+	key: text("key").primaryKey(),
+	value: integer("value"),
+});
+
 // verification_events: derived by diffing verificationStatus vs prior snapshot
 export const verificationEvents = sqliteTable(
 	"verification_events",
