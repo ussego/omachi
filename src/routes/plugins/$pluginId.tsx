@@ -1,35 +1,60 @@
 /** @jsxImportSource react */
 
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { NotFoundState } from "@/components/error-page";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { ErrorPage } from "@/components/error-page";
 import { GraphRule as FigureRule, Graph, GraphBody } from "@/components/graph-frame/graph-frame";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
-import { GraphPlotSkeleton, GraphStatSkeleton } from "@/components/graph-skeleton";
 import { GraphStat } from "@/components/graph-stat";
 import { Badge } from "@/components/ui/badge";
-import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
-import { HttpError, useErrorToast, useLeaderboard, usePluginDetail } from "@/lib/queries";
+import { HttpError, leaderboardQuery, pluginDetailQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/plugins/$pluginId")({
-	head: ({ params }) => ({
+	// Property order matters: `head` reads `loaderData`, so it must be declared
+	// after `loader` for the type to flow through.
+	loader: async ({ params: { pluginId }, context: { queryClient } }) => {
+		try {
+			const [detail] = await Promise.all([
+				queryClient.ensureQueryData(pluginDetailQuery(pluginId)),
+				// The rank card reads the hearts leaderboard; shared across all
+				// plugin pages, so one fetch serves every visit within its TTL.
+				queryClient.ensureQueryData(leaderboardQuery("hearts", 100, 0)),
+			]);
+			return { name: detail.plugin.name ?? pluginId };
+		} catch (err) {
+			// A 404 from the detail API means the plugin isn't in the catalog —
+			// the same dead-end as an unmatched URL. Anything else (5xx, network)
+			// is a load failure, not a missing plugin.
+			if (err instanceof HttpError && err.status === 404) throw notFound();
+			throw err;
+		}
+	},
+	head: ({ params, loaderData }) => ({
 		meta: [
-			{ title: `${params.pluginId} · Omachi` },
+			{ title: `${loaderData?.name ?? params.pluginId} · Omachi` },
 			{
 				name: "description",
 				content: `Hearts, views, copies, and snapshot history for the ${params.pluginId} plugin in the Omarchy catalog.`,
 			},
 		],
 	}),
+	notFoundComponent: () => {
+		const { pluginId } = Route.useParams();
+		return (
+			<ErrorPage
+				code="404"
+				title="Plugin not found"
+				description={`No plugin with the id "${pluginId}" exists in the Omarchy catalog.`}
+			/>
+		);
+	},
 	component: PluginDetailPage,
 });
-
-const DETAILS_SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RELATED_SKELETON = ["a", "b", "c", "d", "e", "f"];
 
 function verificationVariant(status: string | null): "success" | "warning" | "secondary" {
 	if (status === "verified") return "success";
@@ -44,8 +69,13 @@ function statusVariant(status: string | null): "success" | "warning" | "secondar
 }
 
 function PluginDetailPage() {
-	const { pluginId } = useParams({ from: "/plugins/$pluginId" });
-	const { data, isLoading, isError, error } = usePluginDetail(pluginId);
+	const { pluginId } = Route.useParams();
+	const { data } = useSuspenseQuery(pluginDetailQuery(pluginId));
+	const { data: ranks } = useSuspenseQuery(leaderboardQuery("hearts", 100, 0));
+	const rankOf = (id: string) => {
+		const idx = ranks.rows.findIndex((r) => r.pluginId === id);
+		return idx >= 0 ? idx + 1 : null;
+	};
 
 	// Clamp the description to 3 lines; show the toggle only while the text is
 	// actually clipped (the clamp threshold varies with width, so measure it).
@@ -61,122 +91,27 @@ function PluginDetailPage() {
 		const ro = new ResizeObserver(check);
 		ro.observe(el);
 		return () => ro.disconnect();
-	}, [data?.plugin.description]);
-
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	useEffect(() => {
-		if (data?.plugin.name) document.title = `${data.plugin.name} · Omachi`;
-	}, [data]);
-
-	const ranks = useLeaderboard("hearts", 100, 0);
-	const rankOf = (id: string) => {
-		const idx = (ranks.data?.rows ?? []).findIndex((r) => r.pluginId === id);
-		return idx >= 0 ? idx + 1 : null;
-	};
-
-	// Stable across renders: the chart's entrance replays whenever the data
-	// array identity changes, and this map would otherwise make a fresh array
-	// on every re-render of the page.
-	const rows = useMemo(
-		() =>
-			(data?.snapshots ?? []).map((s) => ({
-				snapshotAt: s.snapshotAt,
-				hearts: s.hearts ?? 0,
-				views: s.views ?? 0,
-				copies: s.copies ?? 0,
-			})),
-		[data],
-	);
-
-	if (isLoading) {
-		// Mirror the settled layout so the swap to real content never jumps:
-		// header block, three plot frames, and the stat card row.
-		return (
-			<div className="flex flex-col gap-8">
-				<div className="flex flex-wrap items-stretch gap-4">
-					<Graph title="Details" className="min-w-0 flex-1 select-none" aria-hidden="true">
-						<GraphBody className="flex flex-col gap-5">
-							<div className="flex flex-col gap-2">
-								<Skeleton className="h-8 w-1/2" />
-								<Skeleton className="h-4 w-full max-w-2xl" />
-								<Skeleton className="h-4 w-2/3 max-w-2xl" />
-								<Skeleton className="h-4 w-1/2 max-w-2xl" />
-							</div>
-							<FigureRule />
-							<div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-								{DETAILS_SKELETON.map((k) => (
-									<div className="flex flex-col gap-1.5" key={k}>
-										<Skeleton className="h-3 w-16" />
-										<Skeleton className="h-4 w-28" />
-									</div>
-								))}
-							</div>
-						</GraphBody>
-					</Graph>
-					<Graph title="Rank" className="w-full select-none sm:w-48" aria-hidden="true">
-						<GraphBody className="flex flex-col gap-3 px-5 py-5">
-							<div className="flex flex-col gap-1.5">
-								<Skeleton className="h-9 w-20" />
-								<Skeleton className="h-4 w-32" />
-							</div>
-							<FigureRule />
-							<Skeleton className="h-4 w-36" />
-							<Skeleton className="h-4 w-24" />
-						</GraphBody>
-					</Graph>
-				</div>
-
-				<div className="grid gap-6 lg:grid-cols-3">
-					<GraphPlotSkeleton title="Hearts" />
-					<GraphPlotSkeleton title="Views" />
-					<GraphPlotSkeleton title="Copies" />
-				</div>
-
-				<GraphRule />
-
-				<GraphStatSkeleton title="Averages" items={3} />
-
-				<GraphRule />
-
-				<Graph title="Related" className="w-full select-none" aria-hidden="true">
-					<GraphBody className="flex flex-col gap-5">
-						<Skeleton className="h-3 w-80" />
-						<div className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-							{RELATED_SKELETON.map((k) => (
-								<div className="flex flex-col gap-1.5" key={k}>
-									<Skeleton className="h-4 w-3/4" />
-									<Skeleton className="h-3 w-1/2" />
-								</div>
-							))}
-						</div>
-					</GraphBody>
-				</Graph>
-			</div>
-		);
-	}
-
-	if (isError || !data) {
-		// A 404 from the detail API means the plugin isn't in the catalog —
-		// the same dead-end as an unmatched URL. Anything else (5xx, network)
-		// is a load failure, not a missing plugin.
-		if (error instanceof HttpError && error.status === 404) {
-			return <NotFoundState />;
-		}
-		return (
-			<div className="flex flex-col gap-6">
-				<Empty>
-					<EmptyTitle>Couldn't load this plugin</EmptyTitle>
-					<EmptyDescription>The catalog may still be polling — check back in a moment.</EmptyDescription>
-				</Empty>
-			</div>
-		);
-	}
+	}, [data.plugin.description]);
 
 	const { plugin, snapshots, averages, relations } = data;
 	const last = snapshots[snapshots.length - 1];
 	// Manual-setup plugins aren't installed through the catalog, so the feed
 	// never records copies for them — don't draw an all-zero Copies plot.
 	const manualSetup = plugin.status === "Manual setup";
+
+	// Stable across renders: the chart's entrance replays whenever the data
+	// array identity changes, and this map would otherwise make a fresh array
+	// on every re-render of the page.
+	const rows = useMemo(
+		() =>
+			snapshots.map((s) => ({
+				snapshotAt: s.snapshotAt,
+				hearts: s.hearts ?? 0,
+				views: s.views ?? 0,
+				copies: s.copies ?? 0,
+			})),
+		[snapshots],
+	);
 
 	return (
 		<div className="flex flex-col gap-8">

@@ -1,134 +1,67 @@
 /** @jsxImportSource react */
 
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { ErrorPage } from "@/components/error-page";
 import { Graph, GraphBody, GraphRule as FigureRule } from "@/components/graph-frame/graph-frame";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
 import { GraphStat } from "@/components/graph-stat";
-import { GraphPlotSkeleton, GraphStatSkeleton } from "@/components/graph-skeleton";
-import { Empty, EmptyTitle } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
-import { useAuthorDetail, useAuthors, useErrorToast } from "@/lib/queries";
+import { HttpError, authorDetailQuery, authorsQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
-const SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const DETAILS_CELLS = ["a", "b", "c", "d", "e", "f"];
-
 export const Route = createFileRoute("/authors/$authorId")({
-	head: ({ params }) => ({
+	// Property order matters: `head` reads `loaderData`, so it must be declared
+	// after `loader` for the type to flow through.
+	loader: async ({ params: { authorId }, context: { queryClient } }) => {
+		try {
+			const [detail] = await Promise.all([
+				queryClient.ensureQueryData(authorDetailQuery(authorId)),
+				// The rank card indexes the full author leaderboard; shared with
+				// the authors tab of /leaderboards, so one fetch serves both.
+				queryClient.ensureQueryData(authorsQuery()),
+			]);
+			return { author: detail.author };
+		} catch (err) {
+			// The author API answers 404 when the author has no catalog plugins.
+			if (err instanceof HttpError && err.status === 404) throw notFound();
+			throw err;
+		}
+	},
+	head: ({ params, loaderData }) => ({
 		meta: [
-			{ title: `${params.authorId} · Omachi` },
+			{ title: `${loaderData?.author ?? params.authorId} · Omachi` },
 			{
 				name: "description",
 				content: `Plugins, hearts, views, and copies for Omarchy plugin author ${params.authorId}.`,
 			},
 		],
 	}),
+	notFoundComponent: () => {
+		const { authorId } = Route.useParams();
+		return (
+			<ErrorPage
+				code="404"
+				title="Author not found"
+				description={`No plugins by "${authorId}" exist in the Omarchy catalog.`}
+			/>
+		);
+	},
 	component: AuthorDetailPage,
 });
 
 function AuthorDetailPage() {
-	const { authorId } = useParams({ from: "/authors/$authorId" });
-	const { data, isLoading, isError, error } = useAuthorDetail(authorId);
-
-	const authors = useAuthors();
+	const { authorId } = Route.useParams();
+	const { data } = useSuspenseQuery(authorDetailQuery(authorId));
+	const { data: authors } = useSuspenseQuery(authorsQuery());
 	const rankOf = (name: string) => {
-		const idx = (authors.data?.rows ?? []).findIndex((r) => r.author === name);
+		const idx = authors.rows.findIndex((r) => r.author === name);
 		return idx >= 0 ? idx + 1 : null;
 	};
-
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	useEffect(() => {
-		if (data) document.title = `${data.author} · Omachi`;
-	}, [data]);
-
-	// Stable across renders: the chart entrance replays whenever the data
-	// array identity changes, so keep the mapped series memoized.
-	const activity = useMemo(
-		() => ({
-			labels: (data?.activity ?? []).map((point) => fmtMonthDay(point.snapshotAt)),
-			hearts: (data?.activity ?? []).map((point) => point.hearts ?? 0),
-			views: (data?.activity ?? []).map((point) => point.views ?? 0),
-			copies: (data?.activity ?? []).map((point) => point.copies ?? 0),
-		}),
-		[data],
-	);
-
-	if (isLoading) {
-		// Mirror the settled layout so the swap to real content never jumps:
-		// header block, stat cards, and the plugins table.
-		return (
-			<div className="flex flex-col gap-8">
-				<div className="flex flex-wrap items-stretch gap-4">
-					<Graph title="Details" className="min-w-0 flex-1 select-none" aria-hidden="true">
-						<GraphBody className="flex flex-col gap-5">
-							<Skeleton className="h-8 w-1/2" />
-							<FigureRule />
-							<div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-								{DETAILS_CELLS.map((k) => (
-									<div className="flex flex-col gap-1.5" key={k}>
-										<Skeleton className="h-3 w-16" />
-										<Skeleton className="h-4 w-28" />
-									</div>
-								))}
-							</div>
-						</GraphBody>
-					</Graph>
-					<Graph title="Rank" className="w-full select-none sm:w-48" aria-hidden="true">
-						<GraphBody className="flex flex-col gap-3 px-5 py-5">
-							<div className="flex flex-col gap-1.5">
-								<Skeleton className="h-9 w-16" />
-								<Skeleton className="h-4 w-28" />
-							</div>
-						</GraphBody>
-					</Graph>
-				</div>
-
-				<GraphStatSkeleton title="Totals" items={3} />
-
-				<div className="grid gap-6 lg:grid-cols-3">
-					<GraphPlotSkeleton title="Hearts" />
-					<GraphPlotSkeleton title="Views" />
-					<GraphPlotSkeleton title="Copies" />
-				</div>
-
-				<GraphRule />
-
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Plugin</TableHead>
-							<TableHead>Category</TableHead>
-							<TableHead className="text-right">Hearts</TableHead>
-							<TableHead className="text-right">Views</TableHead>
-							<TableHead className="text-right">Copies</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{SKELETON.map((k) => (
-							<TableRow key={k}>
-								<TableCell colSpan={5}>
-									<Skeleton className="h-5 w-full" />
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</div>
-		);
-	}
-
-	if (isError || !data) {
-		return (
-			<Empty>
-				<EmptyTitle>Author not found</EmptyTitle>
-			</Empty>
-		);
-	}
 
 	const { author, totals, plugins } = data;
 	// Manual-setup plugins aren't installed through the catalog, so copies are
@@ -149,6 +82,19 @@ function AuthorDetailPage() {
 	const statusParts = [...statusCounts.entries()]
 		.sort((a, b) => b[1] - a[1])
 		.map(([status, n]) => `${n} ${status.toLowerCase()}`);
+
+	// Stable across renders: the chart entrance replays whenever the data
+	// array identity changes, so keep the mapped series memoized.
+	const activity = useMemo(
+		() => ({
+			labels: data.activity.map((point) => fmtMonthDay(point.snapshotAt)),
+			hearts: data.activity.map((point) => point.hearts ?? 0),
+			views: data.activity.map((point) => point.views ?? 0),
+			copies: data.activity.map((point) => point.copies ?? 0),
+		}),
+		[data.activity],
+	);
+
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap items-stretch gap-4">
