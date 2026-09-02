@@ -54,7 +54,7 @@ function BadgesPage() {
 			<div className="flex items-center justify-between gap-4">
 				<h1 className="font-heading text-2xl">Badges</h1>
 				<a
-					href="https://github.com/ussego/omastats"
+					href="https://github.com/ussego/omachi"
 					target="_blank"
 					rel="noreferrer"
 					className={buttonVariants({ variant: "outline" })}

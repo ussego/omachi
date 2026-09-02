@@ -30,8 +30,8 @@ TanStack Start application deployed as a Cloudflare Worker with D1 and
 Drizzle, a React frontend, TanStack Router and Query, shadcn UI primitives,
 and mdx-graphs data visualizations. Production deploys run from
 `.github/workflows/deploy.yml` on pushes to `main`; the GitHub repository is
-`https://github.com/ussego/omastats` and the current Git remote is
-`git@github.com:ussego/omastats.git`. The Worker is named `omachi`.
+`https://github.com/ussego/omachi` and the current Git remote is
+`git@github.com:ussego/omachi.git`. The Worker is named `omachi`.
 Read `wrangler.jsonc` and `package.json` before editing or deploying: they are
 the environment truth for scripts, bindings, and deployment identity.
 
@@ -147,10 +147,11 @@ renderers consume those payloads. Keep the chart shape stable:
 
 ## Publishing
 
-The current Git remote is `git@github.com:ussego/omastats.git`. The
-Worker deployment identity is already `omachi`; the D1 database remains
-`omastats`. The publish workflow documented in `README.md` renames the GitHub
-repository and updates the remote only if that repository rename is desired.
+The GitHub repository is `https://github.com/ussego/omachi` and the current
+Git remote is `git@github.com:ussego/omachi.git` (renamed from `omastats`;
+GitHub redirects the old URL). The Worker deployment identity is `omachi`;
+the D1 database remains `omastats` by design, not as a leftover — see
+`docs/adr/0001-worker-renamed-d1-database-unchanged.md`.
 
 ## Design
 
