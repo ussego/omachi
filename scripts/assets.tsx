@@ -5,15 +5,16 @@
  * `bun run build` runs it first. Writes public/og.png, public/favicon.ico and
  * public/favicon.png.
  *
- * The OG card mirrors the blueprint shell from docs/design.md: soft dashed
- * page frame with `+` junctions, the `[O]` mark in Geist Mono, chrome
- * captions, and an ascii-glyph area chart in the site's chart voice. The
- * favicon is the same typographic `[O]` artwork, downsampled to tab size, so
- * both icons are one drawing at different scales.
+ * The OG card mirrors the blueprint shell from docs/design.md: one soft
+ * dashed page frame with `+` junctions, a centered `[O]` mark / wordmark /
+ * tagline lockup, and a frameless ascii area chart as the data ground — the
+ * site's chart voice, demoted to a horizon line. The favicon is the same
+ * typographic `[O]` artwork, downsampled to tab size, so both icons are one
+ * drawing at different scales.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { PNG } from "pngjs";
 import { render } from "takumi-js";
 
@@ -36,7 +37,6 @@ const SITE_BACKGROUND = "#0b0f14";
 const SITE_FOREGROUND = "#f4f4f5";
 const ACCENT = "#69a1e8"; // --graph-accent
 const ACCENT_3 = "#496b96"; // --graph-accent-3, the chart-fill tone
-const FIGURE_INK = "#5d5d5d"; // --graph-frame
 const MUTED = "#9f9fa9"; // --muted-foreground
 const SHELL_INK = "rgba(244, 244, 245, 0.28)"; // page frame, dialed to card visibility
 const SHELL_CORNER = "rgba(244, 244, 245, 0.55)"; // `+` junctions
@@ -46,7 +46,10 @@ const OG_HEIGHT = 630;
 const SHELL_X = 64; // page-frame inset from the canvas edges
 const RULE_TOP = 64; // top soft rule y
 const RULE_BOTTOM = 566; // bottom soft rule y
-const CONTENT_WIDTH = 980;
+// Glyph-quantized: 104 chart columns at the 9px mono advance (15px font), so
+// the ascii chart spans the content column edge-to-edge and the title block's
+// right edge lands on the chart's last column.
+const CONTENT_WIDTH = 936;
 
 /** The 2px-dash / 5px-gap rule used by every graph-frame utility in styles.css. */
 function dashedRule(horizontal: boolean, color: string) {
@@ -121,46 +124,9 @@ function Plus({ x, y, size, color }: { x: number; y: number; size: number; color
 	);
 }
 
-/** All four dashed edges of a figure, like the `graph-frame` utility. */
-function DashedFrame({
-	left,
-	top,
-	width,
-	height,
-	color,
-	children,
-}: {
-	left: number;
-	top: number;
-	width: number;
-	height: number;
-	color: string;
-	children?: ReactNode;
-}) {
-	const layer = (horizontal: boolean) => dashedRule(horizontal, color);
-	return (
-		<div
-			aria-hidden="true"
-			style={{
-				position: "absolute",
-				left,
-				top,
-				width,
-				height,
-				backgroundImage: `${layer(true)}, ${layer(false)}, ${layer(true)}, ${layer(false)}`,
-				backgroundRepeat: "repeat-x, repeat-y, repeat-x, repeat-y",
-				backgroundPosition: "0 0, 100% 0, 0 100%, 0 0",
-				backgroundSize: "100% 1px, 1px 100%, 100% 1px, 1px 100%",
-			}}
-		>
-			{children}
-		</div>
-	);
-}
-
 // ------------------------------------------------------------------ og.png
 
-const CHART_ROWS = 6;
+const CHART_ROWS = 5;
 const CHART_FONT = 15; // px per glyph row; mono advance 0.6em => 9px columns
 
 /**
@@ -212,7 +178,7 @@ function OgCard() {
 			<Plus x={SHELL_X} y={RULE_BOTTOM} size={26} color={SHELL_CORNER} />
 			<Plus x={shellRight} y={RULE_BOTTOM} size={26} color={SHELL_CORNER} />
 
-			{/* content column between the rules */}
+			{/* one centered lockup over one data ground — no second frame */}
 			<div
 				style={{
 					position: "absolute",
@@ -225,87 +191,38 @@ function OgCard() {
 					alignItems: "center",
 				}}
 			>
-				{/* hero row: the [O] mark at medium size, wordmark and headline beside it */}
-				<div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 60 }}>
-					<div style={mono(190, ACCENT, { fontWeight: 700, lineHeight: 1 })}>[O]</div>
-					<div style={{ display: "flex", flexDirection: "column", gap: 16, width: 560 }}>
-						<div style={mono(30, ACCENT, { fontWeight: 500, letterSpacing: 16, lineHeight: 1 })}>
-							OMACHI
-						</div>
-						<div style={sans(38, 600, SITE_FOREGROUND, { lineHeight: 1.3 })}>
-							Independent analytics for the
-						</div>
-						<div style={sans(38, 600, SITE_FOREGROUND, { lineHeight: 1.3 })}>Omarchy plugin catalog</div>
-					</div>
+				<div style={mono(170, ACCENT, { fontWeight: 700, lineHeight: 1 })}>[O]</div>
+				{/* trailing letter-space pulled back so the tracked run centers truly */}
+				<div style={mono(26, SITE_FOREGROUND, { letterSpacing: 14, marginRight: -14, lineHeight: 1, marginTop: 34 })}>
+					OMACHI
+				</div>
+				<div style={sans(30, 500, MUTED, { lineHeight: 1, marginTop: 22 })}>
+					Independent analytics for the Omarchy plugin catalog
 				</div>
 
-				<div style={{ flex: 1, minHeight: 24 }} />
+				<div style={{ flex: 1 }} />
 
-				{/* chart figure: dashed frame, [ TOTAL ] caption, `+` corners */}
-				<div style={{ position: "relative", width: CONTENT_WIDTH, height: 146 }}>
-					<div
-						style={mono(16, ACCENT, {
-							position: "absolute",
-							top: -9,
-							left: "50%",
-							transform: "translateX(-50%)",
-							backgroundColor: SITE_BACKGROUND,
-							padding: "0 10px",
-							letterSpacing: 2,
-							zIndex: 1,
-						})}
-					>
-						[ TOTAL ]
-					</div>
-					<DashedFrame left={0} top={0} width={CONTENT_WIDTH} height={138} color={FIGURE_INK} />
-					<Plus x={0} y={0} size={18} color={FIGURE_INK} />
-					<Plus x={CONTENT_WIDTH} y={0} size={18} color={FIGURE_INK} />
-					<Plus x={0} y={138} size={18} color={FIGURE_INK} />
-					<Plus x={CONTENT_WIDTH} y={138} size={18} color={FIGURE_INK} />
-					<div
-						style={{
-							position: "absolute",
-							left: 22,
-							right: 22,
-							top: 26,
-							height: CHART_ROWS * CHART_FONT,
-							lineHeight: 1,
-						}}
-					>
-						{Array.from({ length: CHART_ROWS }, (_, row) => {
-							const line = chartRow(CHART_ROWS - 1 - row);
-							return (
-								// biome-ignore lint/suspicious/noArrayIndexKey: static glyph grid, rows never reorder
-								<div key={row} style={mono(CHART_FONT, ACCENT, { height: CHART_FONT, lineHeight: 1 })}>
-									{line.split("").map((ch, i) => (
-										// biome-ignore lint/suspicious/noArrayIndexKey: static glyph grid, cells never reorder
-										<span key={i} style={{ color: ch === "-" ? ACCENT_3 : ACCENT }}>
-											{ch}
-										</span>
-									))}
-								</div>
-							);
-						})}
-					</div>
+				{/* data ground: the ascii area chart, frameless, at content width */}
+				<div style={{ width: CONTENT_WIDTH, height: CHART_ROWS * CHART_FONT, lineHeight: 1 }}>
+					{Array.from({ length: CHART_ROWS }, (_, row) => {
+						const line = chartRow(CHART_ROWS - 1 - row);
+						return (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static glyph grid, rows never reorder
+							<div key={row} style={mono(CHART_FONT, ACCENT, { height: CHART_FONT, lineHeight: 1 })}>
+								{line.split("").map((ch, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static glyph grid, cells never reorder
+									<span key={i} style={{ color: ch === "-" ? ACCENT_3 : ACCENT }}>
+										{ch}
+									</span>
+								))}
+							</div>
+						);
+					})}
 				</div>
 
-				<div style={{ flex: 1, minHeight: 14 }} />
-
-				{/* footnotes */}
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						justifyContent: "space-between",
-						width: CONTENT_WIDTH,
-					}}
-				>
-					<span style={mono(14, MUTED, { letterSpacing: 1 })}>
-						SNAPSHOTS EVERY 6H · NEW PLUGINS EVERY 30M
-					</span>
-					<span style={mono(14, MUTED, { letterSpacing: 1 })}>
-						GITHUB.COM/USSEGO/OMACHI · STATS.USSEGO.COM
-					</span>
+				{/* title block: the one address, right-aligned like a drawing stamp */}
+				<div style={{ width: CONTENT_WIDTH, display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+					<span style={mono(13, MUTED, { letterSpacing: 2 })}>STATS.USSEGO.COM</span>
 				</div>
 			</div>
 		</div>
