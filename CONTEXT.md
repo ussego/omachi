@@ -23,7 +23,7 @@ A cheap, frequent refresh that only detects newly-added Plugins — no Snapshot,
 _Avoid_: quick poll
 
 **Explorer Poll**:
-A weekly refresh (Mondays 05:23 UTC) of the Omarchy explorer's similarity graph (explorer-data.json): upserts one row per community Plugin into the plugin_relations mirror — its nearest-neighbor Plugin IDs with similarity scores, its thematic cluster label, and its graph influence. Community scope only; built-in Plugins never get a row.
+A daily refresh (05:23 UTC) of the Omarchy explorer's similarity graph (explorer-data.json): upserts one row per community Plugin into the plugin_relations mirror — its nearest-neighbor Plugin IDs with similarity scores, its thematic cluster label, and its graph influence. Community scope only; built-in Plugins never get a row.
 _Avoid_: graph poll, relations sync
 
 **Related Plugins**:

@@ -2,7 +2,7 @@ name: Explorer poll (plugin relations)
 
 on:
   schedule:
-    - cron: "23 5 * * 1"
+    - cron: "23 5 * * *"
   workflow_dispatch:
 
 concurrency:
