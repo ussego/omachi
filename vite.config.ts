@@ -5,8 +5,13 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const config = defineConfig({
-	resolve: { tsconfigPaths: true },
+const config = defineConfig(({ command }) => ({
+	resolve: {
+		tsconfigPaths: true,
+		// cva still imports clsx by name; devtools-ui's default import needs real
+		// clsx in dev, so the alias only applies to the stripped production build.
+		...(command === "build" ? { alias: { clsx: "cn" } } : {}),
+	},
 	plugins: [
 		devtools(),
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
@@ -14,6 +19,6 @@ const config = defineConfig({
 		tanstackStart(),
 		viteReact(),
 	],
-});
+}));
 
 export default config;
