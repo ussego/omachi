@@ -21,6 +21,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPluginsRouteImport } from './routes/api/plugins'
 import { Route as AuthorsAuthorIdRouteImport } from './routes/authors/$authorId'
 import { Route as PluginsPluginIdRouteImport } from './routes/plugins/$pluginId'
+import { Route as ApiAdminExplorerPollRouteImport } from './routes/api/admin/explorer-poll'
 import { Route as ApiAdminLightPollRouteImport } from './routes/api/admin/light-poll'
 import { Route as ApiAdminSnapshotRouteImport } from './routes/api/admin/snapshot'
 import { Route as ApiAuthorsAuthorIdRouteImport } from './routes/api/authors/$authorId'
@@ -100,6 +101,11 @@ const AuthorsAuthorIdRoute = AuthorsAuthorIdRouteImport.update({
 const PluginsPluginIdRoute = PluginsPluginIdRouteImport.update({
   id: '/plugins/$pluginId',
   path: '/plugins/$pluginId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminExplorerPollRoute = ApiAdminExplorerPollRouteImport.update({
+  id: '/api/admin/explorer-poll',
+  path: '/api/admin/explorer-poll',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminLightPollRoute = ApiAdminLightPollRouteImport.update({
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
   '/api/admin/light-poll': typeof ApiAdminLightPollRoute
   '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
   '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
   '/api/admin/light-poll': typeof ApiAdminLightPollRoute
   '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
   '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
+  '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
   '/api/admin/light-poll': typeof ApiAdminLightPollRoute
   '/api/admin/snapshot': typeof ApiAdminSnapshotRoute
   '/api/authors/$authorId': typeof ApiAuthorsAuthorIdRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/explorer-poll'
     | '/api/admin/light-poll'
     | '/api/admin/snapshot'
     | '/api/authors/$authorId'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/explorer-poll'
     | '/api/admin/light-poll'
     | '/api/admin/snapshot'
     | '/api/authors/$authorId'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/api/plugins'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
+    | '/api/admin/explorer-poll'
     | '/api/admin/light-poll'
     | '/api/admin/snapshot'
     | '/api/authors/$authorId'
@@ -425,6 +437,7 @@ export interface RootRouteChildren {
   ApiPluginsRoute: typeof ApiPluginsRouteWithChildren
   AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
   PluginsPluginIdRoute: typeof PluginsPluginIdRoute
+  ApiAdminExplorerPollRoute: typeof ApiAdminExplorerPollRoute
   ApiAdminLightPollRoute: typeof ApiAdminLightPollRoute
   ApiAdminSnapshotRoute: typeof ApiAdminSnapshotRoute
   ApiAuthorsAuthorIdRoute: typeof ApiAuthorsAuthorIdRoute
@@ -528,6 +541,13 @@ declare module '@tanstack/react-router' {
       path: '/plugins/$pluginId'
       fullPath: '/plugins/$pluginId'
       preLoaderRoute: typeof PluginsPluginIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/explorer-poll': {
+      id: '/api/admin/explorer-poll'
+      path: '/api/admin/explorer-poll'
+      fullPath: '/api/admin/explorer-poll'
+      preLoaderRoute: typeof ApiAdminExplorerPollRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/light-poll': {
@@ -712,6 +732,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPluginsRoute: ApiPluginsRouteWithChildren,
   AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,
   PluginsPluginIdRoute: PluginsPluginIdRoute,
+  ApiAdminExplorerPollRoute: ApiAdminExplorerPollRoute,
   ApiAdminLightPollRoute: ApiAdminLightPollRoute,
   ApiAdminSnapshotRoute: ApiAdminSnapshotRoute,
   ApiAuthorsAuthorIdRoute: ApiAuthorsAuthorIdRoute,

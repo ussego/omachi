@@ -53,10 +53,28 @@ export type Snapshot = {
 	upstreamCheckStatus: string | null;
 };
 
+export type RelatedPlugin = {
+	pluginId: string;
+	name: string | null;
+	author: string | null;
+	stars: number | null;
+	similarity: number;
+};
+
 export type PluginDetailResponse = {
 	plugin: Omit<PluginSummary, "latest">;
 	snapshots: Snapshot[];
 	averages: { views: number | null; copies: number | null; hearts: number | null };
+	/**
+	 * Explorer graph state for the plugin, or null when the explorer poll
+	 * hasn't synced it yet (built-in plugins never get a row). `related` is
+	 * sorted by similarity, descending.
+	 */
+	relations: {
+		cluster: string | null;
+		influence: number | null;
+		related: RelatedPlugin[];
+	} | null;
 };
 
 export type StatsPoint = { bucket: string; count: number };

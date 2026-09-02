@@ -24,6 +24,7 @@
   },
   "vars": {
     "CATALOG_URL": "https://plugins.omarchy.org/catalog.json",
+    "EXPLORER_URL": "https://plugins.omarchy.org/explorer-data.json",
     "STATS_URL": "https://api.omarchyplugins.com/v1/stats"
   },
   "compatibility_flags": ["nodejs_compat"],

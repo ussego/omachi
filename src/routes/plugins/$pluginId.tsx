@@ -5,8 +5,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GraphRule as FigureRule, Graph, GraphBody } from "@/components/graph-frame/graph-frame";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
-import { GraphStat } from "@/components/graph-stat";
 import { GraphPlotSkeleton, GraphStatSkeleton } from "@/components/graph-skeleton";
+import { GraphStat } from "@/components/graph-stat";
 import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,8 @@ export const Route = createFileRoute("/plugins/$pluginId")({
 	component: PluginDetailPage,
 });
 
-const DETAILS_SKELETON = ["a", "b", "c", "d", "e", "f"];
+const DETAILS_SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h"];
+const RELATED_SKELETON = ["a", "b", "c", "d", "e", "f"];
 
 function verificationVariant(status: string | null): "success" | "warning" | "secondary" {
 	if (status === "verified") return "success";
@@ -124,6 +125,20 @@ function PluginDetailPage() {
 					</Graph>
 				</div>
 
+				<Graph title="Related" className="w-full select-none" aria-hidden="true">
+					<GraphBody className="flex flex-col gap-5">
+						<Skeleton className="h-3 w-80" />
+						<div className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+							{RELATED_SKELETON.map((k) => (
+								<div className="flex flex-col gap-1.5" key={k}>
+									<Skeleton className="h-4 w-3/4" />
+									<Skeleton className="h-3 w-1/2" />
+								</div>
+							))}
+						</div>
+					</GraphBody>
+				</Graph>
+
 				<div className="grid gap-6 lg:grid-cols-3">
 					<GraphPlotSkeleton title="Hearts" />
 					<GraphPlotSkeleton title="Views" />
@@ -147,7 +162,7 @@ function PluginDetailPage() {
 		);
 	}
 
-	const { plugin, snapshots, averages } = data;
+	const { plugin, snapshots, averages, relations } = data;
 	const last = snapshots[snapshots.length - 1];
 	// Manual-setup plugins aren't installed through the catalog, so the feed
 	// never records copies for them — don't draw an all-zero Copies plot.
@@ -229,8 +244,18 @@ function PluginDetailPage() {
 										</Badge>
 									)}
 								</dd>
-								</div>
-							</dl>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">family</dt>
+								<dd>{relations?.cluster ?? "—"}</dd>
+							</div>
+							<div className="flex min-w-0 flex-col gap-1">
+								<dt className="text-xs tracking-wide text-graph-muted uppercase">influence</dt>
+								<dd title="graph influence in the omarchy explorer similarity graph">
+									{typeof relations?.influence === "number" ? relations.influence.toFixed(1) : "—"}
+								</dd>
+							</div>
+						</dl>
 					</GraphBody>
 				</Graph>
 				<Graph title="Rank" className="w-full sm:w-48">
@@ -265,6 +290,44 @@ function PluginDetailPage() {
 					</GraphBody>
 				</Graph>
 			</div>
+
+			{relations?.related.length ? (
+				<Graph title="Related" className="w-full">
+					<GraphBody className="flex flex-col gap-5">
+						<p className="text-xs text-graph-muted">
+							nearest neighbors by description similarity, from the omarchy explorer
+						</p>
+						<ul className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+							{relations.related.slice(0, 8).map((r) => (
+								<li key={r.pluginId} className="flex min-w-0 flex-col gap-1">
+									<Link
+										to="/plugins/$pluginId"
+										params={{ pluginId: r.pluginId }}
+										title={`${r.name ?? r.pluginId} · ${Math.round(r.similarity * 100)}% similar`}
+										className="truncate font-medium hover:underline"
+									>
+										{r.name ?? r.pluginId}
+									</Link>
+									<div className="flex items-baseline justify-between gap-3">
+										<span className="truncate text-xs text-muted-foreground">
+											{r.author ?? "—"}
+										</span>
+										<span className="font-mono text-xs text-graph-muted tabular-nums">
+											{Math.round(r.similarity * 100)}%
+										</span>
+									</div>
+								</li>
+							))}
+						</ul>
+					</GraphBody>
+				</Graph>
+			) : (
+				<Graph title="Related" className="w-full">
+					<GraphBody className="flex flex-col items-center justify-center px-5 py-7 text-center sm:px-8">
+						<p className="text-graph-muted">no related plugins yet</p>
+					</GraphBody>
+				</Graph>
+			)}
 
 			{snapshots.length > 0 ? (
 				<div className="grid gap-6 lg:grid-cols-3">

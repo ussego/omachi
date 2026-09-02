@@ -22,6 +22,16 @@ _Avoid_: snapshot poll, cron job
 A cheap, frequent refresh that only detects newly-added Plugins — no Snapshot, no per-plugin diffing — keeping the live Plugin count fresh between Heavy Polls.
 _Avoid_: quick poll
 
+**Explorer Poll**:
+A daily refresh of the Omarchy explorer's similarity graph (explorer-data.json): upserts one row per community Plugin into the plugin_relations mirror — its nearest-neighbor Plugin IDs with similarity scores, its thematic cluster label, and its graph influence. Community scope only; built-in Plugins never get a row.
+_Avoid_: graph poll, relations sync
+
+**Related Plugins**:
+A Plugin's nearest neighbors in the Omarchy explorer graph, ranked by description-similarity score. Stored per Plugin by the Explorer Poll and shown on the Plugin detail page.
+
+**Family**:
+The thematic cluster label the Omarchy explorer assigns a Plugin (e.g. "AI & Automation"), one of a fixed set of clusters over the community catalog.
+
 **Verification Event**:
 A recorded change in a Plugin's verification status, produced by comparing consecutive Snapshots during a Heavy Poll.
 

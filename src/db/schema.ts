@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // plugins: dimension table, upserted on every snapshot poll
 export const plugins = sqliteTable(
@@ -53,6 +53,18 @@ export const pluginSnapshots = sqliteTable(
 		index("snapshots_time_idx").on(t.snapshotAt),
 	],
 );
+
+// plugin_relations: explorer graph state, synced by the daily explorer poll
+// from explorer-data.json (community plugins only; built-ins get no row).
+// Written solely by that poll, never by the catalog upsert, so `related` is
+// JSON-encoded [{pluginId, similarity}] and `cluster` is the upstream label.
+export const pluginRelations = sqliteTable("plugin_relations", {
+	pluginId: text("plugin_id").primaryKey(),
+	related: text("related"), // JSON [{pluginId, similarity}], desc
+	cluster: text("cluster"),
+	influence: real("influence"),
+	refreshedAt: text("refreshed_at"),
+});
 
 // verification_events: derived by diffing verificationStatus vs prior snapshot
 export const verificationEvents = sqliteTable(
