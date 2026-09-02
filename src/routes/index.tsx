@@ -1,35 +1,52 @@
 /** @jsxImportSource react */
 
-import type { UseQueryResult } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { z } from "zod";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
-import { GraphStatSkeleton } from "@/components/graph-skeleton";
 import { GraphStat } from "@/components/graph-stat";
 import { TrendingTable } from "@/components/trending-table";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverPopup, PopoverTrigger } from "@/components/ui/popover";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { ChartSeriesResponse, StatsResponse } from "@/lib/api-types";
 import { fmt, fmtMonthDay, fmtRelative, pct } from "@/lib/format";
-import { useSkeletonDelay } from "@/lib/loading";
 import {
+	breakdownQuery,
 	type Granularity,
-	useBreakdown,
-	useErrorToast,
-	useHealth,
-	usePublishedStats,
-	useRecentPlugins,
-	useTotalStats,
-	useTrending,
-	useUpdatedStats,
-	useVerifiedStats,
+	healthQuery,
+	recentPluginsQuery,
+	statsQuery,
+	trendingQuery,
+	totalStatsQuery,
 } from "@/lib/queries";
+
+const RANGES = [
+	{ label: "30d", value: "30d" },
+	{ label: "90d", value: "90d" },
+	{ label: "365d", value: "365d" },
+	{ label: "All", value: "all" },
+] as const;
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DEFAULTS = { groupBy: "day", range: "90d" } as const;
+
+// Zod v4 schema passed straight to validateSearch; `.catch` coerces garbage
+// to the default instead of erroring the route. View state lives in the URL,
+// so filtered overviews are shareable and back/forward restores them.
+const indexSearchSchema = z.object({
+	// ponytail: default "day" because the catalog only has ~1 day of stats yet;
+	// switch to "month" once there's enough history to be useful.
+	groupBy: z.enum(["day", "month", "year"]).default(DEFAULTS.groupBy).catch(DEFAULTS.groupBy),
+	range: z.enum(["30d", "90d", "365d", "all"]).default(DEFAULTS.range).catch(DEFAULTS.range),
+	from: z.string().regex(ISO_DATE).optional().catch(undefined),
+	to: z.string().regex(ISO_DATE).optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/")({
 	head: () => ({
@@ -42,33 +59,34 @@ export const Route = createFileRoute("/")({
 			},
 		],
 	}),
+	validateSearch: indexSearchSchema,
+	search: { middlewares: [stripSearchParams(DEFAULTS)] },
+	loaderDeps: ({ search: { range, groupBy, from, to } }) => ({ range, groupBy, from, to }),
+	loader: ({ deps, context: { queryClient } }) => {
+		// The week counter is pinned to the last seven days regardless of the
+		// selected range. /api/health is uncached by design (ops monitors read
+		// it directly); the dashboard fetching it per view is not a new D1 cost
+		// — the browser already did exactly that on every page load.
+		return Promise.all([
+			queryClient.ensureQueryData(healthQuery()),
+			queryClient.ensureQueryData(breakdownQuery()),
+			queryClient.ensureQueryData(statsQuery("published", { range: "7d", groupBy: "day" })),
+			queryClient.ensureQueryData(statsQuery("published", deps)),
+			queryClient.ensureQueryData(statsQuery("verified", deps)),
+			queryClient.ensureQueryData(statsQuery("updated", deps)),
+			queryClient.ensureQueryData(totalStatsQuery(deps.groupBy)),
+			queryClient.ensureQueryData(trendingQuery(7)),
+			queryClient.ensureQueryData(recentPluginsQuery(8)),
+		]);
+	},
 	component: OverviewPage,
 });
 
-const SKELETON = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
+type TrendPoint = StatsResponse["points"][number] | ChartSeriesResponse["points"][number];
 
-const RANGES = [
-	{ label: "30d", value: "30d" },
-	{ label: "90d", value: "90d" },
-	{ label: "365d", value: "365d" },
-	{ label: "All", value: "all" },
-] as const;
-
-function TrendChart({
-	title,
-	query,
-}: {
-	title: string;
-	query: UseQueryResult<StatsResponse | ChartSeriesResponse, Error>;
-}) {
-	const { data, isLoading, isError, error } = query;
-	useErrorToast(isError, error instanceof Error ? error.message : String(error));
-	// Skeleton only after the grace period; inside it the real frame renders
-	// with empty data, so fast loads just see the chart fill in.
-	const showSkeleton = useSkeletonDelay(isLoading);
+function TrendChart({ title, points }: { title: string; points: TrendPoint[] }) {
 	// Keep the series identity stable while sibling queries settle so the graph
 	// entrance does not replay on every page render.
-	const points = useMemo(() => data?.points ?? [], [data]);
 	const values = useMemo(() => points.map((point) => point.count), [points]);
 	const labels = useMemo(
 		() => points.map((point) => fmtMonthDay("bucket" in point ? point.bucket : point.date)),
@@ -76,58 +94,40 @@ function TrendChart({
 	);
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
-			{showSkeleton ? (
-				<Skeleton className="h-56 w-full" />
-			) : (
-				<GraphPlot title={title} data={values} labels={labels} className="w-full" />
-			)}
+			<GraphPlot title={title} data={values} labels={labels} className="w-full" />
 		</div>
 	);
 }
 
 function OverviewPage() {
-	// ponytail: default "day" because the catalog only has ~1 day of stats yet;
-	// switch to "month" once there's enough history to be useful.
-	const [groupBy, setGroupBy] = useState<Granularity>("day");
-	const [range, setRange] = useState<string>("90d");
-	const [customFrom, setCustomFrom] = useState<string | undefined>();
-	const [customTo, setCustomTo] = useState<string | undefined>();
+	const { groupBy, range, from, to } = Route.useSearch();
+	const navigate = useNavigate({ from: "/" });
 
-	const health = useHealth();
-	const breakdown = useBreakdown();
-	const publishedWeek = usePublishedStats("7d", "day");
-	const published = usePublishedStats(range, groupBy, customFrom, customTo);
-	const verified = useVerifiedStats(range, groupBy, customFrom, customTo);
-	const updated = useUpdatedStats(range, groupBy, customFrom, customTo);
-	const total = useTotalStats(groupBy);
-	const trending = useTrending(7);
-	const recent = useRecentPlugins(8);
+	const { data: health } = useSuspenseQuery(healthQuery());
+	const { data: breakdown } = useSuspenseQuery(breakdownQuery());
+	const { data: publishedWeek } = useSuspenseQuery(statsQuery("published", { range: "7d", groupBy: "day" }));
+	const { data: published } = useSuspenseQuery(statsQuery("published", { range, groupBy, from, to }));
+	const { data: verified } = useSuspenseQuery(statsQuery("verified", { range, groupBy, from, to }));
+	const { data: updated } = useSuspenseQuery(statsQuery("updated", { range, groupBy, from, to }));
+	const { data: total } = useSuspenseQuery(totalStatsQuery(groupBy));
+	const { data: trending } = useSuspenseQuery(trendingQuery(7));
+	const { data: recent } = useSuspenseQuery(recentPluginsQuery(8));
 
-	useErrorToast(health.isError, health.error instanceof Error ? health.error.message : String(health.error));
-	useErrorToast(total.isError, total.error instanceof Error ? total.error.message : String(total.error));
-	useErrorToast(trending.isError, trending.error instanceof Error ? trending.error.message : String(trending.error));
-	useErrorToast(recent.isError, recent.error instanceof Error ? recent.error.message : String(recent.error));
-	useErrorToast(
-		breakdown.isError,
-		breakdown.error instanceof Error ? breakdown.error.message : String(breakdown.error),
-	);
-
-	const weekCount = (publishedWeek.data?.points ?? []).reduce((a, p) => a + p.count, 0);
-	const showRecentSkeleton = useSkeletonDelay(recent.isLoading);
-	const showStatSkeleton = useSkeletonDelay(health.isLoading || breakdown.isLoading || publishedWeek.isLoading);
-	const custom = Boolean(customFrom || customTo);
+	const weekCount = publishedWeek.points.reduce((a, p) => a + p.count, 0);
+	const custom = Boolean(from || to);
 
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div className="flex flex-wrap items-baseline gap-x-3">
 					<h1 className="font-heading text-2xl">Overview</h1>
-					<p className="text-muted-foreground text-xs">
-						last snapshot {fmtRelative(health.data?.lastSnapshotAt ?? null)}
-					</p>
+					<p className="text-muted-foreground text-xs">last snapshot {fmtRelative(health.lastSnapshotAt)}</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as Granularity)}>
+					<Tabs
+						value={groupBy}
+						onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, groupBy: v as Granularity }) })}
+					>
 						<TabsList size="sm">
 							<TabsTab value="day">Day</TabsTab>
 							<TabsTab value="month">Month</TabsTab>
@@ -138,9 +138,15 @@ function OverviewPage() {
 					<Tabs
 						value={range}
 						onValueChange={(v) => {
-							setRange(v);
-							setCustomFrom(undefined);
-							setCustomTo(undefined);
+							// A preset range supersedes any custom date selection.
+							navigate({
+								search: (prev) => ({
+									...prev,
+									range: v as (typeof RANGES)[number]["value"],
+									from: undefined,
+									to: undefined,
+								}),
+							});
 						}}
 					>
 						<TabsList size="sm">
@@ -168,14 +174,15 @@ function OverviewPage() {
 						<PopoverPopup align="end">
 							<Calendar
 								mode="range"
-								selected={
-									customFrom && customTo
-										? { from: new Date(customFrom), to: new Date(customTo) }
-										: undefined
-								}
+								selected={from && to ? { from: new Date(from), to: new Date(to) } : undefined}
 								onSelect={(r) => {
-									setCustomFrom(r?.from ? r.from.toISOString().slice(0, 10) : undefined);
-									setCustomTo(r?.to ? r.to.toISOString().slice(0, 10) : undefined);
+									navigate({
+										search: (prev) => ({
+											...prev,
+											from: r?.from ? r.from.toISOString().slice(0, 10) : undefined,
+											to: r?.to ? r.to.toISOString().slice(0, 10) : undefined,
+										}),
+									});
 								}}
 							/>
 							{custom && (
@@ -183,10 +190,7 @@ function OverviewPage() {
 									variant="ghost"
 									size="sm"
 									className="mt-2 w-full"
-									onClick={() => {
-										setCustomFrom(undefined);
-										setCustomTo(undefined);
-									}}
+									onClick={() => navigate({ search: (prev) => ({ ...prev, from: undefined, to: undefined }) })}
 								>
 									Clear dates
 								</Button>
@@ -196,34 +200,25 @@ function OverviewPage() {
 				</div>
 			</div>
 
-			{showStatSkeleton ? (
-				<GraphStatSkeleton title="Catalog" items={4} />
-			) : (
-				<GraphStat
-					title="Catalog"
-					items={[
-						{ accent: true, value: fmt(health.data?.pluginCount ?? null), label: "total plugins" },
-						{
-							value: breakdown.data
-								? `${pct(breakdown.data.verifiedCount, breakdown.data.totalPlugins)}%`
-								: "—",
-							label: "verified",
-						},
-						{ value: publishedWeek.isLoading ? "—" : fmt(weekCount), label: "published this week" },
-						{ value: fmt(health.data?.snapshotCount ?? null), label: "snapshots stored" },
-					]}
-				/>
-			)}
+			<GraphStat
+				title="Catalog"
+				items={[
+					{ accent: true, value: fmt(health.pluginCount), label: "total plugins" },
+					{ value: `${pct(breakdown.verifiedCount, breakdown.totalPlugins)}%`, label: "verified" },
+					{ value: fmt(weekCount), label: "published this week" },
+					{ value: fmt(health.snapshotCount), label: "snapshots stored" },
+				]}
+			/>
 
 			<div className="flex flex-col gap-8">
 				<div className="grid gap-8 md:grid-cols-2">
-					<TrendChart title="Published" query={published} />
-					<TrendChart title="Total" query={total} />
+					<TrendChart title="Published" points={published.points} />
+					<TrendChart title="Total" points={total.points} />
 				</div>
 
 				<div className="grid gap-8 md:grid-cols-2">
-					<TrendChart title="Verified" query={verified} />
-					<TrendChart title="Updated" query={updated} />
+					<TrendChart title="Verified" points={verified.points} />
+					<TrendChart title="Updated" points={updated.points} />
 				</div>
 			</div>
 
@@ -243,46 +238,38 @@ function OverviewPage() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{showRecentSkeleton
-							? SKELETON.slice(0, 4).map((k) => (
-									<TableRow key={k}>
-										<TableCell colSpan={4}>
-											<Skeleton className="h-5 w-full" />
-										</TableCell>
-									</TableRow>
-								))
-							: (recent.data?.plugins ?? []).map((p) => (
-									<TableRow key={p.id}>
-										<TableCell>
-											<Link
-												to="/plugins/$pluginId"
-												params={{ pluginId: p.id }}
-												title={p.name ?? p.id}
-												className="block max-w-72 truncate font-medium hover:underline"
-											>
-												{p.name ?? p.id}
-											</Link>
-										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{p.author ? (
-												<Link
-													to="/authors/$authorId"
-													params={{ authorId: p.author }}
-													title={p.author}
-													className="block max-w-40 truncate hover:underline"
-												>
-													{p.author}
-												</Link>
-											) : (
-												"—"
-											)}
-										</TableCell>
-										<TableCell className="text-muted-foreground">{p.category ?? "—"}</TableCell>
-										<TableCell className="text-right font-mono tabular-nums">
-											{fmtRelative(p.addedAt)}
-										</TableCell>
-									</TableRow>
-								))}
+						{recent.plugins.map((p) => (
+							<TableRow key={p.id}>
+								<TableCell>
+									<Link
+										to="/plugins/$pluginId"
+										params={{ pluginId: p.id }}
+										title={p.name ?? p.id}
+										className="block max-w-72 truncate font-medium hover:underline"
+									>
+										{p.name ?? p.id}
+									</Link>
+								</TableCell>
+								<TableCell className="text-muted-foreground">
+									{p.author ? (
+										<Link
+											to="/authors/$authorId"
+											params={{ authorId: p.author }}
+											title={p.author}
+											className="block max-w-40 truncate hover:underline"
+										>
+											{p.author}
+										</Link>
+									) : (
+										"—"
+									)}
+								</TableCell>
+								<TableCell className="text-muted-foreground">{p.category ?? "—"}</TableCell>
+								<TableCell className="text-right font-mono tabular-nums">
+									{fmtRelative(p.addedAt)}
+								</TableCell>
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</div>
@@ -300,7 +287,7 @@ function OverviewPage() {
 						View all
 					</Link>
 				</div>
-				<TrendingTable top={trending.data?.top ?? []} loading={trending.isLoading} />
+				<TrendingTable top={trending.top} loading={false} />
 			</section>
 		</div>
 	);

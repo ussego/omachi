@@ -29,12 +29,12 @@ export function groupLen(groupBy: string | null) {
 	return groupBy === "day" ? 10 : groupBy === "year" ? 4 : 7;
 }
 
-/** range=30d|90d|180d|365d|1y|all, or explicit from/to ISO dates. */
+/** range=7d|30d|90d|180d|365d|1y|all, or explicit from/to ISO dates. */
 export function dateRange(q: URLSearchParams) {
 	let from: string | undefined;
 	let to: string | undefined;
 	const range = q.get("range");
-	const days = { "30d": 30, "90d": 90, "180d": 180, "365d": 365, "1y": 365 }[range ?? ""];
+	const days = { "7d": 7, "30d": 30, "90d": 90, "180d": 180, "365d": 365, "1y": 365 }[range ?? ""];
 	if (days) from = new Date(Date.now() - days * dayMs).toISOString().slice(0, 10);
 	if (q.get("from")) from = q.get("from")!;
 	if (q.get("to")) to = q.get("to")!;
