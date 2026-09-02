@@ -2,16 +2,17 @@
 
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { NotFoundState } from "@/components/error-page";
 import { GraphRule as FigureRule, Graph, GraphBody } from "@/components/graph-frame/graph-frame";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
 import { GraphPlotSkeleton, GraphStatSkeleton } from "@/components/graph-skeleton";
 import { GraphStat } from "@/components/graph-stat";
 import { Badge } from "@/components/ui/badge";
-import { Empty, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
-import { useErrorToast, useLeaderboard, usePluginDetail } from "@/lib/queries";
+import { HttpError, useErrorToast, useLeaderboard, usePluginDetail } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/plugins/$pluginId")({
@@ -125,6 +126,18 @@ function PluginDetailPage() {
 					</Graph>
 				</div>
 
+				<div className="grid gap-6 lg:grid-cols-3">
+					<GraphPlotSkeleton title="Hearts" />
+					<GraphPlotSkeleton title="Views" />
+					<GraphPlotSkeleton title="Copies" />
+				</div>
+
+				<GraphRule />
+
+				<GraphStatSkeleton title="Averages" items={3} />
+
+				<GraphRule />
+
 				<Graph title="Related" className="w-full select-none" aria-hidden="true">
 					<GraphBody className="flex flex-col gap-5">
 						<Skeleton className="h-3 w-80" />
@@ -138,25 +151,22 @@ function PluginDetailPage() {
 						</div>
 					</GraphBody>
 				</Graph>
-
-				<div className="grid gap-6 lg:grid-cols-3">
-					<GraphPlotSkeleton title="Hearts" />
-					<GraphPlotSkeleton title="Views" />
-					<GraphPlotSkeleton title="Copies" />
-				</div>
-
-				<GraphRule />
-
-				<GraphStatSkeleton title="Averages" items={3} />
 			</div>
 		);
 	}
 
 	if (isError || !data) {
+		// A 404 from the detail API means the plugin isn't in the catalog —
+		// the same dead-end as an unmatched URL. Anything else (5xx, network)
+		// is a load failure, not a missing plugin.
+		if (error instanceof HttpError && error.status === 404) {
+			return <NotFoundState />;
+		}
 		return (
 			<div className="flex flex-col gap-6">
 				<Empty>
-					<EmptyTitle>Plugin not found</EmptyTitle>
+					<EmptyTitle>Couldn't load this plugin</EmptyTitle>
+					<EmptyDescription>The catalog may still be polling — check back in a moment.</EmptyDescription>
 				</Empty>
 			</div>
 		);
@@ -291,44 +301,6 @@ function PluginDetailPage() {
 				</Graph>
 			</div>
 
-			{relations?.related.length ? (
-				<Graph title="Related" className="w-full">
-					<GraphBody className="flex flex-col gap-5">
-						<p className="text-xs text-graph-muted">
-							nearest neighbors by description similarity, from the omarchy explorer
-						</p>
-						<ul className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-							{relations.related.slice(0, 8).map((r) => (
-								<li key={r.pluginId} className="flex min-w-0 flex-col gap-1">
-									<Link
-										to="/plugins/$pluginId"
-										params={{ pluginId: r.pluginId }}
-										title={`${r.name ?? r.pluginId} · ${Math.round(r.similarity * 100)}% similar`}
-										className="truncate font-medium hover:underline"
-									>
-										{r.name ?? r.pluginId}
-									</Link>
-									<div className="flex items-baseline justify-between gap-3">
-										<span className="truncate text-xs text-muted-foreground">
-											{r.author ?? "—"}
-										</span>
-										<span className="font-mono text-xs text-graph-muted tabular-nums">
-											{Math.round(r.similarity * 100)}%
-										</span>
-									</div>
-								</li>
-							))}
-						</ul>
-					</GraphBody>
-				</Graph>
-			) : (
-				<Graph title="Related" className="w-full">
-					<GraphBody className="flex flex-col items-center justify-center px-5 py-7 text-center sm:px-8">
-						<p className="text-graph-muted">no related plugins yet</p>
-					</GraphBody>
-				</Graph>
-			)}
-
 			{snapshots.length > 0 ? (
 				<div className="grid gap-6 lg:grid-cols-3">
 					<GraphPlot
@@ -371,6 +343,46 @@ function PluginDetailPage() {
 					...(manualSetup ? [] : [{ value: fmt(averages.copies), label: "average copies" }]),
 				]}
 			/>
+
+			<GraphRule />
+
+			{relations?.related.length ? (
+				<Graph title="Related" className="w-full">
+					<GraphBody className="flex flex-col gap-5">
+						<p className="text-xs text-graph-muted">
+							nearest neighbors by description similarity, from the omarchy explorer
+						</p>
+						<ul className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+							{relations.related.slice(0, 8).map((r) => (
+								<li key={r.pluginId} className="flex min-w-0 flex-col gap-1">
+									<Link
+										to="/plugins/$pluginId"
+										params={{ pluginId: r.pluginId }}
+										title={`${r.name ?? r.pluginId} · ${Math.round(r.similarity * 100)}% similar`}
+										className="truncate font-medium hover:underline"
+									>
+										{r.name ?? r.pluginId}
+									</Link>
+									<div className="flex items-baseline justify-between gap-3">
+										<span className="truncate text-xs text-muted-foreground">
+											{r.author ?? "—"}
+										</span>
+										<span className="font-mono text-xs text-graph-muted tabular-nums">
+											{Math.round(r.similarity * 100)}%
+										</span>
+									</div>
+								</li>
+							))}
+						</ul>
+					</GraphBody>
+				</Graph>
+			) : (
+				<Graph title="Related" className="w-full">
+					<GraphBody className="flex flex-col items-center justify-center px-5 py-7 text-center sm:px-8">
+						<p className="text-graph-muted">no related plugins yet</p>
+					</GraphBody>
+				</Graph>
+			)}
 		</div>
 	);
 }

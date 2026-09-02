@@ -1,14 +1,60 @@
 import { env, waitUntil } from "cloudflare:workers";
 import { createMiddleware, createStart } from "@tanstack/react-start";
 
+/**
+ * API responses must speak JSON with the documented `{ error }` shape. The
+ * framework's failure modes leak through otherwise: unmatched /api paths come
+ * back as the HTML not-found shell, and unhandled route-handler errors are
+ * the raw h3 envelope (`{"status":500,"unhandled":true,...}`).
+ */
+async function apiErrorJson<T>(result: T): Promise<Response | T> {
+	const response = result instanceof Response ? result : (result as { response: Response }).response;
+	const contentType = response.headers.get("content-type") ?? "";
+
+	if (response.status === 404 && contentType.includes("text/html")) {
+		return Response.json({ error: "not found" }, { status: 404 });
+	}
+	if (response.status >= 500 && contentType.includes("application/json")) {
+		const body = await response
+			.clone()
+			.json()
+			.catch(() => null);
+		if (body && typeof body === "object" && (body as { unhandled?: unknown }).unhandled === true) {
+			return Response.json({ error: "internal server error" }, { status: response.status });
+		}
+	}
+	return result;
+}
+
+/**
+ * Handler errors propagate as thrown exceptions (h3 serializes them only at
+ * the outermost layer), so catch them here and answer with the JSON error
+ * shape instead of the raw h3 envelope.
+ */
+async function apiRun<T>(next: () => Promise<T>): Promise<Response | T> {
+	try {
+		return await apiErrorJson(await next());
+	} catch (err) {
+		if (err instanceof Response) return apiErrorJson(err);
+		console.error(err);
+		return Response.json({ error: "internal server error" }, { status: 500 });
+	}
+}
+
 const edgeCache = createMiddleware().server(async ({ next, request }) => {
 	const url = new URL(request.url);
-	if (request.method !== "GET" || !url.pathname.startsWith("/api/")) {
+	if (!url.pathname.startsWith("/api/")) {
 		return next();
 	}
 
+	// Nothing is cached for non-GET (admin) requests; only error bodies
+	// are normalized.
+	if (request.method !== "GET") {
+		return apiRun(() => Promise.resolve(next()));
+	}
+
 	if (url.pathname.startsWith("/api/health")) {
-		const result = await next();
+		const result = await apiRun(() => Promise.resolve(next()));
 		const response = result instanceof Response ? result : result.response;
 		const headers = new Headers(response.headers);
 		headers.set("Cache-Control", "no-cache");
@@ -23,7 +69,7 @@ const edgeCache = createMiddleware().server(async ({ next, request }) => {
 		return new Response(hit.body, { status: hit.status, statusText: hit.statusText, headers });
 	}
 
-	const result = await next();
+	const result = await apiRun(() => Promise.resolve(next()));
 	const response = result instanceof Response ? result : result.response;
 	const headers = new Headers(response.headers);
 	headers.set("Cache-Control", "public, s-maxage=3600");

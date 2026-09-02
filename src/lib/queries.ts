@@ -22,9 +22,20 @@ import type {
 
 // ── fetch helper ───────────────────────────────────────────────────────────
 
+/** A failed API call, carrying the HTTP status so callers can branch on it. */
+export class HttpError extends Error {
+	constructor(
+		public readonly status: number,
+		statusText: string,
+	) {
+		super(`${status} ${statusText}`);
+		this.name = "HttpError";
+	}
+}
+
 async function get<T>(path: string): Promise<T> {
 	const res = await fetch(path);
-	if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+	if (!res.ok) throw new HttpError(res.status, res.statusText);
 	return res.json() as Promise<T>;
 }
 
