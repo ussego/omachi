@@ -41,6 +41,14 @@ async function apiRun<T>(next: () => Promise<T>): Promise<Response | T> {
 	}
 }
 
+/**
+ * Per-prefix TTL overrides for the edge cache (seconds). Everything else
+ * caches for one hour. Trending only changes at the 4x/day heavy poll, so a
+ * 6h TTL costs at most one poll cycle of staleness while cutting its
+ * latest-per-plugin D1 reads ~6x.
+ */
+const CACHE_TTL: [prefix: string, sMaxage: number][] = [["/api/leaderboard/trending", 21600]];
+
 const edgeCache = createMiddleware().server(async ({ next, request }) => {
 	const url = new URL(request.url);
 	if (!url.pathname.startsWith("/api/")) {
@@ -72,7 +80,8 @@ const edgeCache = createMiddleware().server(async ({ next, request }) => {
 	const result = await apiRun(() => Promise.resolve(next()));
 	const response = result instanceof Response ? result : result.response;
 	const headers = new Headers(response.headers);
-	headers.set("Cache-Control", "public, s-maxage=3600");
+	const sMaxage = CACHE_TTL.find(([prefix]) => url.pathname.startsWith(prefix))?.[1] ?? 3600;
+	headers.set("Cache-Control", `public, s-maxage=${sMaxage}`);
 	headers.set("x-cache", "MISS");
 	const output = new Response(response.clone().body, {
 		status: response.status,

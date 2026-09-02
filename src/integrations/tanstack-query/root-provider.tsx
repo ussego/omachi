@@ -8,6 +8,10 @@ export function getContext() {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
+				// Dashboard data only changes at the polls (4x/day for the heavy
+				// one); don't refetch everything on every mount. The edge cache
+				// hides this from D1 anyway, but /api/health is uncached.
+				staleTime: 5 * 60_000,
 				retry: (failureCount, error) => {
 					// A 4xx answer is deterministic — retrying can't turn a missing
 					// plugin into a real one, and the page would sit on its loading
