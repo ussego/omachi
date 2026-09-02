@@ -13,6 +13,7 @@ const LLMS_TXT = `# Omachi
 - [Categories](https://stats.ussego.com/categories): plugin counts and engagement by category, with a monthly activity heatmap.
 - [Badges](https://stats.ussego.com/badges): embeddable stat badges for plugins and authors.
 - [API](https://stats.ussego.com/api/health): JSON endpoints behind the dashboard; most GETs are edge-cached hourly, health endpoints respond uncached.
+- [About](https://stats.ussego.com/about): data sources, permissions, and credits for the dashboard.
 `;
 
 export const Route = createFileRoute("/llms.txt")({

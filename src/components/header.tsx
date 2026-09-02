@@ -19,6 +19,7 @@ const NAV = [
 	{ to: "/categories", label: "Categories" },
 	{ to: "/charts", label: "Charts" },
 	{ to: "/badges", label: "Badges" },
+	{ to: "/about", label: "About" },
 ] as const;
 
 /** GitHub mark (simple-icons path). */
@@ -104,7 +105,7 @@ export default function Header() {
 				<Link
 					to="/"
 					aria-label="Omachi — home"
-					className="group relative inline-block font-mono text-sm tracking-widest text-graph-accent uppercase"
+					className="group relative inline-block shrink-0 font-mono text-sm tracking-widest text-graph-accent uppercase"
 				>
 					<span
 						aria-hidden="true"

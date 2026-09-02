@@ -1,4 +1,5 @@
 import { IconHeart } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { buttonVariants } from "@/components/ui/button";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -34,6 +35,15 @@ export default function Footer() {
 						<span className="font-mono text-muted-foreground text-xs">
 							snapshots every 6h · new plugins every 30m
 						</span>
+						<span aria-hidden="true" className="font-mono text-muted-foreground text-xs">
+							·
+						</span>
+						<Link
+							to="/about"
+							className="font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
+						>
+							About
+						</Link>
 						<div className="flex gap-1">
 							<a
 								href="https://github.com/ussego/omachi"

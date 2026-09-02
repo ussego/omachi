@@ -42,6 +42,19 @@ Architecture, query-budget discipline, and conventions are documented in
 [AGENTS.md](AGENTS.md); [CONTEXT.md](CONTEXT.md) is the domain model and
 `docs/adr/` the decision records.
 
+## Data sources & credits
+
+The plugin catalog and explorer graph come from the [omarchy plugin
+marketplace](https://plugins.omarchy.org)
+([omacom/omarchy-plugin-marketplace](https://github.com/omacom/omarchy-plugin-marketplace), MIT).
+Views, copies, and hearts come from the marketplace's stats API, used with the
+maintainer's permission. The color themes in the header picker are generated
+from [Omarchy](https://github.com/basecamp/omarchy)'s built-in themes (MIT).
+
+## License
+
+[MIT](LICENSE).
+
 ## Deploy
 
 Pushes to `main` run typecheck, lint, and tests, then deploy through
