@@ -66,14 +66,14 @@ the environment truth for scripts, bindings, and deployment identity.
    It does not validate the full feed, write Snapshots, or perform per-Plugin
    diffing; that restraint keeps it cheap.
 3. **Explorer Poll** (`pollExplorerRelations()`, `src/lib/explorer.ts`): GitHub
-   Actions calls `POST /api/admin/explorer-poll` once a day. It fetches
-   explorer-data.json (the Omarchy explorer's similarity graph over the
-   community catalog) and upserts `plugin_relations`: per-Plugin nearest
-   neighbors with similarity scores, the cluster label, and graph influence.
-   Shape checks only, no zod; a malformed payload aborts without writing so
-   yesterday's rows survive. The upstream regenerates the payload per request,
-   so this poll must stay at one run per day. Built-in Plugins are out of
-   scope and never get a `plugin_relations` row.
+   Actions calls `POST /api/admin/explorer-poll` once a week (Monday 05:23
+   UTC). It fetches explorer-data.json (the Omarchy explorer's similarity
+   graph over the community catalog) and upserts `plugin_relations`: per-Plugin
+   nearest neighbors with similarity scores, the cluster label, and graph
+   influence. Shape checks only, no zod; a malformed payload aborts without
+   writing so the previous week's rows survive. The upstream regenerates the
+   payload per request, so this poll must stay at one run per week. Built-in
+   Plugins are out of scope and never get a `plugin_relations` row.
 4. **API**: Each endpoint is a file-based TanStack Start Server Route under
    `src/routes/api/`. Route handlers read Cloudflare bindings through
    `cloudflare:workers`, return the established JSON wire shapes, and use the
@@ -129,14 +129,14 @@ renderers consume those payloads. Keep the chart shape stable:
 - **CPU**: 10 ms/invocation cap, enforced leniently by frequency. The Heavy
   Poll runs four times per day; extra freshness goes through the cheap Light
   Poll, which must avoid full-feed validation and per-Plugin work. The
-  Explorer Poll runs once per day and stays at shape checks + a chunked
+  Explorer Poll runs once a week and stays at shape checks + a chunked
   upsert (two batch calls) — never raise its frequency.
 - **D1 free caps**: 5M rows read/day, 100k rows written/day, 50 queries per
   invocation, and a 500 MB database. The Heavy Poll is near the query cap at
   roughly 3.2k statements and 49 batch calls per run; new work must merge
   queries, such as batching latest reads. The Light Poll should stay around
-  zero to two statements. The Explorer Poll writes ~2k rows/day (~2% of the
-  write cap) in multi-row statements of ≤16 rows, staying under the 100
+  zero to two statements. The Explorer Poll writes ~2k rows/week (~2% of the
+  write cap per run) in multi-row statements of ≤16 rows, staying under the 100
   bound-parameter-per-statement limit.
 - **Cache hits save D1 reads, not CPU**: the Worker still runs to check the
   Cache API.
