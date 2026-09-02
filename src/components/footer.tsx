@@ -26,10 +26,10 @@ export default function Footer() {
 				<div className="flex w-full flex-wrap items-end justify-between gap-3">
 					<div className="flex flex-col">
 						<span className="font-mono text-sm tracking-widest text-graph-accent uppercase">
-							[ Omachi ]
+							[O]
 						</span>
 						<span className="text-muted-foreground text-sm">
-							An independent companion dashboard for the Omarchy plugin catalog
+							Omachi — an independent companion dashboard for the Omarchy plugin catalog
 						</span>
 					</div>
 					<div className="flex flex-wrap items-center justify-end gap-3">
@@ -38,7 +38,7 @@ export default function Footer() {
 						</span>
 						<div className="flex gap-1">
 							<a
-								href="https://github.com/ussego/omastats"
+								href="https://github.com/ussego/omachi"
 								target="_blank"
 								rel="noreferrer"
 								aria-label="GitHub repository"

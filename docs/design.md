@@ -48,11 +48,12 @@ language grows.
   page header, and never between sibling blocks of one region (adjacent charts, consecutive
   reference blocks). Loading skeletons mirror them so the swap to settled content never jumps.
 - **Navbar**: full-width, `bg-background/80 backdrop-blur`, soft dashed rule at the bottom edge.
-  Logo `[ OMACHI ]` = mono, uppercase, `tracking-widest`, accent. Nav links = mono uppercase
+  Logo `[O]` = the Omachi mark: an accent `O` between brackets, mono, uppercase,
+  `tracking-widest`, `aria-label="Omachi — home"` carries the name. Nav links = mono uppercase
   `text-xs`; active page `text-graph-accent`, inactive `text-muted-foreground`. Header controls
   (theme toggle, search, GitHub/Sponsor, menu) all carry the dashed `graph-frame`.
-- **Footer**: full-width soft dashed rule at the top; `[ OMACHI ]` brand in accent; captions mono
-  muted `text-xs`.
+- **Footer**: full-width soft dashed rule at the top; `[O]` brand mark in accent with the Omachi
+  name in the muted line beneath; captions mono muted `text-xs`.
 - **Tabs** (`src/components/ui/tabs.tsx`): triggers mono uppercase `text-xs`; default variant is a
   dashed `graph-frame` list on `bg-background` with a flat `bg-muted` indicator; the underline
   variant uses a `bg-graph-accent` indicator.
@@ -69,8 +70,7 @@ language grows.
 
 - Hover on interactive chrome fades in the marching-ants frame (200ms) — logo and nav links; the
   same frame shows on `group-focus-visible` for keyboard users.
-- Logo hover additionally closes the brackets ~2px (`[  OMACHI  ]` → `[ OMACHI ]`), 200ms
-  ease-out.
+- Logo hover additionally closes the brackets ~2px (`[ O ]` → `[O]`), 200ms ease-out.
 - Motion: 200–220ms ease-out; the march is the only loop; everything respects
   `prefers-reduced-motion`.
 

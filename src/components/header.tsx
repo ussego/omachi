@@ -74,7 +74,7 @@ function MobileNav() {
 				</nav>
 				<DrawerFooter>
 					<a
-						href="https://github.com/ussego/omastats"
+						href="https://github.com/ussego/omachi"
 						target="_blank"
 						rel="noreferrer"
 						className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full justify-start" })}
@@ -103,17 +103,18 @@ export default function Header() {
 			<div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
 				<Link
 					to="/"
+					aria-label="Omachi — home"
 					className="group relative inline-block font-mono text-sm tracking-widest text-graph-accent uppercase"
 				>
 					<span
 						aria-hidden="true"
 						className="graph-frame graph-frame-march pointer-events-none absolute -inset-1 opacity-0 transition-opacity duration-200 group-focus-visible:opacity-100 group-hover:opacity-100"
 					/>
-					<span className="inline-block -translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+					<span aria-hidden="true" className="inline-block -translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
 						[{" "}
 					</span>
-					Omachi
-					<span className="inline-block translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
+					O
+					<span aria-hidden="true" className="inline-block translate-x-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0">
 						{" "}
 						]
 					</span>
@@ -140,7 +141,7 @@ export default function Header() {
 					<ThemeToggle />
 					<CommandPalette />
 					<a
-						href="https://github.com/ussego/omastats"
+						href="https://github.com/ussego/omachi"
 						target="_blank"
 						rel="noreferrer"
 						aria-label="GitHub repository"
