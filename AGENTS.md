@@ -56,10 +56,12 @@ the environment truth for scripts, bindings, and deployment identity.
 
 1. **Heavy Poll** (`runSnapshot()`, `src/lib/snapshot.ts`): GitHub Actions
    calls `POST /api/admin/snapshot`. The poll fetches and validates the catalog
-   and stats feeds, upserts Plugin metadata and `current_*` state, appends one
-   `plugin_snapshots` row per Plugin, diffs against the previous Snapshot into
-   Verification Events and Update Events, and prunes Snapshots older than 90
-   days.
+   and stats feeds, reads each Plugin's previous verification/version state
+   from `plugins.current_*` (before the upsert overwrites it), upserts Plugin
+   metadata and `current_*` state, appends one `plugin_snapshots` row per
+   Plugin, diffs the captured state into Verification Events and Update
+   Events, maintains the `meta.snapshot_count` running total, and prunes
+   Snapshots older than 90 days.
 2. **Light Poll** (`pollNewPlugins()`, `src/lib/light-poll.ts`): GitHub Actions
    calls `POST /api/admin/light-poll`. It fetches the catalog and inserts rows
    only for new Plugin IDs, keeping the live count fresh between Heavy Polls.
@@ -79,8 +81,10 @@ the environment truth for scripts, bindings, and deployment identity.
    `cloudflare:workers`, return the established JSON wire shapes, and use the
    shared `adminAuth` middleware for the admin endpoints.
 5. **Edge cache**: The global request middleware in `src/start.ts` caches
-   successful GET `/api/*` responses for one hour through the Cache API and
-   adds `x-cache: HIT|MISS`. `/api/health*` responses remain uncached.
+   successful GET `/api/*` responses for one hour through the Cache API
+   (per-prefix overrides in `CACHE_TTL`; `/api/leaderboard/trending` caches
+   six hours because its data only moves at the Heavy Poll) and adds
+   `x-cache: HIT|MISS`. `/api/health*` responses remain uncached.
 6. **Frontend**: The same Worker serves the TanStack Start application shell.
    File-based routes live in `src/routes/`; generated `src/routeTree.gen.ts`
    is never hand-edited. Data access uses the API hooks in `src/lib/queries.ts`.
@@ -92,7 +96,9 @@ the environment truth for scripts, bindings, and deployment identity.
 `plugins.current_*` mirrors each Plugin's latest Snapshot row; the Heavy Poll
 writes both in one upsert. Current-state reads (leaderboards, authors, broken
 Plugins, and the latest Plugin list) come from `plugins.current_*`, never from
-`plugin_snapshots`: the latest-per-Plugin query is a full index scan.
+`plugin_snapshots`: the latest-per-Plugin query is a full index scan. The
+Heavy Poll itself diffs against `current_verification_status`/`current_version`
+captured before the upsert — never against `plugin_snapshots`.
 
 - New list and leaderboard routes read `plugins`; keep Snapshot reads
   (trending history and `/plugins/:id`) time-bounded.
@@ -103,6 +109,10 @@ Plugins, and the latest Plugin list) come from `plugins.current_*`, never from
   current-state queries filter `isNotNull(currentSnapshotAt)`.
 - Changing Snapshot columns changes three places together: the Snapshot
   write, the mirror columns, and the upsert.
+- The `meta` table holds running counters so request-time endpoints never
+  full-scan a fact table. `meta.snapshot_count` is seeded by migration and
+  maintained by the Heavy Poll (increment on append, decrement on prune);
+  `/api/health` reads that row instead of `COUNT(*)` on `plugin_snapshots`.
 - `plugin_relations` is a second, smaller mirror — Explorer-graph state
   written only by the Explorer Poll, never by the catalog upsert. The detail
   API joins its `related` JSON against `plugins` for names before serving, and
@@ -133,7 +143,8 @@ renderers consume those payloads. Keep the chart shape stable:
   upsert (two batch calls) — never raise its frequency.
 - **D1 free caps**: 5M rows read/day, 100k rows written/day, 50 queries per
   invocation, and a 500 MB database. The Heavy Poll is near the query cap at
-  roughly 3.2k statements and 49 batch calls per run; new work must merge
+  roughly 3.2k statements and 49 batch calls per run (its diff source is one
+  mirror read, not the chunked snapshot scan it replaced); new work must merge
   queries, such as batching latest reads. The Light Poll should stay around
   zero to two statements. The Explorer Poll writes ~2k rows/day (~2% of the
   write cap per run) in multi-row statements of ≤16 rows, staying under the 100

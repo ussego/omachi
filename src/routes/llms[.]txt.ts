@@ -12,7 +12,7 @@ const LLMS_TXT = `# Omachi
 - [Ecosystem Health](https://stats.ussego.com/health): verification status, install availability, and broken plugins.
 - [Categories](https://stats.ussego.com/categories): plugin counts and engagement by category, with a monthly activity heatmap.
 - [Badges](https://stats.ussego.com/badges): embeddable stat badges for plugins and authors.
-- [API](https://stats.ussego.com/api/health): JSON endpoints behind the dashboard, edge-cached hourly.
+- [API](https://stats.ussego.com/api/health): JSON endpoints behind the dashboard; most GETs are edge-cached hourly, health endpoints respond uncached.
 `;
 
 export const Route = createFileRoute("/llms.txt")({
