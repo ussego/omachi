@@ -1,6 +1,10 @@
 /** Number/date formatting for the dashboard. */
 
-const nf = new Intl.NumberFormat("en-US");
+// Locale is pinned so SSR and hydration agree (the site chrome is English);
+// an unpinned locale resolves per-environment and mismatches on hydration.
+const LOCALE = "en-US";
+
+const nf = new Intl.NumberFormat(LOCALE);
 
 export const fmt = (n: number | null | undefined): string => (n == null ? "—" : nf.format(n));
 
@@ -10,14 +14,14 @@ export const truncate = (s: string, maxLen = 18): string => (s.length > maxLen ?
 export const pct = (a: number, b: number): number => (b > 0 ? Math.round((a / b) * 100) : 0);
 
 export const fmtDate = (iso: string | null | undefined): string =>
-	iso ? new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
+	iso ? new Date(iso).toLocaleDateString(LOCALE, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
 export const fmtMonthDay = (iso: string | null | undefined): string =>
-	iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—";
+	iso ? new Date(iso).toLocaleDateString(LOCALE, { month: "short", day: "numeric" }) : "—";
 
 export const fmtDateTime = (iso: string | null | undefined): string =>
 	iso
-		? new Date(iso).toLocaleString(undefined, {
+		? new Date(iso).toLocaleString(LOCALE, {
 				year: "numeric",
 				month: "short",
 				day: "numeric",
