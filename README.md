@@ -49,7 +49,7 @@ marketplace](https://plugins.omarchy.org)
 ([omacom/omarchy-plugin-marketplace](https://github.com/omacom/omarchy-plugin-marketplace), MIT).
 Views, copies, and hearts come from the marketplace's stats API, used with the
 maintainer's permission. The color themes in the header picker are generated
-from [Omarchy](https://github.com/basecamp/omarchy)'s built-in themes (MIT).
+from [Omarchy](https://github.com/omacom/omarchy)'s built-in themes (MIT).
 
 ## License
 

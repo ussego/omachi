@@ -225,7 +225,7 @@ function AboutPage() {
 					<p>
 						Omachi uses color themes generated from{" "}
 						<a
-							href="https://github.com/basecamp/omarchy"
+							href="https://github.com/omacom/omarchy"
 							target="_blank"
 							rel="noreferrer"
 							className={textLink}
