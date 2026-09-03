@@ -24,26 +24,9 @@ const textLink = "underline decoration-dotted underline-offset-4 transition-colo
 function AboutPage() {
 	return (
 		<div className="flex flex-col gap-8">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h1 className="font-heading text-2xl">About</h1>
-				<div className="flex flex-wrap gap-2">
-					<a href="https://plugins.omarchy.org" target="_blank" rel="noreferrer" className={buttonVariants()}>
-						<span>Official catalog</span>
-						<IconExternalLink data-icon="inline-end" />
-					</a>
-					<a
-						href="https://github.com/ussego/omachi"
-						target="_blank"
-						rel="noreferrer"
-						className={buttonVariants({ variant: "outline" })}
-					>
-						<span>Source</span>
-						<IconExternalLink data-icon="inline-end" />
-					</a>
-				</div>
-			</div>
+			<h1 className="font-heading text-2xl">About</h1>
 
-			<div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)] lg:gap-12">
+			<div className="flex flex-col gap-6">
 				<div className="flex flex-col gap-3">
 					<p className="max-w-3xl text-balance font-heading text-2xl leading-snug sm:text-3xl">
 						A clearer view of the Omarchy plugin ecosystem.
@@ -55,7 +38,7 @@ function AboutPage() {
 					</p>
 				</div>
 
-				<section aria-labelledby="catalog-relationship" className="flex flex-col gap-3">
+				<section aria-labelledby="catalog-relationship" className="flex max-w-2xl flex-col gap-3">
 					<h2 id="catalog-relationship" className="font-heading text-xl">
 						Built to support the official catalog
 					</h2>
@@ -68,6 +51,26 @@ function AboutPage() {
 						Omachi will remain an independent analytics companion. It does not accept submissions, set
 						verification status, or provide an alternative installation path.
 					</p>
+					<div className="flex flex-wrap gap-2 pt-1">
+						<a
+							href="https://plugins.omarchy.org"
+							target="_blank"
+							rel="noreferrer"
+							className={buttonVariants()}
+						>
+							<span>Official catalog</span>
+							<IconExternalLink data-icon="inline-end" />
+						</a>
+						<a
+							href="https://github.com/ussego/omachi"
+							target="_blank"
+							rel="noreferrer"
+							className={buttonVariants({ variant: "outline" })}
+						>
+							<span>Source</span>
+							<IconExternalLink data-icon="inline-end" />
+						</a>
+					</div>
 				</section>
 			</div>
 
@@ -161,10 +164,7 @@ function AboutPage() {
 
 			<GraphRule />
 
-			<section
-				aria-labelledby="project"
-				className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.7fr)] lg:gap-12"
-			>
+			<section aria-labelledby="project" className="flex flex-col gap-6">
 				<div className="flex flex-col gap-3">
 					<h2 id="project" className="font-heading text-xl">
 						Independent and open source
@@ -185,7 +185,7 @@ function AboutPage() {
 					</p>
 				</div>
 
-				<div className="flex flex-col gap-3 text-muted-foreground">
+				<div className="flex max-w-2xl flex-col gap-3 text-muted-foreground">
 					<p>
 						Omachi uses color themes generated from{" "}
 						<a
