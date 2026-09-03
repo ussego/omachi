@@ -1,13 +1,21 @@
 /** @jsxImportSource react */
 
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { z } from "zod";
 import { BrokenPluginsTable } from "@/components/broken-plugins-table";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphRank } from "@/components/graph-rank";
+import { buttonVariants } from "@/components/ui/button";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { UnverifiedPluginsTable } from "@/components/unverified-plugins-table";
 
@@ -18,15 +26,14 @@ const RANGES = [
 	{ value: "14d", label: "14d" },
 	{ value: "30d", label: "1 month" },
 ] as const;
-const DEFAULTS = { range: "30d" } as const;
+const DEFAULTS = { range: "30d", page: 1 } as const;
+const UNVERIFIED_PAGE_SIZE = 25;
 
 // Zod v4 schema passed straight to validateSearch; `.catch` coerces garbage
 // to the default instead of erroring the route.
 const healthSearchSchema = z.object({
-	range: z
-		.enum(["7d", "14d", "30d"])
-		.default(DEFAULTS.range)
-		.catch(DEFAULTS.range),
+	range: z.enum(["7d", "14d", "30d"]).default(DEFAULTS.range).catch(DEFAULTS.range),
+	page: z.number().int().positive().default(DEFAULTS.page).catch(DEFAULTS.page),
 });
 
 export const Route = createFileRoute("/health")({
@@ -71,11 +78,15 @@ function StatusChart({ title, rows }: { title: string; rows: { status: string | 
 }
 
 function HealthPage() {
-	const { range } = Route.useSearch();
+	const { range, page } = Route.useSearch();
 	const navigate = useNavigate({ from: "/health" });
 	const { data: breakdown } = useSuspenseQuery(breakdownQuery());
 	const { data: broken } = useSuspenseQuery(brokenPluginsQuery());
 	const { data: unverified } = useSuspenseQuery(unverifiedPluginsQuery(range));
+	const pageCount = Math.max(1, Math.ceil(unverified.plugins.length / UNVERIFIED_PAGE_SIZE));
+	const currentPage = Math.min(page, pageCount);
+	const pageStart = (currentPage - 1) * UNVERIFIED_PAGE_SIZE;
+	const pagePlugins = unverified.plugins.slice(pageStart, pageStart + UNVERIFIED_PAGE_SIZE);
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -103,7 +114,9 @@ function HealthPage() {
 					<h2 className="font-heading text-xl">Unverified plugins</h2>
 					<Tabs
 						value={range}
-						onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, range: v as typeof range }) })}
+						onValueChange={(v) =>
+							navigate({ search: (prev) => ({ ...prev, range: v as typeof range, page: DEFAULTS.page }) })
+						}
 					>
 						<TabsList>
 							{RANGES.map((r) => (
@@ -114,7 +127,57 @@ function HealthPage() {
 						</TabsList>
 					</Tabs>
 				</div>
-				<UnverifiedPluginsTable plugins={unverified.plugins} />
+				<UnverifiedPluginsTable plugins={pagePlugins} />
+				{unverified.plugins.length > UNVERIFIED_PAGE_SIZE ? (
+					<div className="flex flex-col items-center gap-2">
+						<p className="font-mono text-muted-foreground text-xs uppercase tabular-nums">
+							Showing {pageStart + 1}–
+							{Math.min(pageStart + UNVERIFIED_PAGE_SIZE, unverified.plugins.length)} of{" "}
+							{unverified.plugins.length}
+						</p>
+						<Pagination>
+							<PaginationContent>
+								<PaginationItem>
+									{currentPage > 1 ? (
+										<PaginationPrevious
+											className={buttonVariants({ variant: "ghost", size: "default" })}
+											render={
+												<Link
+													from="/health"
+													to="/health"
+													search={(prev) => ({ ...prev, page: currentPage - 1 })}
+												/>
+											}
+										/>
+									) : (
+										<PaginationPrevious aria-disabled className="pointer-events-none opacity-50" />
+									)}
+								</PaginationItem>
+								<PaginationItem>
+									<span className="flex h-8 items-center px-2 font-mono text-xs uppercase tabular-nums">
+										Page {currentPage} of {pageCount}
+									</span>
+								</PaginationItem>
+								<PaginationItem>
+									{currentPage < pageCount ? (
+										<PaginationNext
+											className={buttonVariants({ variant: "ghost", size: "default" })}
+											render={
+												<Link
+													from="/health"
+													to="/health"
+													search={(prev) => ({ ...prev, page: currentPage + 1 })}
+												/>
+											}
+										/>
+									) : (
+										<PaginationNext aria-disabled className="pointer-events-none opacity-50" />
+									)}
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
