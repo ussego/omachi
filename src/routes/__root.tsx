@@ -64,7 +64,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body className="font-sans antialiased wrap-anywhere">
 				<Header />
 				<main className="flex min-h-[calc(100dvh-3.5rem)] flex-col">
-					<div className="graph-frame-sides relative mx-auto w-full max-w-6xl flex-1">
+					{/* overflow-x-clip: corner marks overhang 8px and must not scroll the
+					    page while the column is wider than max-w-6xl (640-1168px). */}
+					<div className="graph-frame-sides relative mx-auto w-full max-w-6xl flex-1 overflow-x-clip">
 						<GraphCorners ink="text-graph-frame-soft" className="hidden sm:flex" />
 						<div className="px-4 py-8 sm:px-6">{children}</div>
 					</div>

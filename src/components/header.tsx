@@ -48,7 +48,7 @@ function MobileNav() {
 			>
 				<IconMenu className="size-4" />
 			</DrawerTrigger>
-			<DrawerContent>
+			<DrawerContent className="mobile-nav-drawer">
 				<DrawerHeader>
 					<DrawerTitle>Menu</DrawerTitle>
 				</DrawerHeader>

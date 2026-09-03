@@ -175,6 +175,12 @@
 		@apply font-sans;
 		scrollbar-gutter: stable;
 	}
+	html:has(.mobile-nav-drawer) {
+		/* biome-ignore lint/complexity/noImportantStyles: Override Base UI's inline modal scroll lock. */
+		overflow: hidden !important;
+		/* biome-ignore lint/complexity/noImportantStyles: Override Base UI's inline stable gutter. */
+		scrollbar-gutter: auto !important;
+	}
 }
 
 @utility graph-frame {
