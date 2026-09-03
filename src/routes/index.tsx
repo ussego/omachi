@@ -228,6 +228,22 @@ function OverviewPage() {
 
 			<GraphRule />
 
+			<section className="flex flex-col gap-3">
+				<div className="flex items-baseline justify-between">
+					<h2 className="font-heading text-xl">Trending this week</h2>
+					<Link
+						to="/leaderboards"
+						search={{ tab: "trending" }}
+						className="text-muted-foreground text-sm hover:underline"
+					>
+						View all
+					</Link>
+				</div>
+				<TrendingTable top={trending.top} />
+			</section>
+
+			<GraphRule />
+
 			<div className="flex flex-col gap-3">
 				<div className="flex items-baseline justify-between">
 					<h2 className="font-heading text-xl">Recent plugins</h2>
@@ -278,21 +294,6 @@ function OverviewPage() {
 				</Table>
 			</div>
 
-			<GraphRule />
-
-			<section className="flex flex-col gap-3">
-				<div className="flex items-baseline justify-between">
-					<h2 className="font-heading text-xl">Trending this week</h2>
-					<Link
-						to="/leaderboards"
-						search={{ tab: "trending" }}
-						className="text-muted-foreground text-sm hover:underline"
-					>
-						View all
-					</Link>
-				</div>
-				<TrendingTable top={trending.top} />
-			</section>
 		</div>
 	);
 }
