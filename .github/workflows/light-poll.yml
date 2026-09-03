@@ -16,6 +16,6 @@ jobs:
     steps:
       - name: Trigger worker light poll
         run: |
-          curl -fsS -X POST \
+          curl --fail-with-body --silent --show-error -X POST \
             -H "x-admin-token: ${{ secrets.ADMIN_TOKEN }}" \
             https://stats.ussego.com/api/admin/light-poll

@@ -24,8 +24,8 @@ export const Route = createFileRoute("/categories")({
 	}),
 	loader: ({ context: { queryClient } }) =>
 		Promise.all([
-			queryClient.ensureQueryData(categoriesQuery()),
-			queryClient.ensureQueryData(heatmapQuery()),
+			queryClient.query({ ...categoriesQuery(), staleTime: "static" }),
+			queryClient.query({ ...heatmapQuery(), staleTime: "static" }),
 		]),
 	component: CategoriesPage,
 });

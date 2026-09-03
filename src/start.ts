@@ -1,6 +1,8 @@
 import { env, waitUntil } from "cloudflare:workers";
 import { createMiddleware, createStart } from "@tanstack/react-start";
 
+import { apiErrorResponse } from "@/lib/api-error";
+
 /**
  * API responses must speak JSON with the documented `{ error }` shape. The
  * framework's failure modes leak through otherwise: unmatched /api paths come
@@ -37,7 +39,7 @@ async function apiRun<T>(next: () => Promise<T>): Promise<Response | T> {
 	} catch (err) {
 		if (err instanceof Response) return apiErrorJson(err);
 		console.error(err);
-		return Response.json({ error: "internal server error" }, { status: 500 });
+		return apiErrorResponse(err);
 	}
 }
 
@@ -97,7 +99,12 @@ export const adminAuth = createMiddleware().server(async ({ next, request }) => 
 	if (!adminToken || request.headers.get("x-admin-token") !== adminToken) {
 		return Response.json({ error: "unauthorized" }, { status: 401 });
 	}
-	return next();
+	try {
+		return await next();
+	} catch (err) {
+		console.error(err);
+		return apiErrorResponse(err, true);
+	}
 });
 
 export const startInstance = createStart(() => ({ requestMiddleware: [edgeCache] }));

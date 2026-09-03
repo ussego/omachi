@@ -15,6 +15,104 @@ export interface SnapshotResult {
 
 type CatalogPlugin = z.infer<typeof catalogPluginSchema>;
 
+const MAX_FETCH_ATTEMPTS = 2;
+const DEFAULT_RETRY_DELAY_MS = 2000;
+const MAX_RETRY_DELAY_MS = 30_000;
+const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
+const RETRYABLE_STATUSES = new Set([408, 425, 429]);
+
+type FeedFetch = (input: string, init?: RequestInit) => Promise<Response>;
+
+interface FetchValidatedFeedOptions {
+	fetch?: FeedFetch;
+	sleep?: (ms: number) => Promise<void>;
+	now?: () => number;
+	timeoutMs?: number;
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+function isRetryableStatus(status: number) {
+	return RETRYABLE_STATUSES.has(status) || status >= 500;
+}
+
+function retryDelayMs(value: string | null, now: () => number) {
+	if (!value) return DEFAULT_RETRY_DELAY_MS;
+	const seconds = Number(value);
+	const requested = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - now();
+	if (!Number.isFinite(requested)) return DEFAULT_RETRY_DELAY_MS;
+	return Math.min(Math.max(requested, 0), MAX_RETRY_DELAY_MS);
+}
+
+function errorMessage(err: unknown) {
+	return err instanceof Error && err.message ? `${err.name}: ${err.message}` : String(err);
+}
+
+function isTimeoutError(err: unknown) {
+	return err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+}
+
+/** Fetch and validate an upstream feed, retrying only failures likely to be transient. */
+export async function fetchValidatedFeed<T>(
+	label: string,
+	url: string,
+	schema: z.ZodType<T>,
+	options: FetchValidatedFeedOptions = {},
+): Promise<T> {
+	const fetchFeed = options.fetch ?? fetch;
+	const wait = options.sleep ?? sleep;
+	const now = options.now ?? Date.now;
+	const timeoutMs = options.timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
+
+	for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
+		let response: Response;
+		try {
+			response = await fetchFeed(url, { signal: AbortSignal.timeout(timeoutMs) });
+		} catch (err) {
+			if (attempt < MAX_FETCH_ATTEMPTS) {
+				await wait(DEFAULT_RETRY_DELAY_MS);
+				continue;
+			}
+			const category = isTimeoutError(err) ? "timed out" : "request failed";
+			throw new Error(`${label} ${category} after ${attempt} attempts: ${errorMessage(err)}`, { cause: err });
+		}
+
+		if (!response.ok) {
+			await response.body?.cancel().catch(() => undefined);
+			if (attempt < MAX_FETCH_ATTEMPTS && isRetryableStatus(response.status)) {
+				await wait(retryDelayMs(response.headers.get("retry-after"), now));
+				continue;
+			}
+			throw new Error(
+				`${label} fetch failed after ${attempt} attempt${attempt === 1 ? "" : "s"}: HTTP ${response.status}`,
+			);
+		}
+
+		let body: unknown;
+		try {
+			body = await response.json();
+		} catch (err) {
+			if (attempt < MAX_FETCH_ATTEMPTS) {
+				await wait(DEFAULT_RETRY_DELAY_MS);
+				continue;
+			}
+			throw new Error(`${label} JSON parse failed after ${attempt} attempts: ${errorMessage(err)}`, {
+				cause: err,
+			});
+		}
+
+		const parsed = schema.safeParse(body);
+		if (!parsed.success) {
+			throw new Error(`${label} validation failed on attempt ${attempt}: ${parsed.error.message}`, {
+				cause: parsed.error,
+			});
+		}
+		return parsed.data;
+	}
+
+	throw new Error(`${label} fetch failed`);
+}
+
 /** plugin dimension row from catalog metadata (shared with the light poll). */
 export function pluginRow(p: CatalogPlugin) {
 	return {
@@ -73,8 +171,13 @@ export function pluginRowWithCurrent(p: CatalogPlugin, s: ReturnType<typeof buil
 export type PrevState = Map<string, { verificationStatus: string | null; version: string | null }>;
 
 /** Diff snapshots against the previous state (pure; covered by snapshot.test.ts). */
-export function buildEventRows(prev: PrevState, snapshotRows: ReturnType<typeof buildSnapshotRow>[], snapshotAt: string) {
-	const verifyRows: { pluginId: string; occurredAt: string; fromStatus: string | null; toStatus: string | null }[] = [];
+export function buildEventRows(
+	prev: PrevState,
+	snapshotRows: ReturnType<typeof buildSnapshotRow>[],
+	snapshotAt: string,
+) {
+	const verifyRows: { pluginId: string; occurredAt: string; fromStatus: string | null; toStatus: string | null }[] =
+		[];
 	const updateRows: { pluginId: string; occurredAt: string; fromVersion: string | null; toVersion: string | null }[] =
 		[];
 	for (const snapshot of snapshotRows) {
@@ -109,11 +212,10 @@ export function buildEventRows(prev: PrevState, snapshotRows: ReturnType<typeof 
  * D1 limits: 100 bound parameters per statement, 100 statements per batch.
  */
 export async function runSnapshot(env: CloudflareBindings): Promise<SnapshotResult> {
-	const [catalogRes, statsRes] = await Promise.all([fetch(env.CATALOG_URL), fetch(env.STATS_URL)]);
-	if (!catalogRes.ok) throw new Error(`catalog fetch failed: ${catalogRes.status}`);
-	if (!statsRes.ok) throw new Error(`stats fetch failed: ${statsRes.status}`);
-	const catalog = catalogSchema.parse(await catalogRes.json());
-	const stats = statsSchema.parse(await statsRes.json());
+	const [catalog, stats] = await Promise.all([
+		fetchValidatedFeed("catalog", env.CATALOG_URL, catalogSchema),
+		fetchValidatedFeed("stats", env.STATS_URL, statsSchema),
+	]);
 
 	const db = drizzle(env.DB);
 	const snapshotAt = new Date().toISOString();

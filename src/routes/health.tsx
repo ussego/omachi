@@ -45,9 +45,9 @@ export const Route = createFileRoute("/health")({
 	loaderDeps: ({ search: { range } }) => ({ range }),
 	loader: ({ deps, context: { queryClient } }) =>
 		Promise.all([
-			queryClient.ensureQueryData(breakdownQuery()),
-			queryClient.ensureQueryData(brokenPluginsQuery()),
-			queryClient.ensureQueryData(unverifiedPluginsQuery(deps.range)),
+			queryClient.query({ ...breakdownQuery(), staleTime: "static" }),
+			queryClient.query({ ...brokenPluginsQuery(), staleTime: "static" }),
+			queryClient.query({ ...unverifiedPluginsQuery(deps.range), staleTime: "static" }),
 		]),
 	component: HealthPage,
 });

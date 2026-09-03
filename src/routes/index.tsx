@@ -68,15 +68,18 @@ export const Route = createFileRoute("/")({
 		// it directly); the dashboard fetching it per view is not a new D1 cost
 		// — the browser already did exactly that on every page load.
 		return Promise.all([
-			queryClient.ensureQueryData(healthQuery()),
-			queryClient.ensureQueryData(breakdownQuery()),
-			queryClient.ensureQueryData(statsQuery("published", { range: "7d", groupBy: "day" })),
-			queryClient.ensureQueryData(statsQuery("published", deps)),
-			queryClient.ensureQueryData(statsQuery("verified", deps)),
-			queryClient.ensureQueryData(statsQuery("updated", deps)),
-			queryClient.ensureQueryData(totalStatsQuery(deps.groupBy)),
-			queryClient.ensureQueryData(trendingQuery(7)),
-			queryClient.ensureQueryData(recentPluginsQuery(8)),
+			queryClient.query({ ...healthQuery(), staleTime: "static" }),
+			queryClient.query({ ...breakdownQuery(), staleTime: "static" }),
+			queryClient.query({
+				...statsQuery("published", { range: "7d", groupBy: "day" }),
+				staleTime: "static",
+			}),
+			queryClient.query({ ...statsQuery("published", deps), staleTime: "static" }),
+			queryClient.query({ ...statsQuery("verified", deps), staleTime: "static" }),
+			queryClient.query({ ...statsQuery("updated", deps), staleTime: "static" }),
+			queryClient.query({ ...totalStatsQuery(deps.groupBy), staleTime: "static" }),
+			queryClient.query({ ...trendingQuery(7), staleTime: "static" }),
+			queryClient.query({ ...recentPluginsQuery(8), staleTime: "static" }),
 		]);
 	},
 	component: OverviewPage,

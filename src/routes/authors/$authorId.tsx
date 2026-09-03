@@ -20,10 +20,10 @@ export const Route = createFileRoute("/authors/$authorId")({
 	loader: async ({ params: { authorId }, context: { queryClient } }) => {
 		try {
 			const [detail] = await Promise.all([
-				queryClient.ensureQueryData(authorDetailQuery(authorId)),
+				queryClient.query({ ...authorDetailQuery(authorId), staleTime: "static" }),
 				// The rank card indexes the full author leaderboard; shared with
 				// the authors tab of /leaderboards, so one fetch serves both.
-				queryClient.ensureQueryData(authorsQuery()),
+				queryClient.query({ ...authorsQuery(), staleTime: "static" }),
 			]);
 			return { author: detail.author };
 		} catch (err) {

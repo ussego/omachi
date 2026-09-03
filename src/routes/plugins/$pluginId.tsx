@@ -20,10 +20,10 @@ export const Route = createFileRoute("/plugins/$pluginId")({
 	loader: async ({ params: { pluginId }, context: { queryClient } }) => {
 		try {
 			const [detail] = await Promise.all([
-				queryClient.ensureQueryData(pluginDetailQuery(pluginId)),
+				queryClient.query({ ...pluginDetailQuery(pluginId), staleTime: "static" }),
 				// The rank card reads the hearts leaderboard; shared across all
 				// plugin pages, so one fetch serves every visit within its TTL.
-				queryClient.ensureQueryData(leaderboardQuery("hearts", 100, 0)),
+				queryClient.query({ ...leaderboardQuery("hearts", 100, 0), staleTime: "static" }),
 			]);
 			return { name: detail.plugin.name ?? pluginId };
 		} catch (err) {

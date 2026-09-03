@@ -46,9 +46,9 @@ export const Route = createFileRoute("/leaderboards")({
 	// re-run the loader regardless of staleTime.
 	loaderDeps: ({ search: { tab, limit, days } }) => ({ tab, limit, days }),
 	loader: ({ deps, context: { queryClient } }) => {
-		if (deps.tab === "trending") return queryClient.ensureQueryData(trendingQuery(deps.days));
-		if (deps.tab === "authors") return queryClient.ensureQueryData(authorsQuery());
-		return queryClient.ensureQueryData(leaderboardQuery(deps.tab, deps.limit, 10));
+		if (deps.tab === "trending") return queryClient.query({ ...trendingQuery(deps.days), staleTime: "static" });
+		if (deps.tab === "authors") return queryClient.query({ ...authorsQuery(), staleTime: "static" });
+		return queryClient.query({ ...leaderboardQuery(deps.tab, deps.limit, 10), staleTime: "static" });
 	},
 	component: LeaderboardsPage,
 });

@@ -39,7 +39,7 @@ async function get<T>(path: string): Promise<T> {
 
 // ── query options ──────────────────────────────────────────────────────────
 //
-// Route loaders call `queryClient.ensureQueryData(...)` with these so SSR
+// Route loaders call `queryClient.query({ ...options, staleTime: "static" })` with these so SSR
 // ships resolved data and hover-preload warms the edge cache; components read
 // the same cache with `useSuspenseQuery`. The dashboard's data plane is this
 // app's own edge-cached /api server routes — see the comment on `apiFetch`.
