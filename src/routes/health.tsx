@@ -144,6 +144,7 @@ function HealthPage() {
 											render={
 												<Link
 													from="/health"
+													resetScroll={false}
 													to="/health"
 													search={(prev) => ({ ...prev, page: currentPage - 1 })}
 												/>
@@ -165,6 +166,7 @@ function HealthPage() {
 											render={
 												<Link
 													from="/health"
+													resetScroll={false}
 													to="/health"
 													search={(prev) => ({ ...prev, page: currentPage + 1 })}
 												/>
