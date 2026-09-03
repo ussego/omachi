@@ -89,8 +89,10 @@ the environment truth for scripts, bindings, and deployment identity.
    File-based routes live in `src/routes/`; generated `src/routeTree.gen.ts`
    is never hand-edited. Route loaders ensure the `queryOptions` factories in
    `src/lib/queries.ts` against the edge-cached API routes (SSR self-fetches
-   an absolute URL derived from the request, so per-view D1 reads still hit
-   the edge cache first); components read the cache with `useSuspenseQuery`.
+   through the `SELF` service binding, because Cloudflare never re-invokes a
+   Worker for a plain `fetch()` to its own custom domain; the URL is derived
+   from the request, so per-view D1 reads still hit the edge cache first);
+   components read the cache with `useSuspenseQuery`.
    Query-affecting view state lives in zod-validated search params keyed by
    `loaderDeps`. The command palette's keystroke-driven queries stay on plain
    `useQuery`. UI primitives are owned shadcn source files in

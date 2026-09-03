@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query";
 
-import { apiUrl } from "./api-url";
+import { apiFetch } from "./api-url";
 import type {
 	AuthorDetailResponse,
 	AuthorsResponse,
@@ -32,7 +32,7 @@ export class HttpError extends Error {
 }
 
 async function get<T>(path: string): Promise<T> {
-	const res = await fetch(await apiUrl(path));
+	const res = await apiFetch(path);
 	if (!res.ok) throw new HttpError(res.status, res.statusText);
 	return res.json() as Promise<T>;
 }
@@ -42,7 +42,7 @@ async function get<T>(path: string): Promise<T> {
 // Route loaders call `queryClient.ensureQueryData(...)` with these so SSR
 // ships resolved data and hover-preload warms the edge cache; components read
 // the same cache with `useSuspenseQuery`. The dashboard's data plane is this
-// app's own edge-cached /api server routes — see the comment on `apiUrl`.
+// app's own edge-cached /api server routes — see the comment on `apiFetch`.
 
 export type Granularity = "day" | "month" | "year";
 

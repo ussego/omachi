@@ -7,6 +7,7 @@
   },
   "placement": { "mode": "smart" },
   "routes": [{ "pattern": "stats.ussego.com", "custom_domain": true }],
+  "services": [{ "binding": "SELF", "service": "omachi" }],
   "d1_databases": [
     {
       "binding": "DB",
