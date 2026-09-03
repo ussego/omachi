@@ -3,6 +3,7 @@ import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { GraphCorners } from "@/components/graph-frame/graph-frame";
 
 /** Icon button that copies `text` and flashes a check for 1.5s. */
 export function CopyButton({ text }: { text: string }) {
@@ -28,9 +29,14 @@ export function CopyButton({ text }: { text: string }) {
 }
 
 export function Code({ children }: { children: string }) {
-	return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>;
+	return <code className="bg-muted px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>;
 }
 
 export function Snippet({ children }: { children: string }) {
-	return <pre className="overflow-x-auto rounded-lg border bg-muted/50 p-4 font-mono text-sm">{children}</pre>;
+	return (
+		<div className="relative bg-muted/30 graph-frame p-4">
+			<GraphCorners />
+			<pre className="overflow-x-auto font-mono text-sm">{children}</pre>
+		</div>
+	);
 }
