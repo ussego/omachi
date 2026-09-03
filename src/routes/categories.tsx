@@ -104,7 +104,7 @@ function CategoriesPage() {
 
 			<div className="flex flex-col gap-4">
 				<Tabs value={metric} onValueChange={setMetric}>
-					<TabsList>
+					<TabsList variant="underline">
 						{METRICS.map((x) => (
 							<TabsTab key={x.value} value={x.value}>
 								{x.label}
