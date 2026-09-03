@@ -165,6 +165,14 @@
 	[role="button"]:not(:disabled) {
 		cursor: pointer;
 	}
+	footer a {
+		min-height: 24px;
+		line-height: 24px;
+	}
+	[data-slot="table-cell"] > a {
+		min-height: 24px;
+		line-height: 24px;
+	}
 	code,
 	kbd,
 	samp,

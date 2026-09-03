@@ -38,7 +38,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ name: "twitter:image", content: `${SITE_URL}/og.png` },
 		],
 		links: [
-			{ rel: "canonical", href: SITE_URL },
 			{ rel: "icon", href: "/favicon.ico", sizes: "any" },
 			{ rel: "icon", type: "image/png", href: "/favicon.png" },
 			{ rel: "stylesheet", href: appCss },

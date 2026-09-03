@@ -8,7 +8,7 @@ export function getContext() {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
-				// Dashboard data only changes at the polls (4x/day for the heavy
+				// Dashboard data only changes at the polls (3x/day for the heavy
 				// one); don't refetch everything on every mount. The edge cache
 				// hides this from D1 anyway, but /api/health is uncached.
 				staleTime: 5 * 60_000,

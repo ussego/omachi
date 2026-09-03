@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const LLMS_TXT = `# Omachi
 
-> An independent companion dashboard for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges. Snapshots refresh every 6 hours; new-plugin counts every 30 minutes.
+> An independent companion dashboard for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges. Snapshots refresh every 8 hours; new-plugin counts every 30 minutes.
 
 ## Omachi
 

@@ -5,17 +5,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { Code, CopyButton, Snippet } from "@/components/snippet";
 import { buttonVariants } from "@/components/ui/button";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/charts")({
-	head: () => ({
-		meta: [
-			{ title: "Charts · Omachi" },
-			{
-				name: "description",
-				content: "Embeddable chart images for Omarchy catalog stats served by the omachi JSON endpoints.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"Omarchy Plugin Charts · Omachi",
+			"Create embeddable charts for Omarchy plugin, author, and catalog trends using Omachi's public JSON endpoints and live marketplace data.",
+			"/charts",
+		),
 	component: ChartsPage,
 });
 
@@ -64,7 +62,7 @@ function ChartsPage() {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-heading text-2xl">Charts</h1>
+				<h1 className="font-heading text-2xl">Omarchy Plugin Charts</h1>
 				<a
 					href="https://github.com/ussego/omachi"
 					target="_blank"

@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
 import { HttpError, authorDetailQuery, authorsQuery } from "@/lib/queries";
+import { pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/authors/$authorId")({
@@ -32,15 +33,14 @@ export const Route = createFileRoute("/authors/$authorId")({
 			throw err;
 		}
 	},
-	head: ({ params, loaderData }) => ({
-		meta: [
-			{ title: `${loaderData?.author ?? params.authorId} · Omachi` },
-			{
-				name: "description",
-				content: `Plugins, hearts, views, and copies for Omarchy plugin author ${params.authorId}.`,
-			},
-		],
-	}),
+	head: ({ params, loaderData }) => {
+		const author = loaderData?.author ?? params.authorId;
+		return pageHead(
+			`${author} Omarchy Plugins & Stats · Omachi`,
+			`Explore ${author}'s Omarchy plugins, catalog rank, categories, hearts, views, copies, and marketplace activity over the latest 90 days.`,
+			`/authors/${encodeURIComponent(params.authorId)}`,
+		);
+	},
 	notFoundComponent: () => {
 		const { authorId } = Route.useParams();
 		return (

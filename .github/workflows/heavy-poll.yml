@@ -2,7 +2,7 @@ name: Heavy poll (snapshot + diff + prune)
 
 on:
   schedule:
-    - cron: "7 */6 * * *"
+    - cron: "7 */8 * * *"
   workflow_dispatch:
 
 concurrency:

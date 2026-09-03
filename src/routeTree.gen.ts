@@ -18,6 +18,7 @@ import { Route as HealthRouteImport } from './routes/health'
 import { Route as LeaderboardsRouteImport } from './routes/leaderboards'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPluginsRouteImport } from './routes/api/plugins'
 import { Route as AuthorsAuthorIdRouteImport } from './routes/authors/$authorId'
@@ -87,6 +88,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/leaderboards': typeof LeaderboardsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/leaderboards': typeof LeaderboardsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -299,6 +307,7 @@ export interface FileRoutesById {
   '/leaderboards': typeof LeaderboardsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
     | '/leaderboards'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
     | '/authors/$authorId'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/leaderboards'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
     | '/authors/$authorId'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/leaderboards'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
     | '/authors/$authorId'
@@ -446,6 +458,7 @@ export interface RootRouteChildren {
   LeaderboardsRoute: typeof LeaderboardsRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiHealthRoute: typeof ApiHealthRouteWithChildren
   ApiPluginsRoute: typeof ApiPluginsRouteWithChildren
   AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
@@ -533,6 +546,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -749,6 +769,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardsRoute: LeaderboardsRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiHealthRoute: ApiHealthRouteWithChildren,
   ApiPluginsRoute: ApiPluginsRouteWithChildren,
   AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,

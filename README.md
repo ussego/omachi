@@ -31,7 +31,7 @@ truth live in `wrangler.jsonc`.
 ## How it works
 
 GitHub Actions polls the Worker's admin endpoints on a schedule: a heavy
-snapshot poll four times a day (validates feeds, upserts current state and
+snapshot poll three times a day (validates feeds, upserts current state and
 history, diffs events), a cheap light poll every 30 minutes (new plugin IDs
 only), and an explorer poll once a day (similarity graph). `plugins` mirrors
 each plugin's current state, `plugin_snapshots` holds 90 days of history,

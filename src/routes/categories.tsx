@@ -10,18 +10,15 @@ import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 
 import type { CategoriesResponse } from "@/lib/api-types";
 import { categoriesQuery, heatmapQuery } from "@/lib/queries";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/categories")({
-	head: () => ({
-		meta: [
-			{ title: "Categories · Omachi" },
-			{
-				name: "description",
-				content:
-					"Plugin counts and engagement by category for the Omarchy catalog, with a monthly activity heatmap.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"Omarchy Plugin Categories · Omachi",
+			"Explore Omarchy plugin categories by catalog size, average hearts, views, copies, and monthly publishing activity across the plugin ecosystem.",
+			"/categories",
+		),
 	loader: ({ context: { queryClient } }) =>
 		Promise.all([
 			queryClient.query({ ...categoriesQuery(), staleTime: "static" }),
@@ -49,8 +46,8 @@ const METRICS: {
 ];
 
 // Locale pinned so SSR and hydration agree; see the note in lib/format.ts.
-const MONTH_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit" });
-const MONTH_SHORT = new Intl.DateTimeFormat("en-US", { month: "short" });
+const MONTH_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
+const MONTH_SHORT = new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" });
 
 function Heatmap({ points }: { points: { category: string | null; month: string; count: number }[] }) {
 	const { rows, columns, max } = useMemo(() => {
@@ -67,7 +64,7 @@ function Heatmap({ points }: { points: { category: string | null; month: string;
 		const countOf = new Map(points.map((point) => [`${point.category ?? "(none)"}|${point.month}`, point.count]));
 		const columns = months.map((month) => {
 			const [year, monthNumber] = month.split("-");
-			const date = new Date(Number(year), Number(monthNumber) - 1);
+			const date = new Date(`${year}-${monthNumber}-01T00:00:00Z`);
 			return monthNumber === "01" ? MONTH_FMT.format(date) : MONTH_SHORT.format(date);
 		});
 		return {
@@ -100,7 +97,12 @@ function CategoriesPage() {
 
 	return (
 		<div className="flex flex-col gap-8">
-			<h1 className="font-heading text-2xl">Categories</h1>
+			<div className="flex max-w-2xl flex-col gap-1">
+				<h1 className="font-heading text-2xl">Omarchy Plugin Categories</h1>
+				<p className="text-muted-foreground text-sm">
+					Explore each category by plugin count, marketplace engagement, and publishing activity.
+				</p>
+			</div>
 
 			<div className="flex flex-col gap-4">
 				<Tabs value={metric} onValueChange={setMetric}>

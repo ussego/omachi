@@ -14,10 +14,17 @@ export const truncate = (s: string, maxLen = 18): string => (s.length > maxLen ?
 export const pct = (a: number, b: number): number => (b > 0 ? Math.round((a / b) * 100) : 0);
 
 export const fmtDate = (iso: string | null | undefined): string =>
-	iso ? new Date(iso).toLocaleDateString(LOCALE, { year: "numeric", month: "short", day: "numeric" }) : "—";
+	iso
+		? new Date(iso).toLocaleDateString(LOCALE, {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				timeZone: "UTC",
+			})
+		: "—";
 
 export const fmtMonthDay = (iso: string | null | undefined): string =>
-	iso ? new Date(iso).toLocaleDateString(LOCALE, { month: "short", day: "numeric" }) : "—";
+	iso ? new Date(iso).toLocaleDateString(LOCALE, { month: "short", day: "numeric", timeZone: "UTC" }) : "—";
 
 export const fmtDateTime = (iso: string | null | undefined): string =>
 	iso
@@ -27,6 +34,7 @@ export const fmtDateTime = (iso: string | null | undefined): string =>
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit",
+				timeZone: "UTC",
 			})
 		: "—";
 

@@ -45,11 +45,11 @@ async function apiRun<T>(next: () => Promise<T>): Promise<Response | T> {
 
 /**
  * Per-prefix TTL overrides for the edge cache (seconds). Everything else
- * caches for one hour. Trending only changes at the 4x/day heavy poll, so a
- * 6h TTL costs at most one poll cycle of staleness while cutting its
- * latest-per-plugin D1 reads ~6x.
+ * caches for one hour. Trending only changes at the 3x/day heavy poll, so an
+ * 8h TTL costs at most one poll cycle of staleness while cutting its
+ * latest-per-plugin D1 reads ~8x.
  */
-const CACHE_TTL: [prefix: string, sMaxage: number][] = [["/api/leaderboard/trending", 21600]];
+const CACHE_TTL: [prefix: string, sMaxage: number][] = [["/api/leaderboard/trending", 28800]];
 
 const edgeCache = createMiddleware().server(async ({ next, request }) => {
 	const url = new URL(request.url);

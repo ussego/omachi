@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyTitle } from "@/components/ui/empty";
 import { fmt, fmtDate, fmtMonthDay } from "@/lib/format";
 import { HttpError, leaderboardQuery, pluginDetailQuery } from "@/lib/queries";
+import { pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/plugins/$pluginId")({
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/plugins/$pluginId")({
 				// plugin pages, so one fetch serves every visit within its TTL.
 				queryClient.query({ ...leaderboardQuery("hearts", 100, 0), staleTime: "static" }),
 			]);
-			return { name: detail.plugin.name ?? pluginId };
+			return { name: detail.plugin.name ?? pluginId, description: detail.plugin.description };
 		} catch (err) {
 			// A 404 from the detail API means the plugin isn't in the catalog —
 			// the same dead-end as an unmatched URL. Anything else (5xx, network)
@@ -34,15 +35,17 @@ export const Route = createFileRoute("/plugins/$pluginId")({
 			throw err;
 		}
 	},
-	head: ({ params, loaderData }) => ({
-		meta: [
-			{ title: `${loaderData?.name ?? params.pluginId} · Omachi` },
-			{
-				name: "description",
-				content: `Hearts, views, copies, and snapshot history for the ${params.pluginId} plugin in the Omarchy catalog.`,
-			},
-		],
-	}),
+	head: ({ params, loaderData }) => {
+		const name = loaderData?.name ?? params.pluginId;
+		const description =
+			loaderData?.description ??
+			`See hearts, views, copies, repository status, related plugins, and 90-day snapshot history for ${name} in the Omarchy plugin catalog.`;
+		return pageHead(
+			`${name} Stats & History · Omachi`,
+			description,
+			`/plugins/${encodeURIComponent(params.pluginId)}`,
+		);
+	},
 	notFoundComponent: () => {
 		const { pluginId } = Route.useParams();
 		return (

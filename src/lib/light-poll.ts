@@ -13,7 +13,7 @@ export interface LightPollResult {
  * Cheap poll (every 30 min): fetch catalog.json, insert rows for plugin IDs
  * not yet in `plugins`, so the live `count(*)` stays fresh between heavy
  * snapshot runs. No stats fetch, no snapshots, no full zod validation; the
- * heavy poll (every 4h) validates and upserts every row, overwriting anything
+ * heavy poll (every 8h) validates and upserts every row, overwriting anything
  * a malformed light-poll insert could have written.
  */
 export async function pollNewPlugins(env: CloudflareBindings): Promise<LightPollResult> {

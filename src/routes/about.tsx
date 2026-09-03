@@ -5,18 +5,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphStat } from "@/components/graph-stat";
 import { buttonVariants } from "@/components/ui/button";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/about")({
-	head: () => ({
-		meta: [
-			{ title: "About · Omachi" },
-			{
-				name: "description",
-				content:
-					"How Omachi complements the official Omarchy plugin catalog, where its data comes from, and how to read it.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"About Omachi · Omarchy Plugin Analytics",
+			"Learn how Omachi tracks the Omarchy plugin catalog, where its data comes from, how often snapshots refresh, and how to interpret each metric.",
+			"/about",
+		),
 	component: AboutPage,
 });
 
@@ -25,7 +22,7 @@ const textLink = "underline decoration-dotted underline-offset-4 transition-colo
 function AboutPage() {
 	return (
 		<div className="flex flex-col gap-8">
-			<h1 className="font-heading text-2xl">About</h1>
+			<h1 className="font-heading text-2xl">About Omachi</h1>
 
 			<div className="flex flex-col gap-6">
 				<div className="flex flex-col gap-3">
@@ -90,7 +87,7 @@ function AboutPage() {
 					<div className="flex flex-col gap-1">
 						<dt className="font-mono text-xs tracking-wide text-graph-accent uppercase">History</dt>
 						<dd className="text-pretty text-muted-foreground">
-							Six-hour snapshots preserve 90 days of marketplace counts, versions, and verification
+							Eight-hour snapshots preserve 90 days of marketplace counts, versions, and verification
 							changes.
 						</dd>
 					</div>
@@ -193,7 +190,7 @@ function AboutPage() {
 				title="Cadence"
 				items={[
 					{ value: "30 min", label: "new plugin check" },
-					{ value: "6 h", label: "full snapshots" },
+					{ value: "8 h", label: "full snapshots" },
 					{ value: "daily", label: "explorer relations" },
 				]}
 			/>

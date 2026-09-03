@@ -6,17 +6,15 @@ import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { Code, CopyButton, Snippet } from "@/components/snippet";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/badges")({
-	head: () => ({
-		meta: [
-			{ title: "Badges · Omachi" },
-			{
-				name: "description",
-				content: "Embeddable stat badges for Omarchy plugins and authors: hearts, views, copies, and rankings.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"Omarchy Plugin Badges · Omachi",
+			"Add live Omarchy plugin and author badges for hearts, views, copies, and catalog rankings using Omachi's public badge endpoints.",
+			"/badges",
+		),
 	component: BadgesPage,
 });
 
@@ -52,7 +50,7 @@ function BadgesPage() {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-heading text-2xl">Badges</h1>
+				<h1 className="font-heading text-2xl">Omarchy Plugin Badges</h1>
 				<a
 					href="https://github.com/ussego/omachi"
 					target="_blank"

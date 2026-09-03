@@ -25,7 +25,7 @@ import {
 	trendingQuery,
 	totalStatsQuery,
 } from "@/lib/queries";
-import { SITE_TITLE } from "@/lib/site";
+import { pageHead, SITE_DESC, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 const RANGES = [
 	{ label: "30d", value: "30d" },
@@ -51,12 +51,16 @@ const indexSearchSchema = z.object({
 
 export const Route = createFileRoute("/")({
 	head: () => ({
-		meta: [
-			{ title: SITE_TITLE },
+		...pageHead(SITE_TITLE, SITE_DESC, "/"),
+		scripts: [
 			{
-				name: "description",
-				content:
-					"An independent companion dashboard for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges.",
+				type: "application/ld+json",
+				children: JSON.stringify({
+					"@context": "https://schema.org",
+					"@type": "WebSite",
+					name: "Omachi",
+					url: SITE_URL,
+				}),
 			},
 		],
 	}),
@@ -123,9 +127,17 @@ function OverviewPage() {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap items-end justify-between gap-4">
-				<div className="flex flex-wrap items-baseline gap-x-3">
-					<h1 className="font-heading text-2xl">Overview</h1>
-					<p className="text-muted-foreground text-xs">last snapshot {fmtRelative(health.lastSnapshotAt)}</p>
+				<div className="flex max-w-2xl flex-col gap-1">
+					<div className="flex flex-wrap items-baseline gap-x-3">
+						<h1 className="font-heading text-2xl">Omarchy Plugin Stats &amp; Trends</h1>
+						<p className="text-muted-foreground text-xs">
+							last snapshot {fmtRelative(health.lastSnapshotAt)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-sm">
+						Track catalog growth, verification changes, updates, and marketplace activity across Omarchy
+						plugins.
+					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<Tabs
@@ -194,7 +206,9 @@ function OverviewPage() {
 									variant="ghost"
 									size="sm"
 									className="mt-2 w-full"
-									onClick={() => navigate({ search: (prev) => ({ ...prev, from: undefined, to: undefined }) })}
+									onClick={() =>
+										navigate({ search: (prev) => ({ ...prev, from: undefined, to: undefined }) })
+									}
 								>
 									Clear dates
 								</Button>
@@ -293,7 +307,6 @@ function OverviewPage() {
 					</TableBody>
 				</Table>
 			</div>
-
 		</div>
 	);
 }

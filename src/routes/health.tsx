@@ -20,6 +20,7 @@ import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { UnverifiedPluginsTable } from "@/components/unverified-plugins-table";
 
 import { breakdownQuery, brokenPluginsQuery, unverifiedPluginsQuery } from "@/lib/queries";
+import { pageHead } from "@/lib/site";
 
 const RANGES = [
 	{ value: "7d", label: "7d" },
@@ -37,16 +38,12 @@ const healthSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/health")({
-	head: () => ({
-		meta: [
-			{ title: "Ecosystem Health · Omachi" },
-			{
-				name: "description",
-				content:
-					"Verification status, install availability, and broken plugins across the Omarchy plugin catalog.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"Omarchy Plugin Ecosystem Health · Omachi",
+			"Review verification status, install availability, stale repositories, failed upstream checks, and recently unverified plugins across the Omarchy catalog.",
+			"/health",
+		),
 	validateSearch: healthSearchSchema,
 	search: { middlewares: [stripSearchParams(DEFAULTS)] },
 	loaderDeps: ({ search: { range } }) => ({ range }),
@@ -90,7 +87,12 @@ function HealthPage() {
 
 	return (
 		<div className="flex flex-col gap-8">
-			<h1 className="font-heading text-2xl">Ecosystem Health</h1>
+			<div className="flex max-w-2xl flex-col gap-1">
+				<h1 className="font-heading text-2xl">Omarchy Plugin Ecosystem Health</h1>
+				<p className="text-muted-foreground text-sm">
+					Review catalog verification, install availability, repository freshness, and upstream failures.
+				</p>
+			</div>
 
 			<div className="flex flex-col gap-12">
 				<StatusChart title="INSTALL AVAILABILITY" rows={breakdown.installStatus} />

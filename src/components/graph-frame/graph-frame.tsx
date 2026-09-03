@@ -64,10 +64,6 @@ function GraphRule({ className, ...props }: React.ComponentProps<"div">) {
 	return <div aria-hidden="true" className={cn("graph-rule w-full", className)} {...props} />;
 }
 
-function GraphRuleY({ className, ...props }: React.ComponentProps<"div">) {
-	return <div aria-hidden="true" className={cn("graph-rule-y self-stretch", className)} {...props} />;
-}
-
 function GraphTrack({ className, ...props }: React.ComponentProps<"span">) {
 	return <span aria-hidden="true" className={cn("flex w-full min-w-0 select-none", className)} {...props} />;
 }
@@ -101,5 +97,5 @@ function Graph({
 	);
 }
 
-export { Graph, GraphBody, GraphCorners, GraphRule, GraphRuleY, GraphTick, GraphTitle, GraphTrack };
+export { Graph, GraphBody, GraphCorners, GraphRule, GraphTick, GraphTitle, GraphTrack };
 export type { Corner };

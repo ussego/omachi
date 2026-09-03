@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import type { LeaderboardRow } from "@/lib/api-types";
 import { fmt } from "@/lib/format";
 import { authorsQuery, leaderboardQuery, trendingQuery } from "@/lib/queries";
+import { pageHead } from "@/lib/site";
 
 const VALID_TABS = ["hearts", "views", "copies", "copies_per_view", "trending", "authors"] as const;
 const LIMITS = [25, 50, 100] as const;
@@ -26,20 +27,19 @@ const DEFAULTS = { tab: "hearts", limit: 25, days: 7 } as const;
 const leaderboardsSearchSchema = z.object({
 	tab: z.enum(VALID_TABS).default(DEFAULTS.tab).catch(DEFAULTS.tab),
 	limit: z.number().int().min(10).max(100).default(DEFAULTS.limit).catch(DEFAULTS.limit),
-	days: z.union([z.literal(7), z.literal(30)]).default(DEFAULTS.days).catch(DEFAULTS.days),
+	days: z
+		.union([z.literal(7), z.literal(30)])
+		.default(DEFAULTS.days)
+		.catch(DEFAULTS.days),
 });
 
 export const Route = createFileRoute("/leaderboards")({
-	head: () => ({
-		meta: [
-			{ title: "Leaderboards · Omachi" },
-			{
-				name: "description",
-				content:
-					"Top Omarchy plugins by hearts, views, copies, and conversion, plus trending and author leaderboards.",
-			},
-		],
-	}),
+	head: () =>
+		pageHead(
+			"Omarchy Plugin Leaderboard · Omachi",
+			"Compare the top Omarchy plugins by hearts, views, copies, conversion, and recent growth, with rankings for plugin authors across the catalog.",
+			"/leaderboards",
+		),
 	validateSearch: leaderboardsSearchSchema,
 	search: { middlewares: [stripSearchParams(DEFAULTS)] },
 	// Only the active tab's data is fetched; deps changes (tab/limit/days)
@@ -245,9 +245,7 @@ function AuthorsLeaderboard() {
 									{r.author}
 								</Link>
 							</TableCell>
-							<TableCell className="text-right font-mono tabular-nums">
-								{fmt(r.plugins)}
-							</TableCell>
+							<TableCell className="text-right font-mono tabular-nums">{fmt(r.plugins)}</TableCell>
 							<TableCell className="text-right font-mono tabular-nums">{fmt(r.hearts)}</TableCell>
 							<TableCell className="text-right font-mono tabular-nums">{fmt(r.views)}</TableCell>
 							<TableCell className="text-right font-mono tabular-nums">{fmt(r.copies)}</TableCell>
@@ -266,8 +264,16 @@ function LeaderboardsPage() {
 	const metric = METRIC_TABS.find((m) => m.value === tab);
 	return (
 		<div className="flex flex-col gap-6">
-			<h1 className="font-heading text-2xl">Leaderboards</h1>
-			<Tabs value={tab} onValueChange={(value) => navigate({ search: (prev) => ({ ...prev, tab: value as typeof tab }) })}>
+			<div className="flex max-w-2xl flex-col gap-1">
+				<h1 className="font-heading text-2xl">Omarchy Plugin Leaderboard</h1>
+				<p className="text-muted-foreground text-sm">
+					Compare plugins and authors by marketplace activity, conversion, and recent growth.
+				</p>
+			</div>
+			<Tabs
+				value={tab}
+				onValueChange={(value) => navigate({ search: (prev) => ({ ...prev, tab: value as typeof tab }) })}
+			>
 				<TabsList variant="underline">
 					{METRIC_TABS.map((m) => (
 						<TabsTab key={m.value} value={m.value}>

@@ -10,7 +10,7 @@
  * one row lookup + one snapshots read for per-plugin). Well within the 50
  * statements/invocation D1 Free cap.
  *
- * Data freshness: the heavy poll runs every 6h. 1h edge-cache (matching
+ * Data freshness: the heavy poll runs every 8h. 1h edge-cache (matching
  * `/api/stats/*`) is the right cadence for charts.
  */
 

@@ -33,7 +33,7 @@ export default function Footer() {
 					</div>
 					<div className="flex flex-wrap items-center justify-end gap-3">
 						<span className="font-mono text-muted-foreground text-xs">
-							snapshots every 6h · new plugins every 30m
+							snapshots every 8h · new plugins every 30m
 						</span>
 						<span aria-hidden="true" className="font-mono text-muted-foreground text-xs">
 							·

@@ -83,7 +83,7 @@ the environment truth for scripts, bindings, and deployment identity.
 5. **Edge cache**: The global request middleware in `src/start.ts` caches
    successful GET `/api/*` responses for one hour through the Cache API
    (per-prefix overrides in `CACHE_TTL`; `/api/leaderboard/trending` caches
-   six hours because its data only moves at the Heavy Poll) and adds
+   eight hours because its data only moves at the Heavy Poll) and adds
    `x-cache: HIT|MISS`. `/api/health*` responses remain uncached.
 6. **Frontend**: The same Worker serves the TanStack Start application shell.
    File-based routes live in `src/routes/`; generated `src/routeTree.gen.ts`
@@ -145,7 +145,7 @@ renderers consume those payloads. Keep the chart shape stable:
 ## Budget discipline (Workers Free + D1 Free)
 
 - **CPU**: 10 ms/invocation cap, enforced leniently by frequency. The Heavy
-  Poll runs four times per day; extra freshness goes through the cheap Light
+  Poll runs three times per day; extra freshness goes through the cheap Light
   Poll, which must avoid full-feed validation and per-Plugin work. The
   Explorer Poll runs once a day and stays at shape checks + a chunked
   upsert (two batch calls) — never raise its frequency.
