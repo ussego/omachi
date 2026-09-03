@@ -7,17 +7,13 @@ import { NotFoundState } from "@/components/error-page";
 import { GraphCorners } from "@/components/graph-frame/graph-frame";
 import Header from "@/components/header";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
+import { SITE_DESC, SITE_TITLE, SITE_URL } from "@/lib/site";
 import appCss from "@/styles.css?url";
 import themesCss from "@/themes/themes.css?url";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
 }
-
-const SITE_TITLE = "Omachi · Analytics for the Omarchy plugin catalog";
-const SITE_DESC =
-	"An independent companion dashboard for the Omarchy plugin catalog: hearts, views, copies, leaderboards, ecosystem health, categories, and embeddable badges.";
-const SITE_URL = "https://stats.ussego.com";
 
 const THEME_CSS_HREF = JSON.stringify(themesCss);
 

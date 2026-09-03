@@ -25,6 +25,7 @@ import {
 	trendingQuery,
 	totalStatsQuery,
 } from "@/lib/queries";
+import { SITE_TITLE } from "@/lib/site";
 
 const RANGES = [
 	{ label: "30d", value: "30d" },
@@ -51,7 +52,7 @@ const indexSearchSchema = z.object({
 export const Route = createFileRoute("/")({
 	head: () => ({
 		meta: [
-			{ title: "Omachi · Analytics for the Omarchy plugin catalog" },
+			{ title: SITE_TITLE },
 			{
 				name: "description",
 				content:
