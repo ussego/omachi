@@ -3,6 +3,7 @@
 import { IconExternalLink } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
+import { GraphStat } from "@/components/graph-stat";
 import { buttonVariants } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
@@ -117,50 +118,85 @@ function AboutPage() {
 				</dl>
 			</section>
 
-			<div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-				<section aria-labelledby="data-sources" className="flex flex-col gap-3">
-					<h2 id="data-sources" className="font-heading text-xl">
-						Data sources and timing
-					</h2>
-					<ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground marker:text-graph-muted">
-						<li>
+			<GraphRule />
+
+			<section aria-labelledby="data-sources" className="flex flex-col gap-4">
+				<h2 id="data-sources" className="font-heading text-xl">
+					Data sources and timing
+				</h2>
+				<dl className="flex max-w-3xl flex-col">
+					<div className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-8">
+						<dt className="shrink-0 font-mono text-xs tracking-wide text-graph-muted uppercase sm:w-36 sm:pt-0.5">
+							Catalog
+						</dt>
+						<dd className="text-pretty text-sm text-muted-foreground">
 							The catalog and explorer graph come from the{" "}
 							<a href="https://plugins.omarchy.org" target="_blank" rel="noreferrer" className={textLink}>
 								Omarchy Plugin Catalog
 							</a>
 							, whose source is MIT licensed.
-						</li>
-						<li>
+						</dd>
+					</div>
+					<div aria-hidden="true" className="graph-rule" />
+					<div className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-8">
+						<dt className="shrink-0 font-mono text-xs tracking-wide text-graph-muted uppercase sm:w-36 sm:pt-0.5">
+							Marketplace stats
+						</dt>
+						<dd className="text-pretty text-sm text-muted-foreground">
 							The marketplace stats API supplies views, copies, and hearts with its maintainer&apos;s
 							permission.
-						</li>
-						<li>
-							Omachi checks for new plugins every 30 minutes, records full snapshots every six hours, and
-							refreshes explorer relationships once a day.
-						</li>
-					</ul>
-				</section>
+						</dd>
+					</div>
+				</dl>
+			</section>
 
-				<section aria-labelledby="reading-the-data" className="flex flex-col gap-3">
-					<h2 id="reading-the-data" className="font-heading text-xl">
-						Reading the data
-					</h2>
-					<ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground marker:text-graph-muted">
-						<li>
+			<section aria-labelledby="reading-the-data" className="flex flex-col gap-4">
+				<h2 id="reading-the-data" className="font-heading text-xl">
+					Reading the data
+				</h2>
+				<dl className="flex max-w-3xl flex-col">
+					<div className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-8">
+						<dt className="shrink-0 font-mono text-xs tracking-wide text-graph-muted uppercase sm:w-36 sm:pt-0.5">
+							Counts
+						</dt>
+						<dd className="text-pretty text-sm text-muted-foreground">
 							Marketplace counts measure activity in the catalog, not plugin quality or an Omachi
 							endorsement.
-						</li>
-						<li>
+						</dd>
+					</div>
+					<div aria-hidden="true" className="graph-rule" />
+					<div className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-8">
+						<dt className="shrink-0 font-mono text-xs tracking-wide text-graph-muted uppercase sm:w-36 sm:pt-0.5">
+							Verification
+						</dt>
+						<dd className="text-pretty text-sm text-muted-foreground">
 							Verification and install status come from the catalog. Omachi reports them without making
 							its own review decisions.
-						</li>
-						<li>
+						</dd>
+					</div>
+					<div aria-hidden="true" className="graph-rule" />
+					<div className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-8">
+						<dt className="shrink-0 font-mono text-xs tracking-wide text-graph-muted uppercase sm:w-36 sm:pt-0.5">
+							Polling delay
+						</dt>
+						<dd className="text-pretty text-sm text-muted-foreground">
 							Polling creates a small delay between an upstream change and the dashboard, and history
 							covers the latest 90 days.
-						</li>
-					</ul>
-				</section>
-			</div>
+						</dd>
+					</div>
+				</dl>
+			</section>
+
+			<GraphRule />
+
+			<GraphStat
+				title="Cadence"
+				items={[
+					{ value: "30 min", label: "new plugin check" },
+					{ value: "6 h", label: "full snapshots" },
+					{ value: "daily", label: "explorer relations" },
+				]}
+			/>
 
 			<GraphRule />
 
