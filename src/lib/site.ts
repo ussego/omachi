@@ -26,7 +26,7 @@ export function pageHead(title: string, description: string, path: string) {
 }
 
 export function sitemapXml(rows: { id: string; author: string | null; currentSnapshotAt: string | null }[]) {
-	const paths = ["/", "/about", "/leaderboards", "/health", "/categories", "/charts", "/badges"];
+	const paths = ["/", "/about", "/leaderboards", "/health", "/categories", "/charts", "/badges", "/api-docs"];
 	for (const row of rows) paths.push(`/plugins/${encodeURIComponent(row.id)}`);
 	const authors = rows
 		.filter((row) => row.currentSnapshotAt)

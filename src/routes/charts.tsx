@@ -76,7 +76,11 @@ function ChartsPage() {
 
 			<p className="max-w-2xl text-muted-foreground">
 				Embeddable chart images for catalog stats. Omachi serves the time series as JSON; shieldcn renders the
-				SVG.
+				SVG. Public JSON reference:{" "}
+				<a href="/api-docs" className="underline decoration-dotted underline-offset-4">
+					/api-docs
+				</a>
+				.
 			</p>
 
 			<div className="flex flex-col gap-3">

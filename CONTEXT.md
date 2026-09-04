@@ -49,3 +49,7 @@ A single embeddable stat for one Plugin or Author (e.g. heart count), rendered a
 
 **Chart Series**:
 A time-bucketed sequence of counts for one metric (e.g. a Plugin's hearts over time), consumed by an external chart renderer.
+
+**Public API**:
+The unauthenticated GET `/api/*` surface consumed by external renderers and embedders.
+_Avoid_: API docs page, developer docs

@@ -64,7 +64,11 @@ function BadgesPage() {
 
 			<p className="max-w-2xl text-muted-foreground">
 				Embeddable badges for plugin and author stats. Point a badge renderer at stats.ussego.com/api/badges and
-				it returns live numbers from Omachi's mirrored catalog data.
+				it returns live numbers from Omachi's mirrored catalog data. Public JSON reference:{" "}
+				<a href="/api-docs" className="underline decoration-dotted underline-offset-4">
+					/api-docs
+				</a>
+				.
 			</p>
 
 			<div className="flex flex-col gap-4">

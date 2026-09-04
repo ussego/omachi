@@ -23,28 +23,33 @@ export default function Footer() {
 	return (
 		<footer className="shrink-0">
 			<div aria-hidden="true" className="graph-rule-soft" />
-			<div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-7 sm:px-6">
+			<div className="mx-auto w-full max-w-6xl px-4 pt-8 pb-10 sm:px-6">
 				<div className="flex w-full flex-wrap items-end justify-between gap-3">
 					<div className="flex flex-col">
 						<span className="font-mono text-sm tracking-widest text-graph-accent uppercase">[O]</span>
 						<span className="text-muted-foreground text-sm">
-							Omachi — an independent companion dashboard for the Omarchy plugin catalog
+							Omachi is an independent companion dashboard for the Omarchy plugin catalog
 						</span>
 					</div>
-					<div className="flex flex-wrap items-center justify-end gap-3">
-						<span className="font-mono text-muted-foreground text-xs">
-							snapshots every 8h · new plugins every 30m
-						</span>
-						<span aria-hidden="true" className="font-mono text-muted-foreground text-xs">
-							·
-						</span>
-						<Link
-							to="/about"
-							className="font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
-						>
-							About
-						</Link>
-						<div className="flex gap-1">
+					<div className="flex flex-wrap items-end justify-end gap-x-5 gap-y-3">
+						<nav aria-label="Footer" className="flex items-center gap-3">
+							<Link
+								to="/about"
+								className="font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
+							>
+								About
+							</Link>
+							<span aria-hidden="true" className="font-mono text-muted-foreground text-xs">
+								·
+							</span>
+							<Link
+								to="/api-docs"
+								className="font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
+							>
+								API Docs
+							</Link>
+						</nav>
+						<div className="flex items-center gap-1">
 							<a
 								href="https://github.com/ussego/omachi"
 								target="_blank"
