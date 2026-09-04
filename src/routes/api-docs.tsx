@@ -56,7 +56,7 @@ function ApiDocsPage() {
 						<Code>null</Code> when the Light Poll found it but no Heavy Poll has run yet.
 					</li>
 				</ul>
-				<Snippet>{`{"total": 1553, "page": 1, "pageSize": 50, "plugins": [{"id": "ussego.otoru", "latest": {"hearts": 42, ...}}, ...]}`}</Snippet>
+				<Snippet lang="json">{`{"total": 1553, "page": 1, "pageSize": 50, "plugins": [{"id": "ussego.otoru", "latest": {"hearts": 42, ...}}, ...]}`}</Snippet>
 				<Snippet>GET /api/plugins/:id</Snippet>
 				<ul className="list-inside list-disc text-muted-foreground">
 					<li>
@@ -64,7 +64,7 @@ function ApiDocsPage() {
 						<Code>relations</Code> (<Code>null</Code> for built-ins or pre-sync plugins).
 					</li>
 				</ul>
-				<Snippet>{`curl ${BASE}/api/plugins/ussego.otoru`}</Snippet>
+				<Snippet lang="shell">{`curl ${BASE}/api/plugins/ussego.otoru`}</Snippet>
 			</div>
 
 			<GraphRule />
@@ -90,7 +90,7 @@ function ApiDocsPage() {
 						current totals.
 					</li>
 				</ul>
-				<Snippet>{`curl "${BASE}/api/leaderboard/hearts?limit=10"`}</Snippet>
+				<Snippet lang="shell">{`curl "${BASE}/api/leaderboard/hearts?limit=10"`}</Snippet>
 			</div>
 
 			<GraphRule />
@@ -119,7 +119,7 @@ function ApiDocsPage() {
 						.
 					</li>
 				</ul>
-				<Snippet>{`curl ${BASE}/api/badges/hearts/ussego.otoru`}</Snippet>
+				<Snippet lang="shell">{`curl ${BASE}/api/badges/hearts/ussego.otoru`}</Snippet>
 			</div>
 
 			<div className="flex flex-col gap-3">

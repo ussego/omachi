@@ -147,7 +147,7 @@ function BadgesPage() {
 				<p className="text-muted-foreground">
 					The response is a shields.io endpoint schema, so any badge renderer works.
 				</p>
-				<Snippet>{`{"schemaVersion": 1, "label": "Views", "message": "109", "color": "blue"}`}</Snippet>
+				<Snippet lang="json">{`{"schemaVersion": 1, "label": "Views", "message": "109", "color": "blue"}`}</Snippet>
 				<p className="text-muted-foreground">shieldcn, with styling via its own query params:</p>
 				<Snippet>
 					{`https://shieldcn.dev/https/stats.ussego.com/api/badges/hearts/ussego.otoru.svg?logo=lu%3AHeart`}

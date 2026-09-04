@@ -91,6 +91,14 @@ do the rest, so charts, frames, and chrome re-theme together.
   infinite while the wrapping `.group` is hovered; paused by default; active only under
   `prefers-reduced-motion: no-preference`.
 
+## Scrollbars
+
+- Scrollable regions use the owned `ScrollArea` (`src/components/ui/scroll-area.tsx`): overlay
+  thumbs that reveal on hover/scroll and never shift layout.
+- Thumbs stay square and use frame ink (`--graph-frame`), turning `--graph-accent` while hovering
+  or scrolling. Codeblocks (`Snippet`, `src/components/snippet.tsx`) scroll horizontally through it,
+  with the track docked flush and full-bleed in the block's bottom padding, clear of the text.
+
 ## Page chrome
 
 - **Content**: `max-w-6xl` (72rem), centered. The page frame is soft vertical dashed sides

@@ -150,7 +150,7 @@ function ChartsPage() {
 
 			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Response</h2>
-				<Snippet>{`{"title": "plugins published", "total": 1553, "points": [{"date": "2026-07-01", "count": 21}, ...]}`}</Snippet>
+				<Snippet lang="json">{`{"title": "plugins published", "total": 1553, "points": [{"date": "2026-07-01", "count": 21}, ...]}`}</Snippet>
 				<p className="text-muted-foreground">
 					The <Code>count</Code>/<Code>date</Code> keys are what shieldcn's <Code>query</Code> and{" "}
 					<Code>dateQuery</Code> JSONPath selectors pick up.
@@ -170,7 +170,7 @@ function ChartsPage() {
 					the <Code>.json</Code>.
 				</p>
 				<p className="text-muted-foreground">Embed in markdown:</p>
-				<Snippet>
+				<Snippet lang="markdown">
 					{`![new plugins](https://shieldcn.dev/chart/json.svg?url=https://stats.ussego.com/api/charts/omastats/published&query=$.points[*].count&dateQuery=$.points[*].date&title=Plugins+published)`}
 				</Snippet>
 			</div>

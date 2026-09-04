@@ -111,6 +111,38 @@
 	--contrast-23: oklch(0.76 0 0);
 	--contrast-45: oklch(0.48 0 0);
 	--contrast-70: oklch(0.28 0 0);
+	/* Code highlighting (sugar-high): token colors track the active palette
+	   through the graph tokens, so light/dark mode and the Omarchy palettes
+	   re-theme highlighted snippets with no extra CSS. */
+	--sh-keyword: var(--graph-accent);
+	--sh-jsxliterals: var(--graph-accent);
+	--sh-property: var(--graph-accent);
+	--sh-string: var(--graph-accent-2);
+	--sh-class: var(--graph-accent-3);
+	--sh-identifier: var(--graph-positive);
+	--sh-entity: var(--graph-warning);
+	--sh-sign: var(--muted-foreground);
+	--sh-comment: var(--muted-foreground);
+	--sh-method: var(--graph-accent);
+}
+
+/* Blueprint scrollbars for codeblocks: square thumb in frame ink,
+   accent while hovering or scrolling. Unlayered so it wins over the
+   shared ScrollBar utility default, scoped so other ScrollAreas keep it. */
+.snippet-scroll [data-slot="scroll-area-thumb"] {
+	background-color: var(--graph-frame);
+}
+.snippet-scroll [data-hovering] [data-slot="scroll-area-thumb"],
+.snippet-scroll [data-scrolling] [data-slot="scroll-area-thumb"] {
+	background-color: var(--graph-accent);
+}
+/* Codeblock scrollbars dock flush: full-bleed track dropped into the block's
+   bottom padding (the frame uses p-4), clear of the text — so no gutter is
+   needed and the code stays vertically centered. */
+.snippet-scroll [data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
+	margin: 0;
+	/* biome-ignore lint/complexity/noImportantStyles: Base UI pins the track via inline style. */
+	bottom: -8px !important;
 }
 
 .dark {
