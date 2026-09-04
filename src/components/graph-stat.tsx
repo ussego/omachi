@@ -2,8 +2,8 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody } from "@/components/graph-frame/graph-frame";
-import { fadeUp, staggerList } from "@/components/graph-frame/graph-motion";
+import { Graph, GraphBody, type GraphTone } from "@/components/graph-frame/graph-frame";
+import { fadeUp, graphToneClass, staggerList } from "@/components/graph-frame/graph-motion";
 import { cn } from "@/lib/utils";
 
 const columnClass: Record<number, string> = {
@@ -18,23 +18,25 @@ type StatItem = {
 	label: string;
 	hint?: string;
 	accent?: boolean;
+	tone?: GraphTone;
 };
 
 type GraphStatProps = {
 	title: string;
 	items: StatItem[];
+	tone?: GraphTone;
 	corner?: string;
 	className?: string;
 };
 
-function GraphStat({ title, items, corner, className }: GraphStatProps) {
+function GraphStat({ title, items, tone, corner, className }: GraphStatProps) {
 	const reduce = useReducedMotion();
 	const item = fadeUp(reduce);
 	const list = staggerList(reduce, 0.06);
 	const columns = Math.min(items.length, 4);
 
 	return (
-		<Graph title={title} className={className} corner={corner}>
+		<Graph title={title} tone={tone} className={className} corner={corner}>
 			<GraphBody>
 				<motion.ul
 					className={cn("grid gap-8", columnClass[columns])}
@@ -49,7 +51,11 @@ function GraphStat({ title, items, corner, className }: GraphStatProps) {
 							<p
 								className={cn(
 									"text-3xl tracking-tight tabular-nums sm:text-4xl",
-									entry.accent ? "text-graph-accent" : "text-foreground",
+									entry.tone
+										? graphToneClass(entry.tone)
+										: entry.accent
+											? "text-graph-accent"
+											: "text-foreground",
 								)}
 							>
 								{entry.value}

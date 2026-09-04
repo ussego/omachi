@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody, GraphTick, GraphTrack } from "@/components/graph-frame/graph-frame";
+import { Graph, GraphBody, GraphTick, GraphTrack, type GraphTone } from "@/components/graph-frame/graph-frame";
 import {
 	fadeUp,
 	type Glyphs,
@@ -16,6 +16,7 @@ type RankItem = {
 	label: string;
 	value: number;
 	display?: string;
+	tone?: GraphTone;
 };
 
 type GraphRankProps = {
@@ -25,6 +26,7 @@ type GraphRankProps = {
 	ticks?: number;
 	glyphs?: Glyphs;
 	palette?: GraphPalette;
+	tone?: GraphTone;
 	corner?: string;
 	className?: string;
 };
@@ -39,7 +41,7 @@ function formatValue(item: RankItem) {
 	});
 }
 
-function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, className }: GraphRankProps) {
+function GraphRank({ title, items, max, ticks = 20, glyphs, palette, tone, corner, className }: GraphRankProps) {
 	const reduce = useReducedMotion();
 	const item = fadeUp(reduce);
 	const peak = max ?? Math.max(...items.map((entry) => entry.value), 1);
@@ -50,7 +52,7 @@ function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, cla
 	});
 
 	return (
-		<Graph title={title} className={className} corner={corner}>
+		<Graph title={title} tone={tone} className={className} corner={corner}>
 			<GraphBody className="flex flex-col gap-3">
 				<ol className="flex w-full list-none flex-col gap-2">
 					{items.map((entry, index) => {
@@ -81,7 +83,11 @@ function GraphRank({ title, items, max, ticks = 20, glyphs, palette, corner, cla
 
 											return (
 												<GraphTick
-													className={on ? toneClass(palette, "primary") : "text-graph-frame"}
+													className={
+														on
+															? toneClass(palette, "primary", entry.tone ?? tone)
+															: "text-graph-frame"
+													}
 													key={index}
 												>
 													{on ? marks.fill : marks.empty}

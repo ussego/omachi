@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { graphToneClass, type GraphTone } from "@/components/graph-frame/graph-motion";
 import { cn } from "@/lib/utils";
 
 type Corner = "tl" | "tr" | "bl" | "br";
@@ -42,7 +43,12 @@ function GraphCorners({
 	);
 }
 
-function GraphTitle({ className, children, ...props }: React.ComponentProps<"figcaption">) {
+function GraphTitle({
+	className,
+	children,
+	tone,
+	...props
+}: React.ComponentProps<"figcaption"> & { tone?: GraphTone }) {
 	return (
 		<figcaption
 			className={cn(
@@ -51,7 +57,7 @@ function GraphTitle({ className, children, ...props }: React.ComponentProps<"fig
 			)}
 			{...props}
 		>
-			<span className="graph-title-ink text-graph-accent">[ {children} ]</span>
+			<span className={cn("graph-title-ink", graphToneClass(tone))}>[ {children} ]</span>
 		</figcaption>
 	);
 }
@@ -74,12 +80,14 @@ function GraphTick({ className, ...props }: React.ComponentProps<"span">) {
 
 function Graph({
 	title,
+	tone,
 	corner = "+",
 	className,
 	children,
 	...props
 }: React.ComponentProps<"figure"> & {
 	title?: string;
+	tone?: GraphTone;
 	corner?: string;
 }) {
 	const captionId = React.useId();
@@ -90,7 +98,11 @@ function Graph({
 			className={cn("relative min-w-0 graph-frame font-mono text-sm text-foreground", className)}
 			{...props}
 		>
-			{title ? <GraphTitle id={captionId}>{title}</GraphTitle> : null}
+			{title ? (
+				<GraphTitle id={captionId} tone={tone}>
+					{title}
+				</GraphTitle>
+			) : null}
 			<GraphCorners mark={corner} />
 			{children}
 		</figure>
@@ -98,4 +110,4 @@ function Graph({
 }
 
 export { Graph, GraphBody, GraphCorners, GraphRule, GraphTick, GraphTitle, GraphTrack };
-export type { Corner };
+export type { Corner, GraphTone };

@@ -4,6 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { z } from "zod";
+import type { GraphTone } from "@/components/graph-frame/graph-frame";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphPlot } from "@/components/graph-plot";
 import { GraphStat } from "@/components/graph-stat";
@@ -92,7 +93,7 @@ export const Route = createFileRoute("/")({
 
 type TrendPoint = StatsResponse["points"][number] | ChartSeriesResponse["points"][number];
 
-function TrendChart({ title, points }: { title: string; points: TrendPoint[] }) {
+function TrendChart({ title, points, tone }: { title: string; points: TrendPoint[]; tone: GraphTone }) {
 	// Keep the series identity stable while sibling queries settle so the graph
 	// entrance does not replay on every page render.
 	const values = useMemo(() => points.map((point) => point.count), [points]);
@@ -102,7 +103,7 @@ function TrendChart({ title, points }: { title: string; points: TrendPoint[] }) 
 	);
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
-			<GraphPlot title={title} data={values} labels={labels} className="w-full" />
+			<GraphPlot title={title} data={values} labels={labels} palette="duo" tone={tone} className="w-full" />
 		</div>
 	);
 }
@@ -221,22 +222,26 @@ function OverviewPage() {
 			<GraphStat
 				title="Catalog"
 				items={[
-					{ accent: true, value: fmt(health.pluginCount), label: "total plugins" },
-					{ value: `${pct(breakdown.verifiedCount, breakdown.totalPlugins)}%`, label: "verified" },
-					{ value: fmt(weekCount), label: "published this week" },
-					{ value: fmt(health.snapshotCount), label: "snapshots stored" },
+					{ tone: "accent", value: fmt(health.pluginCount), label: "total plugins" },
+					{
+						tone: "positive",
+						value: `${pct(breakdown.verifiedCount, breakdown.totalPlugins)}%`,
+						label: "verified",
+					},
+					{ tone: "category", value: fmt(weekCount), label: "published this week" },
+					{ tone: "secondary", value: fmt(health.snapshotCount), label: "snapshots stored" },
 				]}
 			/>
 
 			<div className="flex flex-col gap-8">
 				<div className="grid gap-8 md:grid-cols-2">
-					<TrendChart title="Published" points={published.points} />
-					<TrendChart title="Total" points={total.points} />
+					<TrendChart title="Published" points={published.points} tone="category" />
+					<TrendChart title="Total" points={total.points} tone="accent" />
 				</div>
 
 				<div className="grid gap-8 md:grid-cols-2">
-					<TrendChart title="Verified" points={verified.points} />
-					<TrendChart title="Updated" points={updated.points} />
+					<TrendChart title="Verified" points={verified.points} tone="positive" />
+					<TrendChart title="Updated" points={updated.points} tone="secondary" />
 				</div>
 			</div>
 

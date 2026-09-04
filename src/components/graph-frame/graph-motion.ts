@@ -4,6 +4,21 @@ export const easeOutCubic = [0.215, 0.61, 0.355, 1] as const
 
 export const DIM_OPACITY = 0.4
 
+export type GraphTone = "accent" | "secondary" | "category" | "positive" | "warning" | "negative"
+
+const GRAPH_TONE_CLASSES: Record<GraphTone, string> = {
+  accent: "text-graph-accent",
+  secondary: "text-graph-accent-2",
+  category: "text-graph-accent-3",
+  positive: "text-graph-positive",
+  warning: "text-graph-warning",
+  negative: "text-graph-negative",
+}
+
+export function graphToneClass(tone: GraphTone = "accent") {
+  return GRAPH_TONE_CLASSES[tone]
+}
+
 export function graphTransition(
   reduce: boolean | null,
   extras?: Transition
@@ -125,7 +140,11 @@ export function intensityGlyph(
   return glyphs[index] ?? glyphs[0] ?? "·"
 }
 
-export function intensityClass(level: number, palette: GraphPalette = "mono") {
+export function intensityClass(
+  level: number,
+  palette: GraphPalette = "mono",
+  tone: GraphTone = "accent"
+) {
   const index = Math.min(4, Math.max(0, Math.round(level)))
 
   if (index <= 0) {
@@ -141,7 +160,7 @@ export function intensityClass(level: number, palette: GraphPalette = "mono") {
       return "text-foreground"
     }
 
-    return "text-graph-accent"
+    return graphToneClass(tone)
   }
 
   if (palette === "multi") {
@@ -171,7 +190,8 @@ export function isMonoPalette(palette?: GraphPalette) {
 
 export function toneClass(
   palette: GraphPalette | undefined,
-  role: "primary" | "secondary" | "idle" | "empty"
+  role: "primary" | "secondary" | "idle" | "empty",
+  tone: GraphTone = "accent"
 ) {
   if (role === "empty") {
     return "text-graph-frame"
@@ -182,7 +202,7 @@ export function toneClass(
   }
 
   if (role === "primary") {
-    return "text-graph-accent"
+    return graphToneClass(tone)
   }
 
   return isMonoPalette(palette) ? "text-graph-muted" : "text-graph-accent-2"

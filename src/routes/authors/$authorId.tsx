@@ -164,8 +164,20 @@ function AuthorDetailPage() {
 
 			{activity.labels.length > 0 && (
 				<div className="grid gap-6 lg:grid-cols-3">
-					<GraphPlot title="Hearts" data={activity.hearts} labels={activity.labels} />
-					<GraphPlot title="Views" data={activity.views} labels={activity.labels} />
+					<GraphPlot
+						title="Hearts"
+						data={activity.hearts}
+						labels={activity.labels}
+						palette="duo"
+						tone="category"
+					/>
+					<GraphPlot
+						title="Views"
+						data={activity.views}
+						labels={activity.labels}
+						palette="duo"
+						tone="secondary"
+					/>
 					{allManualSetup ? (
 						<Graph title="Copies" className="w-full">
 							<GraphBody className="flex h-full flex-col items-center justify-center px-5 py-7 text-center sm:px-8">
@@ -173,7 +185,13 @@ function AuthorDetailPage() {
 							</GraphBody>
 						</Graph>
 					) : (
-						<GraphPlot title="Copies" data={activity.copies} labels={activity.labels} />
+						<GraphPlot
+							title="Copies"
+							data={activity.copies}
+							labels={activity.labels}
+							palette="duo"
+							tone="accent"
+						/>
 					)}
 				</div>
 			)}

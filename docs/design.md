@@ -1,10 +1,9 @@
 # Omachi design language: blueprint
 
-Omachi's chrome and charts share one vocabulary: technical-drawing ("blueprint") frames — dashed
-rules, `+` corner marks, bracketed mono captions, a single blue accent, Geist Mono. Nothing is
-rounded, and nothing adds a second hue — per color theme: the accent hue may change with the theme
-picker, but a theme never mixes hues (see "Color themes" below). Follow this document for any UI
-change; extend it when the language grows.
+Omachi's chrome and charts share one vocabulary: technical-drawing ("blueprint") frames with dashed
+rules, `+` corner marks, bracketed mono captions, terminal colors, and Geist Mono. Nothing is
+rounded. The active color theme supplies the terminal palette; charts and their captions use each
+hue for a fixed data role. Follow this document for any UI change; extend it when the language grows.
 
 ## Tokens — `src/styles.css` is the single source of truth
 
@@ -13,10 +12,10 @@ change; extend it when the language grows.
   - Page headings (`h1`/`h2`): `font-heading` (sans). The mono uppercase voice belongs to chrome
     labels and charts, not to page titles.
 - **Radius**: `--radius: 0`. Never add rounding.
-- **Accent** (the site's only hue by default): `--graph-accent` — blue, hue 255 (light
-  `oklch(0.5 0.18 255)`, dark `oklch(0.7 0.12 255)`), plus `--graph-accent-2`/`-3` for secondary
-  series. Everything else is neutral. The header's color-theme picker can swap the accent hue (and
-  the neutrals with it) per palette — see "Color themes".
+- **Graph palette**: `--graph-accent` for primary/current data, `--graph-accent-2` for cyan secondary
+  or historical data, `--graph-accent-3` for magenta category data, plus `--graph-positive`,
+  `--graph-warning`, and `--graph-negative` for green/yellow/red status data. Omachi defines its own
+  terminal palette; the header's color-theme picker replaces it with the chosen Omarchy palette.
 - **Frame inks**: `--graph-frame` (charts and controls), `--graph-frame-soft` (page frame, roughly
   half the contrast), `--graph-muted`, `--graph-faint`.
 - Components use tokens only (`bg-background`, `text-graph-accent`, …). No raw color values
@@ -38,15 +37,16 @@ do the rest, so charts, frames, and chrome re-theme together.
   (`--secondary`/`--muted`/`--accent`) all take `selection`, which sits near the background in
   every theme (omarchy's `muted` key is a dimmed *text* color, not a UI fill — it only backstops a
   missing `selection`); text on fills is the theme's own `foreground`; `--destructive` from `red`.
-  The
-  neutral ramp (`--graph-frame*`, `--contrast-*`, `--muted-foreground`, `--ring`) is reproduced by
+  The neutral ramp (`--graph-frame*`, `--contrast-*`, `--muted-foreground`, `--ring`) comes from
   interpolating the theme's background→foreground pair by the same oklch lightness fraction the
-  site tokens use, so contrast stays design-calibrated. Series shades `--graph-accent-2`/`-3`
-  step toward the background/foreground in the same directions as the default.
+  site tokens use. The generator maps `accent`, `cyan`, `magenta`, `green`, `yellow`, and `red` onto
+  the graph palette. It keeps colors that reach 4.5:1 contrast against the graph background and
+  adjusts only oklch lightness when a source color misses that threshold. Missing named colors fall
+  back to their `bright_*` counterpart, then to `accent`.
 - **Other mode** (adaptation block): the site's own neutrals keep their contrast and only the
-  accent family moves — the theme accent's hue rebuilt at the site's per-mode lightness/chroma
-  targets (`:root[data-color-theme="…"]` for dark themes in light mode, `….dark` for light themes
-  in dark mode). `--chart-1..5` stay neutral in every theme: charts remain single-hue.
+  graph palette moves (`:root[data-color-theme="…"]` for dark themes in light mode, `….dark` for
+  light themes in dark mode). The generator applies the same contrast correction against the site's
+  background. `--chart-1..5` stay neutral because Omachi's ASCII graphs use the `--graph-*` tokens.
 - **Generated, not hand-written**: `bun run themes:generate` reads
   `/usr/share/omarchy/themes/<theme>/colors.toml` and rewrites `src/themes/themes.css` (the token
   blocks) and `src/themes/themes.ts` (swatch metadata) — both committed, never hand-edited
@@ -57,6 +57,21 @@ do the rest, so charts, frames, and chrome re-theme together.
   see no flash), and the picker injects it lazily on the first pick; visitors on the default see
   no extra bytes. Flipping palettes afterwards is one attribute change — a single style recalc,
   no re-render, no server cost.
+
+## Terminal color grammar
+
+- Primary/current values and general graph titles use `--graph-accent`.
+- Historical or secondary values use cyan through `--graph-accent-2`. A time series may pair its
+  role color on the latest point with cyan history.
+- Categories and hearts use magenta through `--graph-accent-3`; views use cyan; copies use the
+  primary accent.
+- Verified/available values use `--graph-positive`; unknown/manual/unverified values use
+  `--graph-warning`; broken or failed values use `--graph-negative`.
+- A graph caption, including its brackets, matches the graph's data-role color. Mixed-status graphs
+  keep an accent caption and color each row by status. Axes, frames, empty cells, and explanatory
+  copy remain neutral.
+- A color appears only when its role exists. Navigation, controls, tables, badges, page headings,
+  and body copy keep their existing semantic UI tokens.
 
 ## Frame grammar (the utilities)
 
@@ -70,8 +85,8 @@ do the rest, so charts, frames, and chrome re-theme together.
   each corner with a `bg-background` punch-out; props `mark`, `ink` (default `text-graph-frame`),
   `corners` (which corners get marks; default all four), `className`. Page-frame corners use
   `ink="text-graph-frame-soft"` and are hidden below `sm`.
-- **Captions** `GraphTitle`: `[ TITLE ]` straddling the top edge — mono, uppercase, accent. Charts
-  only.
+- **Captions** `GraphTitle`: `[ TITLE ]` straddling the top edge — mono, uppercase, and colored with
+  the graph's data-role tone. Charts only.
 - **Marching ants** `graph-frame-march` (styles.css): runs the frame dashes at 0.4s linear
   infinite while the wrapping `.group` is hovered; paused by default; active only under
   `prefers-reduced-motion: no-preference`.
@@ -130,13 +145,13 @@ do the rest, so charts, frames, and chrome re-theme together.
 Do:
 
 - Use the `graph-frame` family for any box or border.
-- Keep corners square, colors semantic, chrome labels mono uppercase, and one accent hue per
-  color theme.
+- Keep corners square, colors semantic, and chrome labels mono uppercase. Use the terminal color
+  grammar for graph glyphs and captions.
 
 Don't:
 
-- Add hues beyond the active theme's accent and neutrals, rounded cards, or solid heavy borders
-  where a dashed frame belongs.
+- Rotate terminal hues for decoration, add unassigned color roles, use rounded cards, or place solid
+  heavy borders where a dashed frame belongs.
 - Draw charts with SVG or chart libraries — the glyph vocabulary (`GraphPlot`, `GraphRank`,
   `GraphStack`, …) is the chart language.
 - Add loops or pulses beyond the march, or raw color values in components.

@@ -8,33 +8,35 @@ export interface ColorThemeMeta {
 	label: string;
 	/** The palette's authentic mode from colors.toml. */
 	mode: "light" | "dark";
-	/** Native accent and background hexes, for picker swatches. */
+	/** Native terminal colors and background, for picker swatches. */
 	accent: string;
+	secondary: string;
+	category: string;
 	background: string;
 }
 
 export const COLOR_THEMES: ColorThemeMeta[] = [
-	{ id: "omachi", label: "Omachi", mode: "dark", accent: "#005fc6", background: "#ffffff" },
-	{ id: "catppuccin", label: "Catppuccin", mode: "dark", accent: "#89b4fa", background: "#1e1e2e" },
-	{ id: "catppuccin-latte", label: "Catppuccin Latte", mode: "light", accent: "#1e66f5", background: "#eff1f5" },
-	{ id: "ethereal", label: "Ethereal", mode: "dark", accent: "#7d82d9", background: "#060B1E" },
-	{ id: "everforest", label: "Everforest", mode: "dark", accent: "#7fbbb3", background: "#2d353b" },
-	{ id: "flexoki-light", label: "Flexoki Light", mode: "light", accent: "#205EA6", background: "#FFFCF0" },
-	{ id: "gruvbox", label: "Gruvbox", mode: "dark", accent: "#7daea3", background: "#282828" },
-	{ id: "hackerman", label: "Hackerman", mode: "dark", accent: "#82FB9C", background: "#0B0C16" },
-	{ id: "kanagawa", label: "Kanagawa", mode: "dark", accent: "#dcd7ba", background: "#1f1f28" },
-	{ id: "last-horizon", label: "Last Horizon", mode: "dark", accent: "#b59790", background: "#0c0b0c" },
-	{ id: "lumon", label: "Lumon", mode: "dark", accent: "#8bc9eb", background: "#16242d" },
-	{ id: "lupine", label: "Lupine", mode: "light", accent: "#3264eb", background: "#fafafa" },
-	{ id: "matte-black", label: "Matte Black", mode: "dark", accent: "#e68e0d", background: "#121212" },
-	{ id: "miasma", label: "Miasma", mode: "dark", accent: "#78824b", background: "#222222" },
-	{ id: "nord", label: "Nord", mode: "dark", accent: "#81a1c1", background: "#2e3440" },
-	{ id: "osaka-jade", label: "Osaka Jade", mode: "dark", accent: "#509475", background: "#111c18" },
-	{ id: "retro-82", label: "Retro 82", mode: "dark", accent: "#faa968", background: "#05182e" },
-	{ id: "ristretto", label: "Ristretto", mode: "dark", accent: "#f38d70", background: "#2c2525" },
-	{ id: "rose-pine", label: "Rose Pine", mode: "light", accent: "#56949f", background: "#faf4ed" },
-	{ id: "solitude", label: "Solitude", mode: "dark", accent: "#798186", background: "#101315" },
-	{ id: "tokyo-night", label: "Tokyo Night", mode: "dark", accent: "#7aa2f7", background: "#1a1b26" },
-	{ id: "vantablack", label: "Vantablack", mode: "dark", accent: "#8d8d8d", background: "#000000" },
-	{ id: "white", label: "White", mode: "light", accent: "#6e6e6e", background: "#ffffff" },
+	{ id: "omachi", label: "Omachi", mode: "dark", accent: "#005fc6", secondary: "#007080", category: "#93398e", background: "#ffffff" },
+	{ id: "catppuccin", label: "Catppuccin", mode: "dark", accent: "#89b4fa", secondary: "#94e2d5", category: "#f5c2e7", background: "#1e1e2e" },
+	{ id: "catppuccin-latte", label: "Catppuccin Latte", mode: "light", accent: "#1e66f5", secondary: "#179299", category: "#ea76cb", background: "#eff1f5" },
+	{ id: "ethereal", label: "Ethereal", mode: "dark", accent: "#7d82d9", secondary: "#a3bfd1", category: "#c89dc1", background: "#060B1E" },
+	{ id: "everforest", label: "Everforest", mode: "dark", accent: "#7fbbb3", secondary: "#83c092", category: "#d699b6", background: "#2d353b" },
+	{ id: "flexoki-light", label: "Flexoki Light", mode: "light", accent: "#205EA6", secondary: "#3AA99F", category: "#CE5D97", background: "#FFFCF0" },
+	{ id: "gruvbox", label: "Gruvbox", mode: "dark", accent: "#7daea3", secondary: "#89b482", category: "#d3869b", background: "#282828" },
+	{ id: "hackerman", label: "Hackerman", mode: "dark", accent: "#82FB9C", secondary: "#7cf8f7", category: "#86a7df", background: "#0B0C16" },
+	{ id: "kanagawa", label: "Kanagawa", mode: "dark", accent: "#dcd7ba", secondary: "#6a9589", category: "#957fb8", background: "#1f1f28" },
+	{ id: "last-horizon", label: "Last Horizon", mode: "dark", accent: "#b59790", secondary: "#a5a0b6", category: "#c4d8e2", background: "#0c0b0c" },
+	{ id: "lumon", label: "Lumon", mode: "dark", accent: "#8bc9eb", secondary: "#b4e4f6", category: "#8bc9eb", background: "#16242d" },
+	{ id: "lupine", label: "Lupine", mode: "light", accent: "#3264eb", secondary: "#0c67de", category: "#8a4ad7", background: "#fafafa" },
+	{ id: "matte-black", label: "Matte Black", mode: "dark", accent: "#e68e0d", secondary: "#bebebe", category: "#D35F5F", background: "#121212" },
+	{ id: "miasma", label: "Miasma", mode: "dark", accent: "#78824b", secondary: "#c9a554", category: "#bb7744", background: "#222222" },
+	{ id: "nord", label: "Nord", mode: "dark", accent: "#81a1c1", secondary: "#88c0d0", category: "#b48ead", background: "#2e3440" },
+	{ id: "osaka-jade", label: "Osaka Jade", mode: "dark", accent: "#509475", secondary: "#2DD5B7", category: "#D2689C", background: "#111c18" },
+	{ id: "retro-82", label: "Retro 82", mode: "dark", accent: "#faa968", secondary: "#8cbfb8", category: "#3f8f8a", background: "#05182e" },
+	{ id: "ristretto", label: "Ristretto", mode: "dark", accent: "#f38d70", secondary: "#85dacc", category: "#a8a9eb", background: "#2c2525" },
+	{ id: "rose-pine", label: "Rose Pine", mode: "light", accent: "#56949f", secondary: "#d7827e", category: "#907aa9", background: "#faf4ed" },
+	{ id: "solitude", label: "Solitude", mode: "dark", accent: "#798186", secondary: "#707070", category: "#aeaeae", background: "#101315" },
+	{ id: "tokyo-night", label: "Tokyo Night", mode: "dark", accent: "#7aa2f7", secondary: "#449dab", category: "#ad8ee6", background: "#1a1b26" },
+	{ id: "vantablack", label: "Vantablack", mode: "dark", accent: "#8d8d8d", secondary: "#b0b0b0", category: "#9b9b9b", background: "#000000" },
+	{ id: "white", label: "White", mode: "light", accent: "#6e6e6e", secondary: "#3e3e3e", category: "#2e2e2e", background: "#ffffff" },
 ];

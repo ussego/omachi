@@ -80,7 +80,7 @@ function Heatmap({ points }: { points: { category: string | null; month: string;
 	if (rows.length === 0 || columns.length === 0) {
 		return <p className="py-8 text-center text-muted-foreground text-sm">No activity yet.</p>;
 	}
-	return <GraphHeatmap title="ACTIVITY" columns={columns} rows={rows} max={max} className="w-full" />;
+	return <GraphHeatmap title="ACTIVITY" columns={columns} rows={rows} max={max} tone="category" className="w-full" />;
 }
 
 function CategoriesPage() {
@@ -116,6 +116,7 @@ function CategoriesPage() {
 				</Tabs>
 				<GraphRank
 					title="CATEGORIES"
+					tone="category"
 					items={chartRows.map((row) => ({ label: row.name, value: row.value }))}
 					className="w-full"
 				/>

@@ -4,6 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { z } from "zod";
+import type { GraphTone } from "@/components/graph-frame/graph-frame";
 import { BrokenPluginsTable } from "@/components/broken-plugins-table";
 import { GraphRule } from "@/components/graph-frame/graph-rule";
 import { GraphRank } from "@/components/graph-rank";
@@ -29,6 +30,13 @@ const RANGES = [
 ] as const;
 const DEFAULTS = { range: "30d", page: 1 } as const;
 const UNVERIFIED_PAGE_SIZE = 25;
+
+function statusTone(status: string | null): GraphTone {
+	const value = status?.toLowerCase() ?? "unknown";
+	if (value === "verified" || value === "available" || value === "built in") return "positive";
+	if (["broken", "failed", "error", "unavailable"].some((word) => value.includes(word))) return "negative";
+	return "warning";
+}
 
 // Zod v4 schema passed straight to validateSearch; `.catch` coerces garbage
 // to the default instead of erroring the route.
@@ -60,7 +68,11 @@ function StatusChart({ title, rows }: { title: string; rows: { status: string | 
 	const items = useMemo(
 		() =>
 			(rows ?? [])
-				.map((row) => ({ label: row.status ?? "unknown", value: row.count }))
+				.map((row) => ({
+					label: row.status ?? "unknown",
+					value: row.count,
+					tone: statusTone(row.status),
+				}))
 				.sort((left, right) => right.value - left.value),
 		[rows],
 	);

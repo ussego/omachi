@@ -10,10 +10,10 @@
  *       :root[data-color-theme=…].dark for dark themes) maps the theme's own
  *       colors onto the full shadcn/graph token set;
  *     - the opposite mode (adaptation block) keeps the site's neutral tokens
- *       and swaps only the graph-accent family, rebuilt from the theme accent's
- *       hue at the site's per-mode lightness/chroma targets.
- *   src/themes/themes.ts — metadata (id, label, native mode, accent and
- *     background hexes) for the picker's swatches and names.
+ *       and swaps only the graph palette, keeping each Omarchy terminal hue
+ *       while correcting colors that miss text contrast.
+ *   src/themes/themes.ts — metadata (id, label, native mode, terminal colors,
+ *     and background hexes) for the picker's swatches and names.
  *
  * The Omachi default (no data-color-theme attribute) stays byte-identical to
  * src/styles.css; nothing here overrides it. The neutral ramp is reproduced
@@ -142,6 +142,30 @@ function mixHex(from: string, to: string, t: number): string {
 	return toHex(oklabToSrgb([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]));
 }
 
+function contrastRatio(left: string, right: string): number {
+	const luminance = (hex: string) => {
+		const [r, g, b] = parseHex(hex).map((channel) => srgbToLinear(channel / 255));
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	};
+	const [lighter, darker] = [luminance(left), luminance(right)].sort((a, b) => b - a);
+	return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Preserve a terminal color's hue while moving its lightness only as far as WCAG AA requires. */
+function readableHex(source: string, background: string, mode: "light" | "dark"): string {
+	if (contrastRatio(source, background) >= 4.5) return source;
+	const { L, C, H } = hexToOklch(source);
+	let low = mode === "dark" ? L : 0;
+	let high = mode === "dark" ? 1 : L;
+	for (let step = 0; step < 16; step++) {
+		const mid = (low + high) / 2;
+		const passes = contrastRatio(oklchToHex(mid, C, H), background) >= 4.5;
+		if (mode === "dark" ? passes : !passes) high = mid;
+		else low = mid;
+	}
+	return oklchToHex(mode === "dark" ? high : low, C, H);
+}
+
 /* ------------------------------ styles.css ref ----------------------------- */
 
 interface CssColor {
@@ -223,6 +247,24 @@ interface RawTheme {
 	colors: Map<string, string>;
 }
 
+const GRAPH_COLORS = [
+	["graph-accent", "accent"],
+	["graph-accent-2", "cyan"],
+	["graph-accent-3", "magenta"],
+	["graph-positive", "green"],
+	["graph-warning", "yellow"],
+	["graph-negative", "red"],
+] as const;
+
+function graphColors(theme: RawTheme, background: string, mode: "light" | "dark"): Map<string, string> {
+	return new Map(
+		GRAPH_COLORS.map(([token, key]) => {
+			const source = theme.colors.get(key) ?? theme.colors.get(`bright_${key}`) ?? theme.colors.get("accent")!;
+			return [token, readableHex(source, background, mode)];
+		}),
+	);
+}
+
 function humanizeLabel(id: string): string {
 	return id
 		.split("-")
@@ -264,7 +306,6 @@ function buildBlock(theme: RawTheme, site: SiteMode, opts: { isNative: boolean }
 	const mode = opts.isNative ? theme.mode : theme.mode === "dark" ? "light" : "dark";
 	const themeBg = theme.colors.get("background")!;
 	const themeFg = theme.colors.get("foreground")!;
-	const themeAccent = theme.colors.get("accent")!;
 	const bg = opts.isNative ? themeBg : site.bg;
 	const fg = opts.isNative ? themeFg : site.fg;
 	const ramp = new Map<string, string>();
@@ -272,30 +313,11 @@ function buildBlock(theme: RawTheme, site: SiteMode, opts: { isNative: boolean }
 		ramp.set(name, mixHex(bg, fg, rampStrengths(site.tokens).get(name)!));
 	}
 
-	const accentL = mode === "light" ? 0.5 : 0.7;
-	const accentCapC = mode === "light" ? 0.18 : 0.13;
-	const accent = opts.isNative
-		? themeAccent
-		: (() => {
-				// Near-gray accents keep their hue irrelevant; the site's own
-				// hue then carries the family, at the target lightness.
-				const { C, H } = hexToOklch(themeAccent);
-				const c = C > 0.004 ? Math.min(C, accentCapC) : 0;
-				return oklchToHex(accentL, c, C > 0.004 ? H : 255);
-			})();
-	// Series shades mirror styles.css: in light the second tone lifts toward
-	// the background and the third steps toward the ink; in dark both step
-	// toward the background.
-	const accent2 = mode === "light" ? mixHex(accent, bg, 0.16) : mixHex(accent, bg, 0.14);
-	const accent3 = mode === "light" ? mixHex(accent, fg, 0.22) : mixHex(accent, bg, 0.32);
+	const graph = graphColors(theme, bg, mode);
 
 	if (!opts.isNative) {
-		// Adaptation: the site's neutrals stay; only the accent family moves.
-		const tokens = new Map<string, string>();
-		tokens.set("graph-accent", accent);
-		tokens.set("graph-accent-2", accent2);
-		tokens.set("graph-accent-3", accent3);
-		return tokens;
+		// Adaptation: the site's neutrals stay; only the graph palette moves.
+		return graph;
 	}
 
 	// All shadcn fills (secondary/muted/accent) come from `selection`, which
@@ -331,9 +353,7 @@ function buildBlock(theme: RawTheme, site: SiteMode, opts: { isNative: boolean }
 	set("border", border);
 	set("input", border);
 	set("ring", ramp.get("ring")!);
-	set("graph-accent", accent);
-	set("graph-accent-2", accent2);
-	set("graph-accent-3", accent3);
+	for (const [name, value] of graph) set(name, value);
 	for (const name of [
 		"graph-frame",
 		"graph-frame-soft",
@@ -374,6 +394,12 @@ for (const mode of ["light", "dark"] as const) {
 	const fg = tokens.get("foreground")!;
 	site[mode].bg = oklchToHex(bg.L, bg.C, bg.H);
 	site[mode].fg = oklchToHex(fg.L, fg.C, fg.H);
+	for (const [name] of GRAPH_COLORS) {
+		const color = tokens.get(name)!;
+		if (contrastRatio(oklchToHex(color.L, color.C, color.H), site[mode].bg) < 4.5) {
+			throw new Error(`Omachi ${mode} ${name} misses 4.5:1 contrast`);
+		}
+	}
 }
 
 const themes: RawTheme[] = [];
@@ -402,7 +428,20 @@ const blocks = themes.map((theme) => ({
 	adaptation: buildBlock(theme, site[theme.mode === "dark" ? "light" : "dark"], { isNative: false }),
 }));
 
-const omachiAccent = oklchToHex(0.5, 0.18, 255); // :root --graph-accent in styles.css
+for (const { theme, native, adaptation } of blocks) {
+	for (const tokens of [native, adaptation]) {
+		const background = tokens.get("background") ?? site[theme.mode === "dark" ? "light" : "dark"].bg;
+		for (const [name] of GRAPH_COLORS) {
+			const value = tokens.get(name)!;
+			if (contrastRatio(value, background) < 4.5) throw new Error(`${theme.id} ${name} misses 4.5:1 contrast`);
+		}
+	}
+}
+
+const omachiColor = (name: string) => {
+	const color = site.light.tokens.get(name)!;
+	return oklchToHex(color.L, color.C, color.H);
+};
 
 const cssParts = [
 	"/* GENERATED by `bun run themes:generate` — do not edit by hand.",
@@ -411,7 +450,7 @@ const cssParts = [
 	" *",
 	" * The Omachi default (no data-color-theme attribute) is untouched. Each",
 	" * theme overrides the full token set in its native mode and swaps only",
-	" * the graph-accent family (adapted to the site's light/dark targets) in",
+	" * the contrast-corrected graph palette in",
 	" * the opposite mode, where the site's neutrals keep their contrast.",
 	" */",
 	"",
@@ -446,17 +485,21 @@ const tsParts = [
 	"\tlabel: string;",
 	"\t/** The palette's authentic mode from colors.toml. */",
 	'\tmode: "light" | "dark";',
-	"\t/** Native accent and background hexes, for picker swatches. */",
+	"\t/** Native terminal colors and background, for picker swatches. */",
 	"\taccent: string;",
+	"\tsecondary: string;",
+	"\tcategory: string;",
 	"\tbackground: string;",
 	"}",
 	"",
 	"export const COLOR_THEMES: ColorThemeMeta[] = [",
-	`\t{ id: "omachi", label: "Omachi", mode: "dark", accent: "${omachiAccent}", background: "#ffffff" },`,
+	`\t{ id: "omachi", label: "Omachi", mode: "dark", accent: "${omachiColor("graph-accent")}", secondary: "${omachiColor("graph-accent-2")}", category: "${omachiColor("graph-accent-3")}", background: "#ffffff" },`,
 	...themes.map((theme) => {
 		const accent = theme.colors.get("accent")!;
+		const secondary = theme.colors.get("cyan") ?? theme.colors.get("bright_cyan") ?? accent;
+		const category = theme.colors.get("magenta") ?? theme.colors.get("bright_magenta") ?? accent;
 		const background = theme.colors.get("background")!;
-		return `\t{ id: "${theme.id}", label: "${humanizeLabel(theme.id)}", mode: "${theme.mode}", accent: "${accent}", background: "${background}" },`;
+		return `\t{ id: "${theme.id}", label: "${humanizeLabel(theme.id)}", mode: "${theme.mode}", accent: "${accent}", secondary: "${secondary}", category: "${category}", background: "${background}" },`;
 	}),
 	"];",
 	"",

@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody } from "@/components/graph-frame/graph-frame";
+import { Graph, GraphBody, type GraphTone } from "@/components/graph-frame/graph-frame";
 import {
 	fadeUp,
 	type Glyphs,
@@ -29,11 +29,20 @@ type GraphHeatmapProps = {
 	caption?: string;
 	glyphs?: Glyphs;
 	palette?: GraphPalette;
+	tone?: GraphTone;
 	corner?: string;
 	className?: string;
 };
 
-function IntensityScale({ glyphs, palette }: { glyphs: readonly string[]; palette?: GraphPalette }) {
+function IntensityScale({
+	glyphs,
+	palette,
+	tone,
+}: {
+	glyphs: readonly string[];
+	palette?: GraphPalette;
+	tone?: GraphTone;
+}) {
 	return (
 		<p className="flex items-center gap-2 text-graph-muted">
 			<span>Less</span>
@@ -42,7 +51,7 @@ function IntensityScale({ glyphs, palette }: { glyphs: readonly string[]; palett
 					<span
 						className={cn(
 							"w-[1ch] text-center",
-							intensityClass(Math.round((index / Math.max(glyphs.length - 1, 1)) * 4), palette),
+							intensityClass(Math.round((index / Math.max(glyphs.length - 1, 1)) * 4), palette, tone),
 						)}
 						key={`${glyph}-${index}`}
 					>
@@ -64,6 +73,7 @@ function GraphHeatmap({
 	caption,
 	glyphs,
 	palette,
+	tone,
 	corner,
 	className,
 }: GraphHeatmapProps) {
@@ -74,7 +84,7 @@ function GraphHeatmap({
 	const set = resolveGlyphs(glyphs);
 
 	return (
-		<Graph title={title} className={className} corner={corner}>
+		<Graph title={title} tone={tone} className={className} corner={corner}>
 			<GraphBody className="flex flex-col gap-4">
 				<div className="flex w-full flex-col gap-2">
 					<div className="grid w-full items-end gap-x-1" style={{ gridTemplateColumns: template }}>
@@ -109,7 +119,7 @@ function GraphHeatmap({
 											aria-hidden="true"
 											className={cn(
 												"text-center leading-none select-none",
-												intensityClass(level, palette),
+												intensityClass(level, palette, tone),
 											)}
 											key={`${row.label}-${column}`}
 										>
@@ -124,7 +134,7 @@ function GraphHeatmap({
 				{legend || caption ? (
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						{caption ? <p className="text-graph-muted">{caption}</p> : <span />}
-						{legend ? <IntensityScale glyphs={set} palette={palette} /> : null}
+						{legend ? <IntensityScale glyphs={set} palette={palette} tone={tone} /> : null}
 					</div>
 				) : null}
 			</GraphBody>

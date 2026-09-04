@@ -245,11 +245,15 @@ function PluginDetailPage() {
 						title="Hearts"
 						data={rows.map((row) => row.hearts)}
 						labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+						palette="duo"
+						tone="category"
 					/>
 					<GraphPlot
 						title="Views"
 						data={rows.map((row) => row.views)}
 						labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+						palette="duo"
+						tone="secondary"
 					/>
 					{manualSetup ? (
 						<Graph title="Copies" className="w-full">
@@ -262,6 +266,8 @@ function PluginDetailPage() {
 							title="Copies"
 							data={rows.map((row) => row.copies)}
 							labels={rows.map((row) => fmtMonthDay(row.snapshotAt))}
+							palette="duo"
+							tone="accent"
 						/>
 					)}
 				</div>

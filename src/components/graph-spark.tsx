@@ -7,6 +7,7 @@ import {
   GraphBody,
   GraphTick,
   GraphTrack,
+  type GraphTone,
 } from "@/components/graph-frame/graph-frame"
 import {
   DIM_OPACITY,
@@ -28,6 +29,7 @@ type GraphSparkProps = {
   caption?: string
   glyphs?: Glyphs
   palette?: GraphPalette
+  tone?: GraphTone
   corner?: string
   className?: string
   bodyClassName?: string
@@ -39,6 +41,7 @@ function GraphSpark({
   caption,
   glyphs,
   palette,
+  tone,
   corner,
   className,
   bodyClassName,
@@ -53,7 +56,7 @@ function GraphSpark({
   })
 
   return (
-    <Graph title={title} className={className} corner={corner}>
+    <Graph title={title} tone={tone} className={className} corner={corner}>
       <GraphBody className={cn("flex flex-col items-center gap-4", bodyClassName)}>
         <GraphTrack className="justify-center gap-0.5">
           {points.map((glyph, index) => {
@@ -64,8 +67,8 @@ function GraphSpark({
                 <motion.span
                   className={cn(
                     live
-                      ? toneClass(palette, "primary")
-                      : toneClass(palette, "secondary")
+                      ? toneClass(palette, "primary", tone)
+                      : toneClass(palette, "secondary", tone)
                   )}
                   initial={reduce ? false : { opacity: 0 }}
                   transition={graphTransition(reduce, {

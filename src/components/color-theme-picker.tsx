@@ -70,12 +70,24 @@ function applyPalette(id: string) {
 	}
 }
 
-function ThemeSwatch({ accent, background }: { accent: string; background: string }) {
+function ThemeSwatch({
+	accent,
+	secondary,
+	category,
+	background,
+}: {
+	accent: string;
+	secondary: string;
+	category: string;
+	background: string;
+}) {
 	return (
 		<span
 			aria-hidden="true"
 			className="size-3.5 shrink-0 border border-graph-frame"
-			style={{ background: `linear-gradient(135deg, ${accent} 50%, ${background} 50%)` }}
+			style={{
+				background: `conic-gradient(${accent} 0 25%, ${secondary} 0 50%, ${background} 0 75%, ${category} 0)`,
+			}}
 		/>
 	);
 }
@@ -151,7 +163,10 @@ export function ColorThemePicker() {
 				<span
 					aria-hidden="true"
 					className="size-2"
-					style={{ backgroundColor: "var(--graph-accent)" }}
+					style={{
+						background:
+							"linear-gradient(135deg, var(--graph-accent) 0 34%, var(--graph-accent-2) 34% 67%, var(--graph-accent-3) 67%)",
+					}}
 				/>
 				<span className="hidden max-w-32 truncate sm:inline">{active.label}</span>
 			</PopoverTrigger>
@@ -169,11 +184,7 @@ export function ColorThemePicker() {
 								type="button"
 								onClick={() => selectMode(value)}
 								aria-pressed={isActive}
-								title={
-									value === "auto"
-										? "Follow the system setting"
-										: `Force ${value} mode`
-								}
+								title={value === "auto" ? "Follow the system setting" : `Force ${value} mode`}
 								className={cn(
 									"graph-frame flex h-6 flex-1 items-center justify-center font-mono text-[10px] tracking-widest uppercase transition-colors hover:text-foreground",
 									isActive ? "text-graph-accent" : "text-muted-foreground",
@@ -200,7 +211,12 @@ export function ColorThemePicker() {
 									isActive ? "text-graph-accent" : "text-foreground",
 								)}
 							>
-								<ThemeSwatch accent={theme.accent} background={theme.background} />
+								<ThemeSwatch
+									accent={theme.accent}
+									secondary={theme.secondary}
+									category={theme.category}
+									background={theme.background}
+								/>
 								<span className="min-w-0 flex-1 truncate">{theme.label}</span>
 							</button>
 						);

@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 
-import { Graph, GraphBody, GraphRule } from "@/components/graph-frame/graph-frame";
+import { Graph, GraphBody, GraphRule, type GraphTone } from "@/components/graph-frame/graph-frame";
 import {
 	clamp01,
 	fillDelay,
@@ -23,6 +23,7 @@ type GraphPlotProps = {
 	progress?: number;
 	glyphs?: Glyphs;
 	palette?: GraphPalette;
+	tone?: GraphTone;
 	corner?: string;
 	className?: string;
 };
@@ -44,6 +45,7 @@ function GraphPlot({
 	progress = 1,
 	glyphs,
 	palette,
+	tone,
 	corner,
 	className,
 }: GraphPlotProps) {
@@ -59,7 +61,7 @@ function GraphPlot({
 	const marks = trackMarks(glyphs);
 
 	return (
-		<Graph title={title} className={className} corner={corner}>
+		<Graph title={title} tone={tone} className={className} corner={corner}>
 			<GraphBody className="flex flex-col gap-3">
 				<div className="flex gap-3">
 					<div
@@ -86,17 +88,19 @@ function GraphPlot({
 										const isCap = shown && fromBottom === level;
 										const isFill = shown && variant === "area" && fromBottom < level;
 										const glyph = isCap ? marks.fill : isFill ? marks.rest : " ";
-										const tone = isCap
+										const glyphTone = isCap
 											? live
-												? toneClass(palette, "primary")
-												: "text-foreground"
+												? toneClass(palette, "primary", tone)
+												: palette
+													? toneClass(palette, "secondary", tone)
+													: "text-foreground"
 											: isFill
-												? toneClass(palette, "secondary")
+												? toneClass(palette, "secondary", tone)
 												: "text-transparent";
 
 										return (
 											<motion.span
-												className={cn("h-[1em] w-full text-center leading-none", tone)}
+												className={cn("h-[1em] w-full text-center leading-none", glyphTone)}
 												initial={reduce || !shown || glyph === " " ? false : { opacity: 0 }}
 												key={row}
 												transition={graphTransition(reduce, {

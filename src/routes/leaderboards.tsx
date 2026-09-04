@@ -57,6 +57,7 @@ const METRIC_TABS = [
 	{
 		value: "hearts",
 		label: "Hearts",
+		tone: "category",
 
 		score: (r: LeaderboardRow) => r.hearts,
 		spark: (r: LeaderboardRow) => (r.spark ?? []).map((s) => s.hearts ?? 0),
@@ -64,6 +65,7 @@ const METRIC_TABS = [
 	{
 		value: "views",
 		label: "Views",
+		tone: "secondary",
 
 		score: (r: LeaderboardRow) => r.views,
 		spark: (r: LeaderboardRow) => (r.spark ?? []).map((s) => s.views ?? 0),
@@ -71,6 +73,7 @@ const METRIC_TABS = [
 	{
 		value: "copies",
 		label: "Copies",
+		tone: "accent",
 
 		score: (r: LeaderboardRow) => r.copies,
 		spark: (r: LeaderboardRow) => (r.spark ?? []).map((s) => s.copies ?? 0),
@@ -78,6 +81,7 @@ const METRIC_TABS = [
 	{
 		value: "copies_per_view",
 		label: "Conversion",
+		tone: "positive",
 
 		score: (r: LeaderboardRow) => r.score,
 		spark: (r: LeaderboardRow) => (r.spark ?? []).map((s) => (s.views ? (s.copies ?? 0) / s.views : 0)),
@@ -111,7 +115,7 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 
 	return (
 		<div className="flex flex-col gap-6">
-			<GraphRank title={metric.label} items={chartRows} />
+			<GraphRank title={metric.label} items={chartRows} tone={metric.tone} />
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -155,6 +159,8 @@ function MetricLeaderboard({ metric }: { metric: (typeof METRIC_TABS)[number] })
 									<GraphSpark
 										title=""
 										data={metric.spark(r)}
+										palette="duo"
+										tone={metric.tone}
 										corner=""
 										className="w-32 bg-none"
 										bodyClassName="px-0 py-0 sm:px-0 sm:py-0"
@@ -219,7 +225,7 @@ function AuthorsLeaderboard() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<GraphRank title="AUTHOR HEARTS" items={rankItems} />
+			<GraphRank title="AUTHOR HEARTS" items={rankItems} tone="category" />
 			<Table>
 				<TableHeader>
 					<TableRow>
