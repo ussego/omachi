@@ -207,3 +207,6 @@ export function toneClass(
 
   return isMonoPalette(palette) ? "text-graph-muted" : "text-graph-accent-2"
 }
+
+export const GRAPH_TIP_CLASS =
+  "pointer-events-none absolute z-20 whitespace-nowrap graph-frame bg-background px-2 py-1 font-mono text-xs uppercase"

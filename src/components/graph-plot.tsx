@@ -1,11 +1,13 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import * as React from "react";
 
 import { Graph, GraphBody, GraphRule, type GraphTone } from "@/components/graph-frame/graph-frame";
 import {
 	clamp01,
 	fillDelay,
+	GRAPH_TIP_CLASS,
 	type Glyphs,
 	type GraphPalette,
 	graphTransition,
@@ -50,6 +52,7 @@ function GraphPlot({
 	className,
 }: GraphPlotProps) {
 	const reduce = useReducedMotion();
+	const [active, setActive] = React.useState<number | null>(null);
 	const max = Math.max(...data, 0);
 	const min = Math.min(0, ...data);
 	const range = max - min || 1;
@@ -59,6 +62,64 @@ function GraphPlot({
 	const revealed = Math.round(clamp01(progress) * data.length);
 	const lastLive = Math.max(0, revealed - 1);
 	const marks = trackMarks(glyphs);
+	const last = data.length - 1;
+	const activeIndex = active != null && active >= 0 && active <= last ? active : null;
+	const activePct = activeIndex != null ? ((activeIndex + 0.5) / data.length) * 100 : 0;
+	const activeAlign = activePct < 18 ? "left" : activePct > 82 ? "right" : "center";
+	const activeLabel = activeIndex != null ? labels?.[activeIndex] : undefined;
+	const activeValue = activeIndex != null ? (data[activeIndex] ?? 0) : 0;
+	const tooltip =
+		activeIndex != null ? (
+			<span
+				aria-hidden="true"
+				className={cn(GRAPH_TIP_CLASS, "top-1/2")}
+				style={{
+					left: `${activePct}%`,
+					transform: `${activeAlign === "center" ? "translateX(-50%)" : activeAlign === "left" ? "translateX(0)" : "translateX(-100%)"} translateY(calc(-50% + 3px))`,
+				}}
+			>
+				{activeLabel ? <span className="text-graph-muted">{activeLabel} </span> : null}
+				<span className={palette ? toneClass(palette, "primary", tone) : "text-foreground"}>
+					{formatTick(activeValue)}
+				</span>
+			</span>
+		) : null;
+	const cursorLine =
+		activeIndex != null ? (
+			<span
+				aria-hidden="true"
+				className="pointer-events-none absolute graph-rule-y"
+				style={{ left: `${activePct}%`, top: "-0.375rem", bottom: "50%" }}
+			/>
+		) : null;
+
+	function stepActive(delta: number) {
+		setActive((prev) => {
+			if (last < 0) {
+				return null;
+			}
+			const base = prev ?? lastLive;
+			return Math.min(last, Math.max(0, base + delta));
+		});
+	}
+
+	function onPlotKeyDown(event: React.KeyboardEvent) {
+		if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+			event.preventDefault();
+			stepActive(1);
+		} else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+			event.preventDefault();
+			stepActive(-1);
+		} else if (event.key === "Home") {
+			event.preventDefault();
+			setActive(0);
+		} else if (event.key === "End") {
+			event.preventDefault();
+			setActive(last);
+		} else if (event.key === "Escape") {
+			setActive(null);
+		}
+	}
 
 	return (
 		<Graph title={title} tone={tone} className={className} corner={corner}>
@@ -72,8 +133,18 @@ function GraphPlot({
 						<span>{formatTick(min)}</span>
 					</div>
 					<div
-						aria-hidden="true"
-						className="flex min-w-0 flex-1 items-end select-none"
+						role="img"
+						aria-label={
+							activeIndex != null
+								? `${activeLabel ?? `point ${activeIndex + 1}`} ${formatTick(activeValue)}`
+								: `${variant} plot, ${data.length} points, min ${formatTick(min)}, max ${formatTick(max)}`
+						}
+						tabIndex={0}
+						onMouseLeave={() => setActive(null)}
+						onBlur={() => setActive(null)}
+						onFocus={() => setActive((prev) => prev ?? lastLive)}
+						onKeyDown={onPlotKeyDown}
+						className="relative flex min-w-0 flex-1 items-end outline-none select-none focus-visible:ring-1 focus-visible:ring-graph-accent"
 						style={{ height: `${height}em` }}
 					>
 						{data.map((value, column) => {
@@ -82,7 +153,12 @@ function GraphPlot({
 							const shown = column < revealed;
 
 							return (
-								<span className="flex h-full min-w-0 flex-1 flex-col justify-end" key={column}>
+								<span
+									aria-hidden="true"
+									onMouseEnter={() => setActive(column)}
+									className="flex h-full min-w-0 flex-1 flex-col justify-end"
+									key={column}
+								>
 									{Array.from({ length: height }, (_, row) => {
 										const fromBottom = height - 1 - row;
 										const isCap = shown && fromBottom === level;
@@ -116,9 +192,16 @@ function GraphPlot({
 								</span>
 							);
 						})}
+						{activeIndex != null ? (
+							<span
+								aria-hidden="true"
+								className="pointer-events-none absolute top-0 graph-rule-y"
+								style={{ left: `${activePct}%`, bottom: "-0.75rem" }}
+							/>
+						) : null}
 					</div>
 				</div>
-				{start || end ? (
+				{start || end || activeIndex != null ? (
 					<>
 						<div className="flex gap-3">
 							<span aria-hidden="true" className="invisible w-[4ch] shrink-0 leading-none tabular-nums">
@@ -126,10 +209,22 @@ function GraphPlot({
 							</span>
 							<div className="flex min-w-0 flex-1 flex-col gap-1.5">
 								<GraphRule className="w-full" />
-								<div className="flex justify-between leading-none text-graph-muted">
-									<span>{start}</span>
-									{end && end !== start ? <span>{end}</span> : null}
-								</div>
+								{start || end ? (
+									<div className="relative -mb-4 flex justify-between px-0.5 leading-none text-graph-muted">
+										{cursorLine}
+										{tooltip}
+										<span className="relative bg-background px-1">{start}</span>
+										{end && end !== start ? (
+											<span className="relative bg-background px-1">{end}</span>
+										) : null}
+									</div>
+								) : (
+									<div aria-hidden="true" className="relative -mb-4 text-xs uppercase">
+										{"\u00A0"}
+										{cursorLine}
+										{tooltip}
+									</div>
+								)}
 							</div>
 						</div>
 					</>
