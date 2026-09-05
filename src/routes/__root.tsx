@@ -55,6 +55,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: static trusted theme initialization */}
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
 				<HeadContent />
+				{/* Cloudflare Web Analytics */}
+				<script
+					type="module"
+					src="https://static.cloudflareinsights.com/beacon.min.js"
+					data-cf-beacon='{"token": "529e707d35cd495fade1f40fab7a9a34"}'
+				/>
 			</head>
 			<body className="font-sans antialiased wrap-anywhere">
 				<Header />
