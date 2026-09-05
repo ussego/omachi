@@ -110,6 +110,22 @@ export type TrendingResponse = {
 	}[];
 };
 
+export type SearchResponse = {
+	q: string;
+	plugins: {
+		id: string;
+		name: string | null;
+		author: string | null;
+		category: string | null;
+		hearts: number | null;
+	}[];
+	authors: {
+		author: string | null;
+		plugins: number;
+		hearts: number | null;
+	}[];
+};
+
 export type AuthorsResponse = {
 	rows: {
 		author: string | null;

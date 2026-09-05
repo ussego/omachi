@@ -18,7 +18,7 @@ import {
 	CommandPanel,
 	CommandSeparator,
 } from "@/components/ui/command";
-import { useAuthors, usePluginList } from "@/lib/queries";
+import { useSearch } from "@/lib/queries";
 
 type NavItem = {
 	kind: "nav";
@@ -46,28 +46,27 @@ type CommandPaletteDialogProps = {
 	finalFocus: RefObject<HTMLElement | null>;
 };
 
-/** Ctrl+K command palette: navigate pages, search plugins (server-side LIKE). */
+/** Ctrl+K command palette: navigate pages, search plugins and authors via /api/search. */
 export default function CommandPaletteDialog({ open, onOpenChange, finalFocus }: CommandPaletteDialogProps) {
 	const navigate = useNavigate();
 	const [query, setQuery] = useState("");
 	const [debounced, setDebounced] = useState("");
 
 	useEffect(() => {
-		const timeout = setTimeout(() => setDebounced(query), 250);
+		const timeout = setTimeout(() => setDebounced(query.trim()), 150);
 		return () => clearTimeout(timeout);
 	}, [query]);
 
-	const list = usePluginList(debounced, 1, 8);
-	const authors = useAuthors(debounced.length > 0);
-	const pluginItems: PluginItem[] = (list.data?.plugins ?? []).map((plugin) => ({
+	// One ranked server search; mode="none" below disables client-side
+	// filtering so server matches (e.g. on author or description) survive.
+	const search = useSearch(debounced, 8, open);
+	const pluginItems: PluginItem[] = (search.data?.plugins ?? []).map((plugin) => ({
 		kind: "plugin",
-		// value is what the palette filters on (name + id so both match);
-		// id stays the navigation target.
-		value: `${plugin.name ?? plugin.id} ${plugin.id}`,
+		value: plugin.id,
 		label: plugin.name ?? plugin.id,
 		id: plugin.id,
 	}));
-	const authorItems: AuthorItem[] = (authors.data?.rows ?? [])
+	const authorItems: AuthorItem[] = (search.data?.authors ?? [])
 		.filter((author) => author.author != null)
 		.map((author) => ({
 			kind: "author",
@@ -75,11 +74,15 @@ export default function CommandPaletteDialog({ open, onOpenChange, finalFocus }:
 			label: author.author!,
 			count: author.plugins,
 		}));
+	const needle = debounced.toLowerCase();
 	const groups: Group[] = [
-		{ value: "Navigation", items: NAV_ITEMS.map((item) => ({ ...item, value: `${item.to} ${item.label}` })) },
+		{
+			value: "Navigation",
+			items: NAV_ITEMS.filter((item) => !needle || item.label.toLowerCase().includes(needle)),
+		},
 		{ value: "Plugins", items: pluginItems },
-		...(debounced ? [{ value: "Authors", items: authorItems }] : []),
-	];
+		{ value: "Authors", items: authorItems },
+	].filter((group) => group.items.length > 0);
 
 	const go = (item: PaletteItem) => {
 		onOpenChange(false);
@@ -92,7 +95,7 @@ export default function CommandPaletteDialog({ open, onOpenChange, finalFocus }:
 		<CommandDialog open={open} onOpenChange={onOpenChange}>
 			<CommandDialogPopup finalFocus={finalFocus}>
 				<CommandDialogPrimitive.Title className="sr-only">Search pages or plugins</CommandDialogPrimitive.Title>
-				<Command items={groups} onValueChange={setQuery}>
+				<Command items={groups} mode="none" onValueChange={setQuery}>
 					<CommandInput placeholder="Search pages or plugins…" />
 					<CommandPanel>
 						<CommandEmpty>No results found.</CommandEmpty>

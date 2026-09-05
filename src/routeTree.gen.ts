@@ -22,6 +22,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPluginsRouteImport } from './routes/api/plugins'
+import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as AuthorsAuthorIdRouteImport } from './routes/authors/$authorId'
 import { Route as PluginsPluginIdRouteImport } from './routes/plugins/$pluginId'
 import { Route as ApiAdminExplorerPollRouteImport } from './routes/api/admin/explorer-poll'
@@ -109,6 +110,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiPluginsRoute = ApiPluginsRouteImport.update({
   id: '/api/plugins',
   path: '/api/plugins',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSearchRoute = ApiSearchRouteImport.update({
+  id: '/api/search',
+  path: '/api/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthorsAuthorIdRoute = AuthorsAuthorIdRouteImport.update({
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
+  '/api/search': typeof ApiSearchRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
   '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
+  '/api/search': typeof ApiSearchRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
   '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
@@ -319,6 +327,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/health': typeof ApiHealthRouteWithChildren
   '/api/plugins': typeof ApiPluginsRouteWithChildren
+  '/api/search': typeof ApiSearchRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/plugins/$pluginId': typeof PluginsPluginIdRoute
   '/api/admin/explorer-poll': typeof ApiAdminExplorerPollRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
+    | '/api/search'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
     | '/api/admin/explorer-poll'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
+    | '/api/search'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
     | '/api/admin/explorer-poll'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/health'
     | '/api/plugins'
+    | '/api/search'
     | '/authors/$authorId'
     | '/plugins/$pluginId'
     | '/api/admin/explorer-poll'
@@ -474,6 +486,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiHealthRoute: typeof ApiHealthRouteWithChildren
   ApiPluginsRoute: typeof ApiPluginsRouteWithChildren
+  ApiSearchRoute: typeof ApiSearchRoute
   AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
   PluginsPluginIdRoute: typeof PluginsPluginIdRoute
   ApiAdminExplorerPollRoute: typeof ApiAdminExplorerPollRoute
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       path: '/api/plugins'
       fullPath: '/api/plugins'
       preLoaderRoute: typeof ApiPluginsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/search': {
+      id: '/api/search'
+      path: '/api/search'
+      fullPath: '/api/search'
+      preLoaderRoute: typeof ApiSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/authors/$authorId': {
@@ -793,6 +813,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiHealthRoute: ApiHealthRouteWithChildren,
   ApiPluginsRoute: ApiPluginsRouteWithChildren,
+  ApiSearchRoute: ApiSearchRoute,
   AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,
   PluginsPluginIdRoute: PluginsPluginIdRoute,
   ApiAdminExplorerPollRoute: ApiAdminExplorerPollRoute,

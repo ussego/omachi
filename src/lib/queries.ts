@@ -13,6 +13,7 @@ import type {
 	LeaderboardResponse,
 	PluginDetailResponse,
 	PluginListResponse,
+	SearchResponse,
 	StatsResponse,
 	TrendingResponse,
 	UnverifiedResponse,
@@ -68,6 +69,13 @@ export function totalStatsQuery(groupBy: Granularity) {
 	return queryOptions({
 		queryKey: ["stats", "total", groupBy],
 		queryFn: () => get<ChartSeriesResponse>(`/api/charts/omastats/total?groupBy=${groupBy}`),
+	});
+}
+
+export function searchQuery(q: string, limit = 8) {
+	return queryOptions({
+		queryKey: ["search", q, limit],
+		queryFn: () => get<SearchResponse>(`/api/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 	});
 }
 
@@ -173,6 +181,11 @@ export function unverifiedPluginsQuery(range: string) {
 // The command palette fetches on keystrokes rather than on navigation, so it
 // stays on plain useQuery — route loaders would refetch the whole list on
 // every debounced change with no keepPreviousData smoothness.
+
+/** Previous results stay on screen while the next query loads. */
+export function useSearch(q: string, limit = 8, enabled = true) {
+	return useQuery({ ...searchQuery(q, limit), enabled, placeholderData: keepPreviousData });
+}
 
 /** Previous results stay on screen while the next query loads. */
 export function usePluginList(q: string, page: number, pageSize = 50) {
