@@ -64,7 +64,7 @@ function ApiDocsPage() {
 						<Code>relations</Code> (<Code>null</Code> for built-ins or pre-sync plugins).
 					</li>
 				</ul>
-				<Snippet lang="shell">{`curl ${BASE}/api/plugins/ussego.otoru`}</Snippet>
+				<Snippet lang="shell">{`curl "${BASE}/api/plugins/ussego.otoru"`}</Snippet>
 			</div>
 
 			<GraphRule />
@@ -79,8 +79,8 @@ function ApiDocsPage() {
 						cap at 4.
 					</li>
 					<li>
-						Empty <Code>q</Code> returns the most-loved plugins and authors — the command palette
-						landing state.
+						Empty <Code>q</Code> returns the most-loved plugins and authors for the command
+						palette landing state.
 					</li>
 				</ul>
 				<Snippet lang="shell">{`curl "${BASE}/api/search?q=otel&limit=8"`}</Snippet>
@@ -138,7 +138,7 @@ function ApiDocsPage() {
 						.
 					</li>
 				</ul>
-				<Snippet lang="shell">{`curl ${BASE}/api/badges/hearts/ussego.otoru`}</Snippet>
+				<Snippet lang="shell">{`curl "${BASE}/api/badges/hearts/ussego.otoru"`}</Snippet>
 			</div>
 
 			<div className="flex flex-col gap-3">
