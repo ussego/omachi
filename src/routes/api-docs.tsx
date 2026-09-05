@@ -70,6 +70,25 @@ function ApiDocsPage() {
 			<GraphRule />
 
 			<div className="flex flex-col gap-3">
+				<h2 className="font-heading text-xl">Search</h2>
+				<Snippet>GET /api/search?q=otel&limit=8</Snippet>
+				<ul className="list-inside list-disc text-muted-foreground">
+					<li>
+						Ranked plugins (name/id/author/description/category/tags, prefix hits first, ties by
+						hearts) plus matching authors. <Code>limit</Code> (max 20) sizes the plugin list; authors
+						cap at 4.
+					</li>
+					<li>
+						Empty <Code>q</Code> returns the most-loved plugins and authors — the command palette
+						landing state.
+					</li>
+				</ul>
+				<Snippet lang="shell">{`curl "${BASE}/api/search?q=otel&limit=8"`}</Snippet>
+			</div>
+
+			<GraphRule />
+
+			<div className="flex flex-col gap-3">
 				<h2 className="font-heading text-xl">Authors and leaderboards</h2>
 				<Snippet>GET /api/authors/:login</Snippet>
 				<ul className="list-inside list-disc text-muted-foreground">
